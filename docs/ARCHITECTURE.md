@@ -1,90 +1,90 @@
 # Architecture
 
-> **Status: PROVISIONAL DESIGN. Nothing described here has been implemented.** No code exists in this repository. This document records the proposed design from Handover §5–6 and Phase 1 decisions, so it can be checked and changed as implementation teaches us things. Update it whenever the design changes (see [CLAUDE.md](../CLAUDE.md)).
+> **Status: PROVISIONAL DESIGN (methodology provisionally approved 16 Nov 2026). Nothing described here has been implemented.** No application code exists in this repository. Update this document whenever the design changes (see [CLAUDE.md](../CLAUDE.md)).
+>
+> **History:** the handover (§5–6) proposed a single pipeline: spec parser → feature extractor → taxonomy selector → LLM generator → executor → reporting. The 16 Nov 2026 checkpoint kept that pipeline and added the stages, switches and safeguards below. The earlier single-arm description is superseded, not discarded: it is still the core path of Arms B/C.
 
-## Design principles (FINAL — D0.4, D0.5, D0.6)
+## Design principles
 
-- Our own implementation; a small, working end-to-end pipeline first.
-- Deterministic, explainable strategy selector first.
-- No dashboard, multi-agent orchestration, RL, custom model training or vector database until a measured need emerges.
-- The selector and generator see only what a normal tester would have: the OpenAPI/Swagger spec and genuinely public documentation. No hidden labels, issue text, patches or benchmark metadata (D5, PROPOSED, enforcement mechanism below).
+**FINAL — D0.3–D0.6:**
+- our own implementation;
+- a small end-to-end pipeline first;
+- a deterministic, explainable selector;
+- no dashboard, multi-agent orchestration, RL, custom model training or vector database until a measured need exists;
+- no benchmark ground truth enters the system.
+
+**PROVISIONAL — methodology checkpoint:**
+- **No feedback or refinement loop in v1.** Single-shot generation keeps the budget comparable across arms and avoids tests adapting to faulty behaviour (RESTestBench).
+- **One codebase, three arms**, differing only in planner configuration and catalogue file (D12).
+- **System side vs researcher side:** researcher-side tools may read benchmark ground truth; system-side code must never import them.
 
 ## Pipeline (PROVISIONAL)
 
 ```
-OpenAPI/Swagger spec (+ optional public docs / requirements)
-        │
-        ▼
-1. Specification parser ──► operations, parameters, schemas, constraints,
-        │                    response fields, auth info, documented relationships
-        ▼
-2. API feature extractor ──► observable features per operation
-        │
-        ▼
-3. Taxonomy-guided strategy selector (deterministic rules)   ◄── EXPERIMENTAL ARM ONLY
-        │                    selected + prioritised strategies, with recorded reasons
-        ▼
-4. LLM test generator ─────► structured test cases, request sequences,
-        │                    input values, explicit assertions
-        ▼
-5. Execution & validation engine ─► run requests, manage state, capture
-        │                    responses, evaluate assertions, classify outcomes
-        ▼
-6. Experiment runner & reporting ─► detections, false positives, coverage, request
-                             count, time, LLM usage/cost, reproducibility metadata
+SYSTEM SIDE — allow-listed inputs only; every input hashed into a run manifest
+ 0 Input loader (allow-list; fails the run on violation) + run manifest writer
+ 1 Spec normaliser ─► one sanitised project-level spec (D5.1 preference order; never a union)
+ 2 Explorer ─► GET-only, shape-only observations of the project's reference version (D13)
+ 3 Feature extractor (deterministic) ─► feature record per operation/resource (hashed, shared by all arms)
+ 4 Planner ─ Arm A: s slots per operation, no strategies
+           └ Arms B/C: shared selector + catalogue_B | catalogue_C ─► (operation, strategy) slots + reasons
+ 5 LLM generator ─► one call per operation; same model, settings and system prompt; JSON test DSL
+ 6 Static validator ─► well-formedness only (no repair, no regeneration)
+ 7 Replayer ─► per defect: buggy then patched; snapshot restore; r repetitions; isolated re-runs
+ 8 Verdict engine ─► outcome classes (PASS/FAIL/FLAKY/ERROR-INFRA/ERROR-TEST), differential candidates
+ 9 Results store ─► runs, tests, exchanges, verdicts, budgets, versions (PostgreSQL)
+
+RESEARCHER SIDE — may read ground truth; never imported by system code
+ · benchmark validation (X6/X7) · fix-delta attribution · blinded confirmation sheet · statistics
+ · analysis/benchmark_audit/ scripts
 ```
-
-The baseline arm runs the same stages **without stage 3** (ordinary LLM-generated tests from the same spec and public docs, same model, same budget).
-
-Optional, **postponed** until the core pipeline and protocol are stable: React dashboard / experiment-management UI (Handover §5.8, Phase 7).
 
 ## Components
 
 | # | Component | Responsibility | Status |
 |---|---|---|---|
-| 1 | Specification parser | Parse specs; support **Swagger 2.0 and OpenAPI 3.x** (D8, PROVISIONAL: swagger-parser v3, which converts 2.0 → 3.0) | Not started |
-| 2 | Feature extractor | Derive observable features relevant to test strategies | Not started |
-| 3 | Strategy selector | Map features → strategies by transparent rules; record why each strategy was chosen | Not started |
-| 4 | LLM test generator | Provider-independent client; generate structured tests and assertions | Not started |
-| 5 | Execution/validation engine | RestAssured or Java HTTP Client; state handling; assertion evaluation; logs | Not started |
-| 6 | Experiment runner/reporting | Run both arms under the budget; store results and metadata | Not started |
+| 0 | Input loader + manifest | Single file-reading path; allow-list; SHA-256 of every input; full prompts and responses; model metadata; code and benchmark commits | Not started |
+| 1 | Spec normaliser | Parse Swagger 2.0 and OpenAPI 3.x (D8: swagger-parser v3); neutral name; fix servers; keyword scan; hash | Not started |
+| 2 | Explorer | GET-only HTTP wrapper; ≤ 2 requests per GET operation; deterministic ID choice; double run; shape inference; values never exported | Not started |
+| 3 | Feature extractor | Operation/resource features (methods, params, filter-like params, CRUD sets, action sub-resources, auth), plus shape features | Not started |
+| 4 | Planner / selector | Arm A slot allocation; B/C trigger predicates, catalogue order, seed-rotated round-robin, reason log; catalogue files versioned | Not started |
+| 5 | LLM generator | Provider-independent client; fixed system prompt; arm-specific task section; token accounting | Not started |
+| 6 | Static validator | Schema validation of the DSL; rejects, never repairs | Not started |
+| 7 | Replayer | Drives `defects4rest checkout` sequentially; health check; generic fixture; snapshot/restore (Dolibarr DB dump); fixed test order; isolated candidate re-runs | Not started |
+| 8 | Verdict engine | Outcome classes; differential candidates; flaky detection | Not started |
+| 9 | Results store | PostgreSQL schema for runs, tests, exchanges, verdicts, budgets | Not started |
+| R | Researcher tools | Attribution (RESTCountries fix-delta script), confirmation sheet with arm anonymisation, statistics (Python) | Partly: audit scripts exist in `analysis/benchmark_audit/` |
 
-## Taxonomy vs strategy (PROPOSED — D2, D3)
+## Test DSL (to be specified before any arm is run)
 
-- **Defect type** = what goes wrong: Defects4REST taxonomy (6 types / 13 subtypes). Used to prioritise.
-- **Test strategy** = how a test probes for it, e.g. boundary/invalid input, filter/query probing, multi-step stateful workflow, credential/role variation, semantic/factual response assertion.
-- The selector maps observable API features → strategies. The strategy list is **not frozen**; it must be frozen (with observable evidence, assertions and benchmark support for each) before the experiment, per Handover §9-A.
-- If prevalence priors are used, they must exclude evaluation projects (D6, PROPOSED).
+JSON test case:
+- **steps:** method, path template, parameters, body, symbolic auth role, captures;
+- **assertions:** status in a set; JSON-path equals/contains/matches/compare; cross-step comparisons.
 
-## Leakage firewall (PROPOSED — D5)
-
-Planned enforcement, not yet built:
-- Path allow-list: generator/selector may read only `<project>#<issue>_spec.json/yaml` and public docs.
-- Forbidden: `bug_replication/**/README.md`, `defects4rest/data/defect_data/*.csv`, `defects4rest info` output, issue URLs/titles, patches, per-defect taxonomy labels.
-- Every input file for every run is logged.
-- Open check: the 5 differing Dolibarr specs must be confirmed not to be bug-specific (E10).
+The DSL is the same for all arms. Its assertion vocabulary must be fixed **before** seeing arm outputs, so that expressiveness limits apply equally.
 
 ## Technology stack (PROVISIONAL, Handover §6)
 
 | Area | Choice |
 |---|---|
 | Backend/orchestration | Java 21, Spring Boot |
-| Spec parsing | swagger-parser v3 (D8); alternatives open |
-| LLM integration | Provider-independent client abstraction; provider/model **not yet chosen** |
-| HTTP execution | RestAssured or Java HTTP Client — **not yet chosen** |
-| Persistence | PostgreSQL (test cases, runs, outcomes, experiment metadata) |
-| Deployment | Docker for benchmark services and dependencies |
-| Analysis | Python (statistics, plots, benchmark adapters) |
-| Frontend | React — optional, postponed |
-| Benchmark host | Native Linux, or Windows + WSL2 + Docker Desktop (D9, FINAL) |
+| Spec parsing | swagger-parser v3 (D8) |
+| LLM integration | Provider-independent client; provider/model **TBD** |
+| HTTP execution | RestAssured or Java HTTP Client — **TBD** |
+| Persistence | PostgreSQL (Docker) |
+| Benchmark | Defects4REST CLI, pinned commit `265db11` (D1.1) |
+| Deployment | Docker; host = Windows + WSL2 (Ubuntu) + Docker Desktop (D9) |
+| Analysis | Python (statistics, plots, researcher-side scripts) |
+| Frontend | React — optional, postponed (Phase 7) |
 
 ## Data model
 
-Not designed yet. To be added with Phase 2–3, informed by what the runner needs to store (runs, test cases, requests/responses, outcomes, budget counters, versions, seeds).
+Not designed yet. Expected entities: Project, SpecVersion (hash), FeatureRecord (hash), Catalogue (version), Arm, Seed, Suite, TestCase (hash), Deployment (defect, version, image digests), Execution, Exchange, Verdict, Candidate, Confirmation, BudgetCounter. To be designed in Phases 2–3.
 
 ## Open design questions
 
-1. HTTP client choice; test-case representation; how state/dependencies are modelled.
-2. LLM provider/model and how budget is defined (tokens, calls, requests, time) — must be equal across arms.
-3. How the detection oracle (D4) is automated vs manual.
-4. Whether any feedback/refinement loop is used (allowed as an aid, not a novelty claim).
+1. HTTP client choice; DSL details; how captures and cross-step comparisons are expressed.
+2. LLM provider/model; whether the provider supports seeds; token accounting.
+3. Automating the Dolibarr installer and API key (Phase 1 go/no-go, R13).
+4. Product-generated spec configuration ("all API modules") for Dolibarr (R14).
+5. Snapshot mechanism per project (DB dump vs volume copy).

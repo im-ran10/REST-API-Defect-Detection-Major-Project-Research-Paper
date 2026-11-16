@@ -23,15 +23,30 @@ REST API testing tools and LLM-based approaches can generate requests and tests,
 
 ## Proposed contribution (to be validated — not established)
 
-1. Adopt (D2, PROPOSED) or construct a practical taxonomy of REST API defect categories that can be operationalised into test-generation strategies.
+*Original list (handover):*
+1. Adopt or construct a practical taxonomy of REST API defect categories that can be operationalised into test-generation strategies.
 2. Extract observable features from an API specification and available public documentation.
 3. Use those features to select and prioritise taxonomy-guided test strategies with transparent deterministic rules.
 4. Generate structured LLM-assisted test cases and assertions for the selected strategies.
 5. Evaluate whether this detects more real-world defects than a plain LLM-generated-test baseline under comparable budgets.
 
+*As refined at the methodology checkpoint (16 Nov 2026; D2.1, D3.1, D12, PROVISIONAL):*
+- **The taxonomy:** the Defects4REST taxonomy is adopted as reference vocabulary and is the source of a strategy catalogue (C). Adopting it is not our contribution.
+- **The study:** a controlled three-arm study under equal budgets, on held-out projects with a buggy-vs-patched differential oracle:
+  - **A** — plain LLM generation;
+  - **B** — feature-conditioned selection from a general-principles catalogue (established tool checks + metamorphic relations);
+  - **C** — the same selector with the taxonomy-derived catalogue.
+- **Sub-questions:**
+  - RQ1: does B beat A (selection effect)?
+  - RQ2: does C beat B (taxonomy effect)?
+  - RQ3: which defects and mechanisms does each arm find, and at what cost?
+- **Contributions:** the frozen, source-traceable catalogue and a benchmark-validity audit are secondary contributions.
+
 The intended contribution is the **empirical evaluation of this strategy-selection approach**, not the mere use of an LLM, a defect taxonomy, API testing, or multi-agent architecture.
 
-**Current uncertainty:** the novelty of this exact combination has **not** been established (see [RESEARCH_LOG.md §5](RESEARCH_LOG.md)), and it is untested whether defect-type labels correspond to how defects can actually be detected (RESEARCH_LOG risk R1).
+**Current uncertainty:**
+- **Novelty:** the novelty of this exact combination has **not** been established; only a targeted search has been done (see [RESEARCH_LOG.md §5](RESEARCH_LOG.md)).
+- **Label–mechanism mismatch (risk R1):** defect-type labels demonstrably do not match detection mechanisms in RESTCountries (E13). Whether this hurts taxonomy-guided generation is untested.
 
 ## Scope and non-goals
 

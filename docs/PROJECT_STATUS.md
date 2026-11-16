@@ -1,10 +1,13 @@
 # Project Status
 
-**Last updated:** 16 Nov 2026 (owner environment recorded; push access verified)
+**Last updated:** 16 Nov 2026 (methodology checkpoint)
 
 ## Current stage
 
-**Research validation and Phase 1 (environment setup).** No application code exists. No experiment has been run. There are **no measured results**.
+**Methodology provisionally approved; Phase 1 (environment setup and feasibility checks) is next.**
+- No application code exists.
+- No experiment has been run.
+- There are **no measured results**.
 
 ## What has actually been done
 
@@ -15,60 +18,82 @@
 | Benchmark counts, taxonomy, CLI and prerequisites verified from primary sources | [RESEARCH_LOG.md E1–E5](RESEARCH_LOG.md) |
 | Published four-tool baseline numbers and failure causes recorded | E6, E7 |
 | Static check of restcountries#235 buggy vs patched data | E8 (static only) |
-| Pilot subjects **proposed** (RESTCountries, Dolibarr) | D7 (PROPOSED) |
-| Documentation system created and pushed to `main` | Owner asked for review-then-push on 16 Nov 2026; **owner's own review still to come** |
-| Owner environment stated: **Windows**, **IntelliJ IDEA** (has VS Code too; more experienced with IntelliJ) | Owner, 16 Nov 2026 |
-| WSL2 present: `wsl --status` reports Default Version 2; `wsl -l -v` lists `docker-desktop` (default) and `Ubuntu`, both WSL version 2 and Stopped | Owner-reported output, 16 Nov 2026 |
-| Push access from the Claude workspace verified (a throwaway branch was pushed to GitHub) | See Open questions item 3 |
+| Documentation system created and pushed to `main` (commit `fafe00d`) | CHANGELOG |
+| Owner environment: **Windows**, **IntelliJ IDEA**; WSL2 with `docker-desktop` and `Ubuntu` (both stopped when checked) | Owner, 16 Nov 2026 |
+| Push access from the Claude workspace verified (throwaway branch `claude/push-access-test`, kept at the owner's request) | CHANGELOG |
+| D2–D7 review: label inconsistencies, ground-truth issues, leakage channels, development set defined | `docs/proposals/2026-11-16_D2-D7_review.md`; E11–E21 |
+| Final methodology and revision 2: three arms, exploration, spec rules, holdout, detection protocol, statistics | `docs/proposals/2026-11-16_final_methodology.md`, `…_methodology_revision_2.md`; E22–E26 |
+| **Owner provisionally approved the methodology** | DECISIONS D1.1, D2.1–D7.1, D11–D14 (PROVISIONAL) |
+| Owner approved D10 (repository = source of truth) and the D16.1 development fallback order | DECISIONS D10, D16.1 |
+| Researcher-side audit scripts | `analysis/benchmark_audit/` |
 
 ## What has NOT been done
 
-- No development environment installed or confirmed.
-- Defects4REST not installed; no defect deployed or reproduced.
-- No spec-variant check on Dolibarr.
-- No code, schema, prompts or generated tests.
-- No focused novelty check.
-- Taxonomy and strategy set not frozen; experiment protocol not frozen.
-- Decisions D2–D7 and D10 are PROPOSED, i.e. **not yet agreed by the owner**.
+- No development environment installed or confirmed (Docker inside Ubuntu not yet tested).
+- Defects4REST not installed; no defect deployed or reproduced (so D1 remains PROVISIONAL).
+- No Phase 1 feasibility checks: Dolibarr automation, Podman (X5), official specs (X8).
+- No code, DSL, catalogues, prompts or generated tests.
+- Systematic novelty check not done (only a targeted search).
+- Protocol **not frozen**; budgets (*s*, tokens, caps), LLM model and reviewers TBD.
 
-## Phase 1 checklist (carried over from the decision log)
+## Decisions awaiting the owner
 
-- [x] Verify benchmark counts, taxonomy, CLI, prerequisites from primary sources
-- [x] Choose pilot subjects (proposed D7)
-- [x] Confirm dev OS/IDE — Windows + IntelliJ IDEA (owner, 16 Nov 2026). Host requirement D9 is therefore Windows + WSL2 + Docker Desktop (WSL integration)
-- [ ] Verify WSL2 setup: Ubuntu (WSL2) is installed. Still to confirm: Ubuntu starts and works, Docker Desktop is installed and running, and its WSL integration is enabled for Ubuntu (`docker run hello-world` from inside Ubuntu). Decide where the project and benchmark files live (WSL filesystem vs Windows)
-- [ ] Install toolchain: Java 21, Maven, Docker (+ WSL2 if Windows), Python 3.9+ venv, Go 1.16+, PostgreSQL (Docker), Git
-- [ ] Install Defects4REST v1.0.0 (pin commit), run `defects4rest --help`
+None at present. D10 approved (FINAL) and D16.1 approved (PROVISIONAL) on 16 Nov 2026.
+
+## Phase 1 checklist (revised 16 Nov 2026)
+
+Environment
+- [x] Verify benchmark counts, taxonomy, CLI and prerequisites from primary sources
+- [x] Choose pilot subjects → now the development set (D7.1)
+- [x] Confirm dev OS/IDE — Windows + IntelliJ IDEA (D9: Windows + WSL2 + Docker Desktop)
+- [ ] Verify WSL2: Ubuntu starts; Docker Desktop running with WSL integration for Ubuntu (`docker run hello-world` inside Ubuntu); decide file locations (WSL filesystem recommended)
+- [ ] Install toolchain in Ubuntu: Java 21, Maven, Python 3.9+ venv, Go 1.16+, Git, GitHub CLI; PostgreSQL via Docker
+- [ ] Install Defects4REST at commit `265db11` (D1.1); run `defects4rest --help`
+
+Development-set feasibility
 - [ ] Deploy restcountries#235 buggy → reproduce "Kiev"; deploy patched → "Kyiv"
-- [ ] Deploy one Dolibarr defect, obtain API key, reproduce with curl/Postman
-- [ ] Explain the 5 differing Dolibarr specs (leakage check)
+- [ ] **Dolibarr go/no-go (R13):** deploy one defect, then script the installer + API key for one version within 2 days; reproduce one defect with curl. If no-go, follow D16.1 (SeaweedFS, else RESTCountries alone)
+- [ ] Dolibarr product-generated spec: fetch `/api/index.php/explorer/swagger.json` at the reference version with all API modules enabled (R14)
 - [ ] Minimal Java 21 program: load spec, list operations, send one request, capture status + body
-- [ ] Record exact versions (benchmark commit, Docker images, JDK) in [DECISIONS.md](DECISIONS.md)/[RESEARCH_LOG.md](RESEARCH_LOG.md)
 
-First concrete milestone (Handover §11): a locally running benchmark REST API, a readable OpenAPI spec, and a minimal program that sends a request and captures the response. **Not** a dashboard.
+Holdout feasibility (**metadata only — do not open holdout ground truth**; see CLAUDE.md)
+- [ ] **X5 Podman:** deploy its reference version within one working day, in an isolated environment (R21)
+- [ ] **X8 official specs:** for nocodb, flowable-engine and kafka-rest, find a product-generated/official spec of the reference version; record the source or exclude
+- [ ] Reference-version date/ancestry checks and hook check (function names only) for each eligible holdout project
+- [ ] Record exact versions (benchmark commit, Docker images, JDK)
 
-## Roadmap (Handover §10)
+First concrete milestone (Handover §11, unchanged): a locally running benchmark REST API, a readable OpenAPI spec, and a minimal program that sends a request and captures the response. **Not** a dashboard.
+
+## Roadmap (Handover §10, mapped to the approved methodology)
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | Environment and benchmark setup | **In progress** |
-| 2 | Baseline pipeline (parse spec, ordinary LLM tests, execute, capture) | Not started |
-| 3 | Test execution engine (test-case model, state handling, assertions, logs) | Not started |
-| 4 | Taxonomy and feature selector (deterministic rules, leakage prevention) | Not started |
-| 5 | Proposed method (taxonomy-guided suites under fixed budget) | Not started |
-| 6 | Evaluation (controlled runs, validation, statistics) | Not started |
+| 1 | Environment, benchmark setup, feasibility checks (above) | **Next** |
+| 2 | Arm A end to end on RESTCountries: input loader + manifest, spec normaliser, explorer, LLM generator, DSL, static validator | Not started |
+| 3 | Replayer and verdict engine: snapshots, repetitions, isolated re-runs, outcome classes; results store | Not started |
+| 4 | Feature extractor, selector, catalogues B and C (development set only) | Not started |
+| 5 | Development runs; calibration of *s*, *k*, tokens; catalogue divergence test; freeze (EXPERIMENT_PROTOCOL §13) | Not started |
+| 6 | Holdout evaluation, blinded confirmation, statistics | Not started |
 | 7 | Integrated application (DB-backed experiment management; optional React) | Not started |
 | 8 | Research paper | Not started |
 
-Handover §9 pre-implementation work: A freeze feasible taxonomy (open), B validate benchmark environment (Phase 1, open), C freeze experiment protocol (draft only), D focused novelty check (open), E pilot (open).
+Handover §9 pre-implementation work:
+
+| Item | Status |
+|---|---|
+| A — freeze a feasible taxonomy | Replaced by the catalogue design; frozen in Phase 5 |
+| B — validate benchmark environment | Phase 1 |
+| C — freeze experiment protocol | Methodology approved; freeze in Phase 5 |
+| D — focused novelty check | Open |
+| E — pilot | Phase 5 development runs |
 
 ## Open questions / blockers
 
-1. WSL2: Ubuntu is installed; Docker Desktop (currently stopped) and its WSL integration for Ubuntu must be confirmed working (see checklist).
-2. Owner decision on PROPOSED items D2–D7, D10.
-3. GitHub push: verified working on 16 Nov 2026 by pushing a throwaway branch `claude/push-access-test`. The session cannot delete remote branches (HTTP 403), so that branch **still exists on GitHub and must be deleted by the owner** (GitHub → Branches). Nothing has been pushed to `main`.
-4. Whether the 5 differing Dolibarr specs leak defect information (E10).
+1. WSL2/Docker integration not yet verified.
+2. If Dolibarr fails its go/no-go, apply D16.1 (try SeaweedFS as an extra development subject, else RESTCountries alone).
+3. Feasibility of Dolibarr automation, Podman (X5) and official specs (X8) determines the development and holdout sizes (R12).
+4. Budgets and LLM model choice: TBD in Phase 5 calibration, pinned before the holdout (D15).
 
 ## Next task
 
-Owner reviews the pushed documentation and requests any changes. Then continue the Phase 1 toolchain checklist: verify Docker Desktop + Ubuntu integration, install the toolchain, then install Defects4REST and reproduce restcountries#235.
+Documentation update committed on a documentation branch, awaiting the owner's merge approval. Then begin Phase 1: verify Docker inside Ubuntu, install the toolchain and Defects4REST, and reproduce restcountries#235.

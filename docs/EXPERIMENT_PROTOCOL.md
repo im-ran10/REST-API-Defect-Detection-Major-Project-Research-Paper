@@ -1,75 +1,261 @@
 # Experiment Protocol
 
-> **Status: DRAFT — NOT FROZEN. No experiment has been run and there are no results.** Handover §19 requires a frozen protocol before any comparative run, and forbids tuning the proposed method on hidden test defects. Items marked **TBD** are deliberately undecided; do not fill them with guesses. Items tagged D# come from [DECISIONS.md](DECISIONS.md) and carry that decision's status.
+> **Status: METHODOLOGY PROVISIONALLY APPROVED (16 Nov 2026) — NOT FROZEN.** No experiment has been run and there are no results.
+>
+> - **Freeze point:** the protocol is frozen at the end of the development phase, before any holdout deployment (Handover §19; D11).
+> - **Undecided values:** items marked **TBD** are deliberately undecided — do not fill them with guesses.
+> - **Decision status:** items tagged D# carry the status shown in [DECISIONS.md](DECISIONS.md).
+> - **Full reasoning:** `docs/proposals/2026-11-16_final_methodology.md`, as amended by `docs/proposals/2026-11-16_methodology_revision_2.md` (the latter takes precedence).
 
-## 1. Question and hypothesis
+## 1. Research questions
 
-Research question: see [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md). Working hypothesis: taxonomy-guided strategy selection detects more real-world defects than ordinary LLM-generated tests under the same budget. This is a hypothesis, not a finding.
+Main question (unchanged, Handover §2.2):
 
-## 2. Arms
+> Can selecting and prioritizing test-generation strategies using an empirical taxonomy of REST API defects improve the detection of real-world REST API defects compared with ordinary LLM-generated tests under the same testing budget?
 
-| Arm | Description | Status |
+Operationalised as:
+
+- **RQ1 (selection effect):** does Arm B detect more real-world defects than Arm A under equal budgets?
+- **RQ2 (taxonomy effect):** does Arm C detect more than Arm B under the same selector, budget and prompts?
+- **RQ3 (descriptive):** which defects and detection mechanisms does each arm find, at what false-positive and cost levels?
+
+RQ1 and RQ2 are the two pre-registered primary comparisons; C vs A is secondary. These are hypotheses, not findings.
+
+## 2. Arms (D12, PROVISIONAL)
+
+| | A — plain | B — general principles | C — taxonomy-derived |
+|---|---|---|---|
+| Planner | *s* slots per operation, no strategies | shared selector + `catalogue_B` | shared selector + `catalogue_C` |
+| Prompt task section | "write *s* tests likely to reveal defects" | one slot per selected B strategy (description + oracle template) | one slot per selected C strategy (taxonomy-derived manifestation + oracle template) |
+
+**Held identical across arms:**
+- the project-level spec and the exploration feature record;
+- the LLM provider, model version and settings;
+- one generation call per operation;
+- *s* slots per operation and the request caps;
+- the JSON test DSL and the system prompt;
+- deployments, replay, fixtures and verdict rules.
+
+**Catalogues (D3.1).** Draft entries are in the proposals (final methodology §4.3; revision 2 §1).
+- **B** = Schemathesis/RESTler checks + Segura et al.'s six metamorphic output patterns + RFC 9110 semantics.
+- **C** = taxonomy-derived; every entry cites a subtype or L-class.
+- **Membership:** a strategy belongs to B only if it appears in B's named sources.
+- **Overlap:** a frozen overlap table records which strategy families have a counterpart in the other catalogue.
+
+**Two-arm fallback.** At the freeze, compute *catalogue divergence* on the development subjects: the share of (operation, slot) assignments whose strategy family has no counterpart in the other catalogue. If it is < 20%, run A vs C only and report RQ2 as not testable.
+
+**Development effort parity.** A, B and C each get the same number of logged revision rounds on the development set.
+
+**External tools.** Schemathesis, RESTler, EvoMaster and AutoRestTest are not run in the initial plan (scope). Their published RQ3 results for 6 development defects (E20) are context only, not comparable baselines.
+
+## 3. Selection (D3.1, D6.1)
+
+- **Features:** deterministic, from the project-level spec and exploration shapes (final methodology §5.1).
+- **Triggering:** each catalogue entry has a boolean trigger predicate over those features.
+- **Allocation:** per operation, triggered strategies in catalogue order fill *s* slots round-robin, starting at index (seed mod length); default strategy if nothing triggers.
+- **No priors.**
+- **Logging:** each choice is logged with its predicate and feature values.
+
+## 4. Budgets and settings
+
+| Item | Value |
+|---|---|
+| Slots per operation *s* | **TBD** (proposal 3; calibrated on dev) |
+| Generation seeds *k* | 5; raise to 10 for all arms **only if** > 30% of dev defects show intermediate detection rates and the budget allows (decided before the holdout) |
+| Execution repetitions *r* | 3 (flakiness classification only) |
+| Temperature / provider seed | fixed non-zero temperature; provider seed where available; **TBD** values |
+| Request caps (per test, per suite) | **TBD** |
+| Token budget (per call, per arm, total) | **TBD**, pinned before the holdout (D15) |
+| LLM provider/model | **TBD** |
+
+## 5. Inputs, spec source and leakage control (D5.1)
+
+**Spec source, in order of preference:**
+1. The product-generated/official spec of the project's reference version, generated with a documented, defect-independent configuration. For Dolibarr this is `/api/index.php/explorer/swagger.json` with all API-capable modules enabled.
+2. Otherwise, a benchmark spec that is identical across the project's defects, or differs only by version with zero single-defect operations; use the reference defect's copy.
+3. **Never** a union, and never a per-defect spec.
+
+**Sanitisation:**
+1. Neutral filename `spec.json`; replace servers/host.
+2. Keyword scan over all text fields: `bug`, `issue`, `#\d+`, `fix`, `buggy`, `patched`, `workaround`, `regression`, `TODO`, `FIXME`, GitHub URLs.
+3. **The owner** reviews the hits; each edit is logged.
+4. SHA-256 recorded. Every arm/seed manifest must reference the same hash.
+
+**Forbidden inputs to the system:**
+- replication READMEs and images;
+- defect CSVs;
+- `defects4rest info` and checkout output;
+- deploy and setup-hook code;
+- cloned upstream history;
+- the replication package;
+- issue trackers;
+- per-defect spec files.
+
+**Enforcement:**
+- a single allow-listed input loader that fails the run on any violation;
+- a run manifest (file hashes, full prompts and responses, model metadata, code commit, benchmark commit);
+- a per-batch prompt audit for defect IDs, issue URLs and unexplained triggering-endpoint strings — any hit voids the batch.
+
+Suites are generated **per project**, never per defect.
+
+## 6. Exploratory API analysis (D13, PROVISIONAL)
+
+**Reference version:** the buggy version of the project's earliest-buggy defect. Two checks per project; if either fails, use the fallback below:
+- every patch is dated after the reference;
+- every patch is a git descendant of the reference.
+
+The checks pass for RESTCountries (`aadbd07`) and Dolibarr (`9d4007e`) (E22).
+
+**Hook rule:** if the reference defect has a setup hook (checked by function name only), that defect is excluded from the primary analysis and included in a sensitivity analysis.
+
+**Execution:**
+- **Isolation:** a dedicated deployment, discarded afterwards.
+- **Requests:** GET only (client wrapper rejects other methods; no redirects); ≤ 2 requests per GET operation (collection + one item, with the ID chosen by code); 10 s timeout; 15 min per project.
+- **Order:** operations sorted by path, then method.
+- **Reproducibility:** run twice; on a difference, keep the intersection of fields and report it.
+
+**Extraction:** shape only — keys, JSON types, nesting, format tags — plus code-computed booleans (`has_id_like_field`, `has_reference_array`). **Values never leave the explorer.**
+
+**Sharing:** one hashed feature record per project, used by every arm and seed.
+
+**Fallback:** spec plus official-documentation examples, for the affected project only.
+
+**Later ablation:** spec-only.
+
+## 7. Development and held-out sets (D7.1, D11, D14)
+
+- **Development:**
+  - RESTCountries (15 usable; #237 excluded; #199 uses `--patched 2`; #202 contested);
+  - Dolibarr (18 usable + 4 needing a fixture; #23345, #26307, #29372 excluded).
+  - Fallback if Dolibarr is infeasible (D16.1): add an already-excluded project such as SeaweedFS; else RESTCountries alone. A holdout project is moved only with a compelling, documented justification.
+- **Holdout candidates after X1–X4:** awx, flowable-engine, kafka-rest, mastodon, netbox, nocodb (29 defects) + Podman (23) if X5 passes; X8 may remove nocodb, flowable-engine and kafka-rest.
+- **Expected evaluable holdout:**
+
+  | Scenario | Expected evaluable defects |
+  |---|---|
+  | Podman infeasible, X8 removes nothing | ≈ 22–27 |
+  | Worst case (Podman infeasible, X8 removes nocodb, flowable-engine, kafka-rest) | ≈ 16 |
+  | Podman feasible | ≈ 40–48 |
+
+- **Per-defect rules after the freeze:** X6 (validation fails), X7 (needs extra environment; sensitivity subset).
+- **Fixtures:** the benchmark checkout is treated as a black box; a generic project fixture (credentials, ≥ 2 roles where supported) is written only from public documentation, before any holdout ground truth is opened.
+- **Claims:** "pre-registered, project-level, design-frozen held-out evaluation with partial researcher exposure" — **not blind** (ledger: RESEARCH_LOG §9).
+- **Fallback if real defects prove infeasible overall** (Handover §8.1, risk R6): a controlled mutation benchmark such as RESTestBench. Check its scope and artifacts first; it is not planned unless Phase 1 fails broadly.
+
+## 8. Deployment and execution (D4.1)
+
+For each defect *d* and each version (buggy; patched at the recorded index):
+1. checkout → health check → generic fixture → snapshot (Dolibarr DB dump; RESTCountries none);
+2. for each arm × seed × repetition: restore the snapshot → run the frozen suite in a fixed order;
+3. shut down.
+
+Notes:
+- **Shared buggy versions** are deployed once (RESTCountries `aadbd07` serves #177, #199, #235).
+- **Same deployments for all arms:** every arm runs against the same deployments.
+- **Test independence:** the DSL requires self-contained tests (own resources, run-scoped unique names, bound IDs, no global counts).
+- **Isolated re-runs:** every candidate is re-run alone (restore → single test) *r* times on both versions.
+
+## 9. Outcomes, detection and attribution (D4.1)
+
+| Class | Definition | Counts toward detection? |
 |---|---|---|
-| **Baseline** | Ordinary LLM-generated API tests from the same spec and public docs, **without** taxonomy-guided strategy selection | Required (Handover §8.2) |
-| **Proposed** | Taxonomy-guided strategy selection, then LLM test generation | Required |
-| External reference tools | Schemathesis, RESTler, EvoMaster, AutoRestTest or a benchmark-recommended tool, where feasible and reproducible | Optional; choose by subject compatibility. The paper's published results (E6) are reference points only because the protocol differs |
+| PASS | all assertions hold in all *r* runs | — |
+| FAIL | an assertion fails in all *r* runs with valid exchanges | candidate input |
+| FLAKY | verdicts differ across runs | never |
+| ERROR-INFRA | deploy or health failure, connection error, timeout, gateway error; redeploy ≤ 2×, then *not evaluable* | never |
+| ERROR-TEST | malformed or unexecutable test, or its own setup fails on both versions | never |
 
-## 3. Budget parity (rules; values TBD)
+**Candidate:** FAIL on buggy and PASS on patched, with no ERROR-INFRA, and reproduced in isolation.
 
-Control or explicitly report: model/provider/version, generation token or call budget, request budget, execution time, and other constraints. The same model is used in both arms (see risks R2 and R3 in [RESEARCH_LOG.md](RESEARCH_LOG.md)). **Numeric budget values: TBD.**
+**Attribution to the defect's own fix-commit delta:**
+- **RESTCountries — mechanical:** the failing assertion must read a (country, field) changed by *d*'s own fix commit. Example: a "UKR capital = Kyiv" test failing on `aadbd07` and passing on #199's patch is **not** a #199 detection (E15).
+- **Dolibarr — reviewer-judged** against the fix commit and README. `#24661` is flagged (E19).
 
-## 4. Benchmark and subjects
+**Blinded confirmation (arm labels hidden):**
+- **Verdicts:** Confirmed / Related / Unrelated / Spurious.
+- **Evidence recorded:** defect, test hash, both exchanges, failing assertion, rationale.
+- **Who and when:** reviewer, date.
+- **Reviewers:** two independent reviewers preferred; otherwise ≥ 30% double-coded with κ reported.
 
-- Primary: **Defects4REST v1.0.0** (D1, PROVISIONAL until one defect is reproduced locally). Pin the exact commit. 607 = curated dataset; 110 = reproducible subset; expect ~108 folders actually present (E3).
-- Pilot subjects: **RESTCountries (16) and Dolibarr (25 listed)**; fallbacks NetBox (6), NocoDB (6) (D7, PROPOSED).
-- Pilot size: Handover §8.1 suggests roughly 10–15 defects as a planning suggestion, **not a final sample-size decision**. Final defect sample: **TBD**.
-- Inclusion/exclusion: defects needing infrastructure or external conditions out of reach of black-box spec-based testing (E7 L4, L7, L8, L9) are to be excluded or reported separately. Exact rule: **TBD**.
-- Fallback if real defects prove infeasible: a controlled mutation benchmark such as RESTestBench (check scope and artifacts first; Handover §8.1, §12).
+**Detection(d, arm, seed)** ⇔ at least one Confirmed candidate. Related results are reported as a sensitivity count.
 
-## 5. Inputs and leakage control (D0.6 FINAL; D5 PROPOSED)
+**Pre-run validation (X6):** a researcher reproduces the README behaviour on buggy and the expected behaviour on patched. Failures are excluded and listed.
 
-Allowed inputs: `<project>#<issue>_spec.json/yaml` and genuinely public API documentation. Forbidden: bug-replication READMEs, defect CSVs, `defects4rest info`, issue URLs/titles, patches, per-defect labels. Log every input file per run. Do not tune the selector or prompts on the defects used for final evaluation; define a separate development set (**TBD**).
+## 10. Metrics and analysis
 
-## 6. Definition of "detected" (D4, PROPOSED)
+**Per (defect, arm, seed):**
+- detected; candidate and verdict counts;
+- patched-version failures, triaged into wrong oracle / other real defect / environment;
+- **false-positive rate** = wrong-oracle failures ÷ executed tests;
+- buggy-only unattributed failures;
+- invalid-test rate; flaky rate;
+- tests and requests executed; **operation coverage** (share of spec operations exercised; Handover §8.3);
+- tokens in/out; generation and execution time;
+- selected strategies (B/C).
 
-A defect is detected only if a generated test:
-1. fails on the **buggy** checkout,
-2. passes on the **patched** checkout, and
-3. a human confirms post hoc that the failure corresponds to the documented defect.
+**Primary analysis:**
+- **Estimand:** mean per-defect difference in detection rate over seeds.
+- **Test:** within-defect paired sign-flip permutation test (10,000 permutations); Wilcoxon signed-rank reported alongside; **Holm** correction over RQ1 and RQ2.
+- **Effect size:** mean difference with a two-stage project→defect cluster-bootstrap 95% CI, plus a defect-level CI, both reported. With 6–7 clusters the cluster CI will be wide.
 
-A failing request alone is not a detection (Handover §8.3). Record the confirmation procedure and who confirmed (**TBD**). Differs from the paper's lenient criterion (E6), so cross-study comparison needs caveats.
+**Secondary analyses:**
+- binomial GLMM (arm fixed; defect nested in project as random intercepts; odds ratios; refit without project if the fit is singular);
+- detected-by-≥ 1-seed with exact McNemar. Illustration: with 10 discordant defects, p < 0.05 needs 9:1; with 20, 15:5.
 
-## 7. Metrics
+**Project level:** per-project tables; leave-one-project-out estimates with a forest plot.
 
-Primary: real-world defects detected; detection rate/recall over the selected reproducible set.
-Supporting: false-positive rate or manually validated failure precision (also measured by running tests on patched versions); endpoint/operation/parameter/behaviour coverage where measurable; generated and executed request counts; generation and execution time; LLM token usage and estimated cost; repeatability across runs/seeds where practical.
+**Sensitivity analyses:**
+- S1: triggering operation in spec vs not;
+- S2: spec source (development set only, Dolibarr);
+- S3: excluding reference defects that had hooks;
+- S4: excluding the 14 holdout defects in the paper's RQ3 sample;
+- X7 subset;
+- Related counted as detected.
 
-## 8. Repetitions and statistics
+**Claim discipline:**
+- Inference covers the sampled defects and projects only; no per-type significance tests.
+- If fewer than 20 evaluable holdout defects remain, report descriptively.
+- No post-hoc subgroup hunting.
 
-Number of runs/seeds, tests for significance, effect sizes and handling of per-type small samples: **TBD**. Constraint already known: Auth/Session (4) and Distributed/Cluster (3) are too small for per-type significance claims (E4, R4).
+## 11. Reproducibility record (per run)
 
-## 9. Reproducibility record (per run)
+Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and tool versions, LLM provider/model/version and date, prompts, decoding settings, seeds, spec hash, feature-record hash, catalogue versions, budget counters, code commit.
 
-Benchmark commit, Docker images, JDK, tool versions, LLM provider/model/version and date, prompts, decoding settings, random seeds, input file list, budget counters.
+## 12. Threats to validity (summary; details in RESEARCH_LOG)
 
-## 10. Threats to validity (known so far)
+- **Construct:**
+  - labels ≠ detection mechanisms (R1, E13, E25);
+  - flawed ground truth for some defects (R22);
+  - semantic oracles depend on the model's world knowledge (R2).
+- **Internal:**
+  - contamination of the researchers (R18);
+  - spec leakage (R23);
+  - training-data contamination (R3);
+  - manual setup variability (R13);
+  - B/C boundary (R15).
+- **External:**
+  - few projects;
+  - T2-dominated sample;
+  - RESTCountries has a single detection mechanism.
+- **Statistical:** small *n* (R12); no per-type claims.
 
-- Label–mechanism mismatch between taxonomy and detectability (R1).
-- Semantic oracles rely on the LLM's world knowledge (R2).
-- Possible training-data contamination from public issues (R3).
-- Small per-type samples (R4).
-- Prevalence-prior circularity (D6).
-- Artifact gaps (108 vs 110 folders) and the unexplained Dolibarr spec variants (E3, E10).
-- Defects that are not black-box testable (E7).
+## 13. Freeze checklist (all before the first holdout deployment)
 
-## 11. Freeze checklist (all must be done before the first comparative run)
+- [ ] Catalogues B and C, the overlap table, predicates, feature extractor, DSL, prompts, budgets (*s*, *k*, tokens, caps) frozen and git-tagged
+- [ ] Owner check: no catalogue entry, predicate or prompt mentions holdout resources or endpoints
+- [ ] Catalogue divergence computed → three-arm or two-arm design fixed
+- [ ] Power/precision estimate from dev variance recorded
+- [ ] X5 and X8 outcomes recorded; holdout project list fixed
+- [ ] D16.1 applied and recorded (if Dolibarr was infeasible)
+- [ ] Generic fixtures per holdout project written from public docs
+- [ ] Reference-version checks and hook rule applied per holdout project
+- [ ] Reviewers named; confirmation sheet and arm-anonymisation script ready
+- [ ] Focused novelty check completed (R19)
 
-- [ ] Taxonomy/strategy set frozen and mapped to observable evidence and benchmark defects (Handover §9-A)
-- [ ] D2–D7 reviewed by the owner
-- [ ] One defect reproduced locally (D1 → FINAL)
-- [ ] Defect sample, development/evaluation split and exclusion rules fixed
-- [ ] Budget values fixed and shown equal across arms
-- [ ] Oracle and confirmation procedure fixed
-- [ ] Statistical plan fixed
-- [ ] Focused novelty check completed (Handover §9-D)
-- [ ] Protocol committed and tagged before running
+## 14. Post-freeze change log
+
+Any change after the freeze is recorded here (date, change, reason) and forces all arms to be rerun.
+
+| Date | Change | Reason | Rerun done |
+|---|---|---|---|
+| — | — | — | — |
