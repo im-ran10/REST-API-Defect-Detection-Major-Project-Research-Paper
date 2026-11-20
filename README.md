@@ -35,7 +35,28 @@ Planned stack: Java 21, Spring Boot, PostgreSQL, Docker, Python (analysis).
 
 ## Setup and usage
 
-Not available yet — there is nothing to build or run. This section will be updated when the toolchain and first code are added. Planned prerequisites for the benchmark (Defects4REST v1.0.0): Python 3.9+, Docker + Compose, Git, Go 1.16+; on Windows, WSL2 with Docker Desktop WSL integration.
+There is no application code to build or run yet. The verified environment for the benchmark is below.
+
+**Environment** (verified 20 Nov 2026; see `docs/EXPERIMENT_PROTOCOL.md` §11):
+- Windows with WSL2 running Ubuntu 24.04.
+- Docker Desktop with WSL integration enabled for Ubuntu; your Ubuntu user in the `docker` group.
+- OpenJDK 21, Maven, Python 3.9+ (with `venv`), Go 1.16+, Git.
+- GitHub CLI (`gh auth login`), using HTTPS.
+
+**Benchmark (Defects4REST, pinned commit):**
+```bash
+mkdir -p ~/tools && cd ~/tools
+python3 -m venv defects4rest-env && source defects4rest-env/bin/activate
+git clone https://github.com/ANSWER-OSU/Defects4REST.git && cd Defects4REST
+git checkout 265db1165e54b01a0698af0fd28d345169a5449f
+pip install -e . && defects4rest --help
+```
+
+The benchmark lives outside this repository and is never committed. Holdout projects' replication material must not be opened (see `CLAUDE.md`).
+
+Known quirks:
+- `--stop` and `--clean` need `--buggy` or `--patched` as well.
+- RESTCountries redeploys need `sudo rm -rf ~/tools/Defects4REST/defects4rest/data/temp_project_data/restcountries` first (root-owned build files).
 
 ## Documentation
 

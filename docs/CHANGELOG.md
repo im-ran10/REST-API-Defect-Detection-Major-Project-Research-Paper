@@ -4,6 +4,20 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-20 — Phase 1: environment ready, first defect reproduced, D1 final
+
+Added
+- `RESEARCH_LOG.md`: E27 (restcountries#235 reproduced: buggy "Kiev", patched "Kyiv"; image digests); E28 (CLI quirks: `--stop`/`--clean` need a version flag; root-owned build files break redeploys); R25; E8 limitation marked resolved (§1a); findings-log row.
+- `EXPERIMENT_PROTOCOL.md` §11: environment baseline.
+- `README.md`: verified environment, benchmark install steps and known quirks.
+
+Changed
+- `DECISIONS.md`: D1 and D1.1 PROVISIONAL → FINAL (trigger met: one defect reproduced locally; owner approval 20 Nov 2026). Status history updated.
+- `PROJECT_STATUS.md`: environment and reproduction recorded; checklist ticked; next task = Dolibarr go/no-go.
+
+Notes
+- No application code; no experimental results.
+
 ### 2026-11-16 — Owner decisions D10 and D16.1
 
 Changed

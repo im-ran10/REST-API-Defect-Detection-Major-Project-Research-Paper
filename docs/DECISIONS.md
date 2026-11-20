@@ -22,7 +22,7 @@ Rules for editing this file are in [CLAUDE.md](../CLAUDE.md). Never delete or si
 | ID | Topic | Status |
 |---|---|---|
 | D0.1–D0.8 | Handover decisions (direction, own implementation, scope guard, leakage rule, no novelty claims, no direction change) | FINAL |
-| D1, D1.1 | Defects4REST as primary benchmark, pinned at commit `265db11` | PROVISIONAL |
+| D1, D1.1 | Defects4REST as primary benchmark, pinned at commit `265db11` | FINAL (owner-approved 20 Nov 2026) |
 | D2.1 | Taxonomy = reference vocabulary and derivation source of catalogue C | PROVISIONAL |
 | D3.1 | Types vs strategies; catalogues B and C; shared deterministic selector | PROVISIONAL |
 | D4.1 | Differential detection protocol | PROVISIONAL |
@@ -66,7 +66,7 @@ Rows are unchanged except the Status cell, which now records supersession where 
 
 | # | Date | Decision | Reason | Evidence | Status |
 |---|---|---|---|---|---|
-| D1 | 16 Nov 2026 | Use **Defects4REST v1.0.0** as the primary real-world defect benchmark. | Only public executable benchmark of real-world REST API defects; single-command buggy/patched checkout; per-bug OpenAPI specs. | E1–E5 | **PROVISIONAL** (until one defect is reproduced locally); refined by D1.1 |
+| D1 | 16 Nov 2026 | Use **Defects4REST v1.0.0** as the primary real-world defect benchmark. | Only public executable benchmark of real-world REST API defects; single-command buggy/patched checkout; per-bug OpenAPI specs. | E1–E5 | **FINAL** (owner-approved 20 Nov 2026 after restcountries#235 was reproduced locally, E27; was PROVISIONAL until one defect was reproduced); refined by D1.1 |
 | D2 | 16 Nov 2026 | **Adopt the Defects4REST taxonomy (6 types / 13 subtypes)** as the empirical taxonomy instead of constructing our own four-category list. | Empirically derived (607 defects, 50 projects), peer-reviewed (ICSE 2026), and the same label space as the benchmark, so results are interpretable. Handover candidates map onto it (see [RESEARCH_LOG.md §3](RESEARCH_LOG.md)). | E1, E6 | **SUPERSEDED by D2.1** (was PROPOSED) |
 | D3 | 16 Nov 2026 | **Separate "defect type" from "test strategy".** Taxonomy = what goes wrong (Defects4REST types). Strategies = how a test probes for it (e.g. boundary/invalid input, filter/query probing, multi-step stateful workflow, credential/role variation, semantic/factual response assertion). The selector maps *observable API features* → strategies, prioritised using taxonomy information. | The handover's four candidates mixed both levels: "stateful workflows" and "response/behaviour checks" are strategies, not defect types. Defects4REST RQ3 failure causes (L1 semantic, L2 stateless, L3 auth) are naturally strategies. | E6, E7 | **SUPERSEDED by D3.1** (was PROPOSED) |
 | D4 | 16 Nov 2026 | **Detection oracle = differential + manual confirmation.** A defect counts as detected only if a generated test (a) fails on the buggy checkout, (b) passes on the patched checkout, and (c) a human confirms post hoc that the failure corresponds to the documented defect. | Stronger and more objective than Defects4REST's own criterion (manual log inspection, "matched or closely resembled", any of 5 seeds). Buggy/patched checkouts make this possible. Consistent with Handover §8.3 ("a failing request alone is not a defect detection"). | E5, E8 | **SUPERSEDED by D4.1** (was PROPOSED) |
@@ -97,7 +97,7 @@ The full reasoning is in:
 
 | # | Decision | Reason | Evidence | Status |
 |---|---|---|---|---|
-| D1.1 | Pin Defects4REST by commit **`265db1165e54b01a0698af0fd28d345169a5449f`** (27 Sep 2026; `pyproject.toml` version 1.0.0). The repository has no git tags. | "v1.0.0" is not a reproducible identifier on its own. | E21 | PROVISIONAL (until one defect is reproduced locally) |
+| D1.1 | Pin Defects4REST by commit **`265db1165e54b01a0698af0fd28d345169a5449f`** (27 Sep 2026; `pyproject.toml` version 1.0.0). The repository has no git tags. | "v1.0.0" is not a reproducible identifier on its own. | E21, E27 | **FINAL** (owner-approved 20 Nov 2026; was PROVISIONAL until one defect was reproduced locally) |
 | D2.1 | The Defects4REST taxonomy is the **reference vocabulary** for stratification and reporting, and the **derivation source of catalogue C**; every C entry cites a subtype or limitation class (L1–L9). Authoritative per-defect labels: `bug_replication/README.md` at the pinned commit (identical to the replication package's `607_defects_types.csv`). Per-defect labels are never a system input. Adopting the taxonomy is not claimed as a contribution. | Labels describe the dominant reported symptom/fix area, not a detection mechanism; per-project READMEs disagree for 22/110 defects. | E11, E12, E13, E25 | PROVISIONAL |
 | D3.1 | Defect types and test strategies are separate. There are two versioned catalogues with trigger predicates, oracle templates and provenance:<br>• **B** = established tool checks (Schemathesis, RESTler), the six metamorphic output patterns of Segura et al. (TSE 2018), and RFC 9110 semantics;<br>• **C** = strategies derived from the Defects4REST taxonomy and its documented tool limitations.<br>Membership follows a stated provenance rule. One shared deterministic selector allocates *s* slots per operation, without priors, and logs reasons. Catalogues are frozen before the holdout. | Isolates catalogue provenance as the only B/C difference. | E25; literature §6 | PROVISIONAL |
 | D4.1 | A **detection** requires a frozen test that:<br>• is stably FAIL on buggy and PASS on patched (recorded patch index) over r = 3 runs from identical snapshots;<br>• is reproduced in isolation;<br>• is attributable to the defect's **own fix-commit delta**;<br>• is Confirmed by arm-blind review: two independent reviewers preferred, otherwise ≥ 30% double-coded with Cohen's κ.<br>Infrastructure, invalid and flaky outcomes never count. Defects failing pre-run validation are excluded and listed. False positives = wrong-oracle failures on patched versions. | Co-resident defects and large patch deltas exist (e.g. RESTCountries #199's patched version also contains the #235 fix). | E14, E15, E19, E21 | PROVISIONAL |
@@ -137,6 +137,7 @@ The full reasoning is in:
 | 16 Nov 2026 | D15 | new → FINAL | Owner directive |
 | 16 Nov 2026 | D16 | new → PROPOSED | Raised by the consistency check |
 | 16 Nov 2026 | D10 | PROPOSED → FINAL | Owner approval, 16 Nov 2026 |
+| 20 Nov 2026 | D1, D1.1 | PROVISIONAL → FINAL | Trigger met: restcountries#235 reproduced locally on buggy ("Kiev") and patched ("Kyiv") versions (E27); owner approval, 20 Nov 2026. Exclusion of individual holdout projects (D14) is unaffected. |
 | 16 Nov 2026 | D16 | PROPOSED → SUPERSEDED | Replaced by D16.1 (owner's chosen fallback order) |
 | 16 Nov 2026 | D16.1 | new → PROVISIONAL | Owner decision, 16 Nov 2026 |
 

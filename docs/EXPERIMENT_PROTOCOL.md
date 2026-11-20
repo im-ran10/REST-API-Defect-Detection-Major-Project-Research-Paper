@@ -221,6 +221,20 @@ Notes:
 
 Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and tool versions, LLM provider/model/version and date, prompts, decoding settings, seeds, spec hash, feature-record hash, catalogue versions, budget counters, code commit.
 
+**Environment baseline (recorded 20 Nov 2026):**
+
+| Item | Version |
+|---|---|
+| Host | Windows + WSL2, kernel 6.6.87.2-microsoft-standard-WSL2 |
+| Linux | Ubuntu 24.04 |
+| Docker Compose | v2.38.2-desktop.1 |
+| JDK | OpenJDK 21.0.13 |
+| Maven | 3.8.7 |
+| Python | 3.12.3 |
+| Go | 1.22.2 |
+| Git | 2.43.0 |
+| RESTCountries build/run images | see RESEARCH_LOG E27 |
+
 ## 12. Threats to validity (summary; details in RESEARCH_LOG)
 
 - **Construct:**

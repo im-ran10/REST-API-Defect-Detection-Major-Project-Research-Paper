@@ -39,6 +39,7 @@ Decision IDs (D#) refer to [DECISIONS.md](DECISIONS.md).
 | E3 | "v1.0.0" is the `pyproject.toml` version only; the repo has **no git tags**. Pin commit `265db11`. The two missing folders are `dolibarr#26307` and `seaweedfs#1776`; `flowable-engine#3536` has a folder but no spec. Two folder names are misspelled (`netBox#18669`, `seaweeedfs#913`). | `inventory.py`, `holdout_meta.py` |
 | E4 | Counted **by subtype** the 110 are T2 60, T1 25, T4 10, T5 9, T3 4, T6 2. The original tally (T2 59, T6 3) used the type column, which is inconsistent for `kafka-rest#475` (typed T6, subtype ST5). | `labels.py` |
 | E8 | `aadbd07` is the buggy version of #177, #199 **and** #235. #235's patch `01769a8` lives in the `plokhotnyuk/restcountries` fork. The static check holds; still no HTTP reproduction. | `rcdiff.py` |
+| E8 | The "HTTP reproduction not yet run" limitation is resolved: restcountries#235 was reproduced over HTTP on 20 Nov 2026 (E27). | Owner's run |
 | E10 | Dolibarr has **6** distinct specs across 24 defects (not "19 identical + 5 variants" alone). The `#26066` variant adds 12 paths, including its triggering `/multicurrencies`. One shared spec does not match every deployed version. Superseded in practice by E17/E23 and D5.1. | `specs.py`, `spec_provenance.py` |
 
 ### 1b. New evidence (16 Nov 2026, verified unless marked)
@@ -60,6 +61,8 @@ Decision IDs (D#) refer to [DECISIONS.md](DECISIONS.md).
 | E23 | At the Dolibarr reference commit, `htdocs/api/index.php` serves `/api/index.php/explorer/swagger.json` (product-generated spec). The endpoint set depends on the enabled modules [A]. | Dolibarr source | Preferred spec source (D5.1) |
 | E24 | Holdout eligibility (metadata only):<br>• 69 non-development defects in 10 projects;<br>• 67 after X1;<br>• 52 after X2–X4 (29 in awx, flowable-engine, kafka-rest, mastodon, netbox, nocodb + 23 in Podman).<br>Project facts: signal-cli deploy prints a QR device-link URL (needs a real account); Podman builds from source and one defect needs manual rootless mode. | `holdout_meta.py`; [BR] | D11, D14 |
 | E25 | [P] §3.3.3: each issue was assigned its **dominant** subtype from the issue report and its patch. [P] Table 7 already maps subtypes to EvoMaster fault classes from [M22]. | [P] | Labels ≠ mechanisms; must cite Table 7 |
+| E27 | **First local reproduction (20 Nov 2026).** On the owner's machine (Windows + WSL2 Ubuntu 24.04 + Docker Desktop, Compose v2.38.2), `defects4rest checkout -p restcountries -i 235` at benchmark commit `265db11`:<br>• `--buggy` → `GET /restcountries/rest/v2/alpha/UKR` returns 200 with `capital` = `"Kiev"`;<br>• `--patched` (index 1, SHA `01769a8`, fetched from the fork) → 200 with `capital` = `"Kyiv"`.<br>Images: `maven:3.9.0-eclipse-temurin-8@sha256:a02151d1006f667f2a3d6f752749a4c74cdcb63bd1f5ffd5d1b2a647bf90903d`, `tomcat:8.5-jdk8-openjdk@sha256:19f41f912667dafc90c2136e4fa1958d520b4e99d0b9564beacae9e25c0140de`. The buggy SHA (`aadbd07`) is from the benchmark CSV; the buggy run's console output was not captured. | Owner's terminal output | D1/D1.1 → FINAL; environment validated end to end |
+| E28 | **Benchmark CLI quirks (20 Nov 2026):**<br>• `--stop` and `--clean` are rejected unless `--buggy` or `--patched` is also given (mutually exclusive required group in `cli.py`); the checkout docs omit this.<br>• The RESTCountries deploy builds with Maven in a Docker container running as root on a bind mount, so `target/` files are root-owned; the next deploy's `shutil.rmtree` fails with `PermissionError`. Workaround: `sudo rm -rf …/defects4rest/data/temp_project_data/restcountries` before each redeploy. | `cli.py`, `deploy_restcountries.py`; owner's run | Replayer automation must handle it (R25) |
 | E26 | Excluding RESTCountries (16) and Dolibarr (29) from the 607 changes T2 from 41.7% to 39.7% and T1 from 27.0% to 27.2%. ST5 is 35/110 = 32% of the executable set vs 118/607 = 19% of the dataset. | [RP] CSVs | D6.1 |
 
 ## 2. Defects4REST: findings, limitations and open issues (consolidated)
@@ -127,6 +130,7 @@ Added at the methodology checkpoint (16 Nov 2026) — all **unresolved**:
 22. **R22 Benchmark ground-truth defects** (E14, E18, E19): some patched versions do not show the documented behaviour, have large deltas, or need undocumented setup. Pre-run validation (X6) and fix-delta attribution (D4.1).
 23. **R23 Specification leakage** through filenames, per-defect variants and unions (E16, E17). Mitigated by D5.1; sensitivity analyses S1–S2 (EXPERIMENT_PROTOCOL §10).
 24. **R24 Development-set fallback.** Resolved by D16.1 (SeaweedFS, else RESTCountries alone). Residual risk: SeaweedFS's 3-operation spec and RESTCountries' single detection mechanism would leave strategy diversity largely untested before the freeze.
+25. **R25 Root-owned build artefacts** (E28) break unattended redeploys. Must be handled before the replayer automates deployments (e.g. a privileged cleanup step, or running build containers as the host user). How: undecided.
 
 ## 5. Novelty check status
 
@@ -199,6 +203,7 @@ An earlier, broader concept was contract-aware agentic generation of positive, n
 | 16 Nov 2026 | Earliest-buggy reference version verified safe for RESTCountries and Dolibarr. | E22 |
 | 16 Nov 2026 | Holdout eligibility computed from metadata only. | E24 |
 | 16 Nov 2026 | Methodology provisionally approved by the owner (D2.1–D7.1, D11–D14). | DECISIONS.md |
+| 20 Nov 2026 | First local reproduction: restcountries#235 ("Kiev" → "Kyiv"); two CLI quirks found. | E27, E28 |
 
 ## 9. Researcher contamination ledger
 

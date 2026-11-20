@@ -1,10 +1,10 @@
 # Project Status
 
-**Last updated:** 16 Nov 2026 (methodology checkpoint)
+**Last updated:** 20 Nov 2026 (Phase 1: environment ready; first defect reproduced)
 
 ## Current stage
 
-**Methodology provisionally approved; Phase 1 (environment setup and feasibility checks) is next.**
+**Phase 1 in progress (environment setup and feasibility checks).** The environment is ready and the first development defect (restcountries#235) has been reproduced. Methodology provisionally approved 16 Nov 2026.
 - No application code exists.
 - No experiment has been run.
 - There are **no measured results**.
@@ -26,11 +26,15 @@
 | **Owner provisionally approved the methodology** | DECISIONS D1.1, D2.1–D7.1, D11–D14 (PROVISIONAL) |
 | Owner approved D10 (repository = source of truth) and the D16.1 development fallback order | DECISIONS D10, D16.1 |
 | Researcher-side audit scripts | `analysis/benchmark_audit/` |
+| **Environment ready (19–20 Nov 2026):** Ubuntu 24.04 (WSL2); Docker Desktop with WSL integration, user in `docker` group, Compose v2.38.2 (`docker compose` and `docker-compose`); OpenJDK 21.0.13; Maven 3.8.7; Python 3.12.3; Go 1.22.2; Git 2.43.0; GitHub CLI logged in (HTTPS); project repo cloned at `~/projects/rest-api-defect-detection` | Owner's terminal output |
+| Defects4REST installed at `265db11` in `~/tools/Defects4REST` (venv `~/tools/defects4rest-env`) | Owner's terminal output |
+| **restcountries#235 reproduced locally:** buggy → "Kiev", patched → "Kyiv"; image digests recorded | RESEARCH_LOG E27 |
+| D1, D1.1 → FINAL (owner, 20 Nov 2026) | DECISIONS §5 |
 
 ## What has NOT been done
 
-- No development environment installed or confirmed (Docker inside Ubuntu not yet tested).
-- Defects4REST not installed; no defect deployed or reproduced (so D1 remains PROVISIONAL).
+- Only one defect reproduced (restcountries#235); the rest of the development set is not yet validated.
+- PostgreSQL not yet started.
 - No Phase 1 feasibility checks: Dolibarr automation, Podman (X5), official specs (X8).
 - No code, DSL, catalogues, prompts or generated tests.
 - Systematic novelty check not done (only a targeted search).
@@ -46,12 +50,13 @@ Environment
 - [x] Verify benchmark counts, taxonomy, CLI and prerequisites from primary sources
 - [x] Choose pilot subjects → now the development set (D7.1)
 - [x] Confirm dev OS/IDE — Windows + IntelliJ IDEA (D9: Windows + WSL2 + Docker Desktop)
-- [ ] Verify WSL2: Ubuntu starts; Docker Desktop running with WSL integration for Ubuntu (`docker run hello-world` inside Ubuntu); decide file locations (WSL filesystem recommended)
-- [ ] Install toolchain in Ubuntu: Java 21, Maven, Python 3.9+ venv, Go 1.16+, Git, GitHub CLI; PostgreSQL via Docker
-- [ ] Install Defects4REST at commit `265db11` (D1.1); run `defects4rest --help`
+- [x] Verify WSL2: Ubuntu starts; Docker Desktop running with WSL integration for Ubuntu (`docker run hello-world` inside Ubuntu); files in the WSL filesystem
+- [x] Install toolchain in Ubuntu: Java 21, Maven, Python 3.9+ venv, Go 1.16+, Git, GitHub CLI
+- [ ] PostgreSQL via Docker (needed from Phase 2/3)
+- [x] Install Defects4REST at commit `265db11` (D1.1); run `defects4rest --help`
 
 Development-set feasibility
-- [ ] Deploy restcountries#235 buggy → reproduce "Kiev"; deploy patched → "Kyiv"
+- [x] Deploy restcountries#235 buggy → reproduce "Kiev"; deploy patched → "Kyiv" (20 Nov 2026, E27)
 - [ ] **Dolibarr go/no-go (R13):** deploy one defect, then script the installer + API key for one version within 2 days; reproduce one defect with curl. If no-go, follow D16.1 (SeaweedFS, else RESTCountries alone)
 - [ ] Dolibarr product-generated spec: fetch `/api/index.php/explorer/swagger.json` at the reference version with all API modules enabled (R14)
 - [ ] Minimal Java 21 program: load spec, list operations, send one request, capture status + body
@@ -60,7 +65,7 @@ Holdout feasibility (**metadata only — do not open holdout ground truth**; see
 - [ ] **X5 Podman:** deploy its reference version within one working day, in an isolated environment (R21)
 - [ ] **X8 official specs:** for nocodb, flowable-engine and kafka-rest, find a product-generated/official spec of the reference version; record the source or exclude
 - [ ] Reference-version date/ancestry checks and hook check (function names only) for each eligible holdout project
-- [ ] Record exact versions (benchmark commit, Docker images, JDK)
+- [ ] Record exact versions (benchmark commit, Docker images, JDK) — done for the environment and RESTCountries (E27, EXPERIMENT_PROTOCOL §11); repeat per subject
 
 First concrete milestone (Handover §11, unchanged): a locally running benchmark REST API, a readable OpenAPI spec, and a minimal program that sends a request and captures the response. **Not** a dashboard.
 
@@ -96,4 +101,11 @@ Handover §9 pre-implementation work:
 
 ## Next task
 
-Documentation update committed on a documentation branch, awaiting the owner's merge approval. Then begin Phase 1: verify Docker inside Ubuntu, install the toolchain and Defects4REST, and reproduce restcountries#235.
+**Dolibarr go/no-go (R13):**
+1. Deploy one Dolibarr defect (buggy, then patched).
+2. Complete the install wizard and create an API key by hand.
+3. Try to script that install and API key.
+4. Reproduce the defect with curl.
+5. Fetch the product-generated spec.
+
+If no-go, apply D16.1.
