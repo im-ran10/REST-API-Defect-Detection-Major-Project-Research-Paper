@@ -85,6 +85,8 @@ Not designed yet. Expected entities: Project, SpecVersion (hash), FeatureRecord 
 
 1. HTTP client choice; DSL details; how captures and cross-step comparisons are expressed.
 2. LLM provider/model; whether the provider supports seeds; token accounting.
-3. Automating the Dolibarr installer and API key (Phase 1 go/no-go, R13).
-4. Product-generated spec configuration ("all API modules") for Dolibarr (R14).
+3. Automating the Dolibarr installer, modules and API key (R13). Go/no-go outcome: conditional go, with scripting time-boxed to two working days (D17). The replayer needs it.
+4. Product-generated spec configuration ("all API modules") for Dolibarr (R14). Confirmed module-dependent: API + Products gives 75 paths (E29).
 5. Snapshot mechanism per project (DB dump vs volume copy).
+6. Deployment handling the replayer must include: root-owned build files (R25), recipe decay such as the Debian 11 workaround (R26), avoiding the per-deploy 1.7 GB Dolibarr re-clone (R27), database host `db` in the Dolibarr install. Policies decided: D18 (base images), D19 (prepared clones with equivalence checks).
+7. The spec parser must also read **OpenAPI 3.1** (nocodb's official spec, E33). Whether swagger-parser v3 (D8) handles it adequately is not yet verified.

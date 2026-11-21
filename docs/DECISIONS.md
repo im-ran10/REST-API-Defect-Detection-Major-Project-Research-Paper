@@ -34,12 +34,18 @@ Rules for editing this file are in [CLAUDE.md](../CLAUDE.md). Never delete or si
 | D10 | Repository as documentation source of truth | FINAL (owner-approved 16 Nov 2026) |
 | D11 | Project-level held-out evaluation | PROVISIONAL |
 | D12 | Three experimental arms with a two-arm fallback | PROVISIONAL |
-| D13 | Minimal GET-only, shape-only exploration | PROVISIONAL |
+| D13.1 | Minimal GET-only, shape-only exploration (reference-version check amended) | PROVISIONAL (delegated, 21 Nov 2026) |
 | D14 | Exclusion rules X1–X8 | PROVISIONAL |
 | D15 | Quality over arbitrary deadlines; explicit resource budgets | FINAL (owner directive) |
 | D16.1 | Development-set fallback order if Dolibarr is infeasible (no holdout project moved) | PROVISIONAL |
+| D17 | Dolibarr Phase 1 go/no-go: conditional go (2-day time box for setup automation, else D16.1) | PROVISIONAL (owner, 21 Nov 2026) |
+| D18 | End-of-life base images: minimal, generic repository fix, recorded as a deviation | PROVISIONAL (delegated, 21 Nov 2026) |
+| D19 | Reuse one prepared clone per project instead of the CLI's per-deploy re-clone, with equivalence checks | PROVISIONAL (delegated, 21 Nov 2026) |
+| D20 | kafka-rest excluded from the holdout (X8; reference version not deployable) | PROVISIONAL (delegated, 21 Nov 2026) |
+| D21 | Defects whose operations lie outside the project-level spec stay in the primary analysis; covered by sensitivity analysis S1 | PROVISIONAL (delegated, 21 Nov 2026) |
 | D2–D7 (original) | Phase 1 proposals of 16 Nov 2026 | SUPERSEDED by D2.1–D7.1 |
 | D16 (original options) | Fallback options (a)/(b)/(c) | SUPERSEDED by D16.1 |
+| D13 (original) | Exploration with strict ancestry check | SUPERSEDED by D13.1 |
 
 ---
 
@@ -106,11 +112,33 @@ The full reasoning is in:
 | D7.1 | **Development set:** RESTCountries (15 usable: #237 excluded; #199 uses patch index 2; #202 flagged as contested) and Dolibarr (18 usable + 4 needing a fixture; #23345, #26307, #29372 excluded), subject to deployment and validation checks. Development results are reported separately and never as main evidence. | Pilot ground truth has been studied; it cannot serve as unbiased evaluation. | E13–E15, E18–E20 | PROVISIONAL |
 | D11 | **Project-level held-out evaluation** on projects passing X1–X5 and X8; per-defect rules X6–X7 after the freeze. Described as *pre-registered and design-frozen*, **not blind**, with the contamination ledger published. If fewer than 20 evaluable holdout defects remain, results are reported descriptively. | Prevents tuning on evaluation defects; honest about partial researcher exposure. | E24; RESEARCH_LOG §7 | PROVISIONAL |
 | D12 | **Three arms:**<br>• A — plain LLM generation;<br>• B — feature-conditioned, general-principles catalogue;<br>• C — feature-conditioned, taxonomy-derived catalogue.<br>They differ only in planner/catalogue and the prompt task section, under equal information, model, calls, slots and request caps. **Two-arm fallback (A vs C)** if *catalogue divergence* on the development set is < 20%. Divergence = the share of (operation, slot) assignments whose strategy family has no counterpart in the other catalogue, computed with a frozen overlap table and no ground truth. | Without B, a C > A result cannot be attributed to the taxonomy. | Proposal revision 2 §1 | PROVISIONAL |
-| D13 | **Minimal exploration** in the initial system: GET-only, shape-only exploration of the **earliest-buggy reference version**, subject to:<br>• per-project date and ancestry checks;<br>• excluding the reference defect from the primary analysis if a setup hook ran for it;<br>• an isolated, discarded deployment with fixed limits;<br>• two runs for reproducibility;<br>• one hashed feature record shared by all arms.<br>Fallback per project: spec plus official-documentation examples. Spec-only is a later ablation. | Development specs lack response structure; earliest-buggy predates all fixes on both development subjects. | E16, E21, E22 | PROVISIONAL |
+| D13 | **Minimal exploration** in the initial system: GET-only, shape-only exploration of the **earliest-buggy reference version**, subject to:<br>• per-project date and ancestry checks;<br>• excluding the reference defect from the primary analysis if a setup hook ran for it;<br>• an isolated, discarded deployment with fixed limits;<br>• two runs for reproducibility;<br>• one hashed feature record shared by all arms.<br>Fallback per project: spec plus official-documentation examples. Spec-only is a later ablation. | Development specs lack response structure; earliest-buggy predates all fixes on both development subjects. | E16, E21, E22 | **SUPERSEDED by D13.1** (was PROVISIONAL) |
 | D14 | **Exclusion rules** (ground-truth-free unless marked):<br>• X1 no folder or no spec;<br>• X2 needs an external personal account/device (signal-cli-rest-api);<br>• X3 per-defect curated specs or spec text naming a bug (enviroCar-server);<br>• X4 project spec documents < 5 operations (seaweedfs);<br>• X5 reference version not deployable on the owner's host within one working day (**Podman** attempted);<br>• X6 (after freeze) benchmark validation fails;<br>• X7 (after freeze) needs environment changes beyond checkout + generic fixture (sensitivity subset);<br>• X8 benchmark specs contain single-defect operations **and** no product-generated/official reference spec is obtainable (at risk: nocodb, flowable-engine, kafka-rest).<br>The owner accepted X2–X4 provisionally. | Keeps exclusions independent of defect ground truth where possible. | E17, E24 | PROVISIONAL |
 | D15 | Scientific quality is not compromised to meet an arbitrary implementation deadline. Realistic resource and execution budgets (time, tokens, deployments, reviewer effort) are set explicitly and recorded before the holdout. | Owner directive, 16 Nov 2026. | — | FINAL (owner directive) |
 | D16 | **Development-set fallback if Dolibarr fails its Phase 1 feasibility check.** The original fallbacks (NetBox, NocoDB) are now holdout candidates and cannot be used without shrinking and contaminating the holdout. Options:<br>(a) develop on RESTCountries only (weak: one detection mechanism);<br>(b) move one eligible holdout project to development, chosen by a pre-registered rule before any holdout inspection — suggested rule: the eligible project with the fewest defects that passes X5/X8;<br>(c) use an excluded project (e.g. seaweedfs) for pipeline development only.<br>**Recommendation:** (b). | Consistency check found a conflict with the original D7 fallbacks. | — | **SUPERSEDED by D16.1** (was PROPOSED) |
 | D16.1 | **Development-set fallback order (owner decision, 16 Nov 2026):**<br>1. Attempt RESTCountries and Dolibarr as planned.<br>2. If Dolibarr proves infeasible, investigate an already-excluded project such as **SeaweedFS** as an additional development subject.<br>3. If that is also infeasible, use **RESTCountries alone** for initial pipeline development.<br>4. **Do not** move a designated holdout project into the development set unless there is a compelling methodological justification, recorded as a new decision with the resulting contamination documented in RESEARCH_LOG §9.<br>Remaining holdout projects stay independent. | Protects holdout independence. Note: SeaweedFS was excluded from the holdout by X4 (3-operation spec), so it can mainly exercise the pipeline, not strategy diversity. | E24 | **PROVISIONAL** (revisit if Dolibarr fails its Phase 1 go/no-go) |
+
+### D17 — Phase 1 Dolibarr go/no-go (21 Nov 2026)
+
+| # | Date | Decision | Reason | Evidence | Status |
+|---|---|---|---|---|---|
+| D17 | 21 Nov 2026 | **Conditional go for Dolibarr.**<br>1. Dolibarr stays in the development set (D7.1 unchanged).<br>2. Scripting the per-deployment setup (install wizard, API module, Products module, admin API key) for one version is time-boxed to **two working days** of effort.<br>3. If it is not achieved within the time box, apply D16.1 step 2 (investigate SeaweedFS as an additional development subject).<br>4. The Debian bullseye workaround (E30) is a recorded deviation from the benchmark recipe; how to handle it permanently was decided separately in D18. | dolibarr#23179 reproduces on buggy and not on patched (E29), so Dolibarr is deployable. Manual setup took ~15 min the first time and ~7 min the second, about 5 hours over ~44 deployments, and is error-prone (E29), so R13 stays open. | E29, E30; R13 | **PROVISIONAL** (owner agreed 21 Nov 2026; revisit at the end of the time box) |
+
+Notes:
+- The time box was first agreed as one working day and changed by the owner to **two working days** on the same day (21 Nov 2026), matching the earlier plan.
+- The earlier plan's fallback was "keep Dolibarr with fewer defects" (`docs/proposals/2026-11-16_final_methodology.md` F1). D17 replaces it with D16.1 step 2. The proposals stay unchanged as historical documents; D17 governs.
+
+### D13.1, D18–D21 — Decisions delegated by the owner (21 Nov 2026)
+
+Decided by the drafting assistant under the owner's explicit delegation (21 Nov 2026); the owner may revisit any of them. Each follows from Phase 1 evidence; none was informed by holdout ground truth (only the metadata in E32/E33).
+
+| # | Date | Decision | Reason | Evidence | Status |
+|---|---|---|---|---|---|
+| D13.1 | 21 Nov 2026 | D13 unchanged except the **reference-version check**. A project's reference version (earliest-buggy) is acceptable if:<br>(1) every patch commit is dated after it (committer timestamps); and<br>(2) **no patch commit is contained in it** (no patch is a git ancestor of the reference).<br>Whether each patch is a git descendant is **reported, not required**. Otherwise the D13 fallback applies. | The check exists so that exploration never observes a fixed version. (1)+(2) test that directly; "descendant" additionally fails on fixes merged on release branches, which carry no leakage. Applied uniformly; RESTCountries and Dolibarr pass both forms. **Disclosure:** amended after seeing holdout version metadata (E32), before any holdout deployment or ground truth. | E22, E32; R28 | **PROVISIONAL** (delegated) |
+| D18 | 21 Nov 2026 | **End-of-life base images.** When a benchmark image fails to build only because its distribution's package repositories have been retired, apply the smallest generic fix that restores the original packages: drop the retired repository (Dolibarr: `bullseye-security`, E30) or, if needed later, point apt to `archive.debian.org`. **Never** change the base image, language runtime or application version. The fix is identical for every defect of a project, is recorded per subject (EXPERIMENT_PROTOCOL §11), and is reported in the paper. Other subjects are checked from build files only when they are first deployed. | Restores the benchmark's intended environment with the least change; upgrading the base image would change the system under test. | E30; R26 | **PROVISIONAL** (delegated) |
+| D19 | 21 Nov 2026 | **Prepared clones.** The replayer may keep one clone per project and switch versions with `git checkout <sha>` instead of the CLI's full re-clone, provided that before each deployment: `HEAD` equals the target SHA; `git status` shows no tracked changes; the generated build files are byte-identical to what the CLI writes; and all containers and volumes of the previous version are removed (`down -v`). Recorded as a deviation. | Same source tree and build files as the CLI produces, without ~1.7 GB per deploy (≈ 75 GB over ~44 Dolibarr deployments) or the network failures that come with it. | E29, E30; R27 | **PROVISIONAL** (delegated) |
+| D20 | 21 Nov 2026 | **kafka-rest is excluded from the holdout** (3 defects). | Two independent, ground-truth-free reasons: (a) X8 — its benchmark specs contain single-defect operations and no official spec exists for its 2015 reference version (E33); (b) the reference version maps to image `confluentinc/cp-kafka-rest:0`, which does not exist on Docker Hub (owner check, 21 Nov 2026, E32), so the reference cannot be deployed as the benchmark specifies. kafka-rest stays under the ground-truth firewall. | E17, E32, E33; D14 | **PROVISIONAL** (delegated) |
+| D21 | 21 Nov 2026 | **Defects whose operations are outside the project-level spec** (e.g. one nocodb defect, one flowable-engine defect, E33) **stay in the primary analysis**. They are analysed by the existing sensitivity analysis S1 (triggering operation in spec vs not), decided by the validator after the freeze. | Excluding them now would select defects using per-defect spec content, which sits close to ground truth. In the paired per-defect comparison a defect no arm can reach adds a zero difference and does not bias the arm contrast; it only lowers absolute detection rates, which are reported as such. | E33; EXPERIMENT_PROTOCOL §10 | **PROVISIONAL** (delegated) |
 
 ---
 
@@ -125,6 +153,7 @@ The full reasoning is in:
 | D6 | D6.1 | 16 Nov 2026 | Priors excluded from the initial system. |
 | D7 | D7.1 | 16 Nov 2026 | Pilot subjects become the development set with usable-defect lists; NetBox/NocoDB fallbacks withdrawn (see D16.1). |
 | D16 | D16.1 | 16 Nov 2026 | Owner chose: RESTCountries + Dolibarr → else add SeaweedFS → else RESTCountries alone; no holdout project moved without documented justification. |
+| D13 | D13.1 | 21 Nov 2026 | Reference-version check: "every patch is a descendant" replaced by "no patch is contained in the reference" (descendant status reported only). Delegated decision. |
 
 ---
 
@@ -140,6 +169,9 @@ The full reasoning is in:
 | 20 Nov 2026 | D1, D1.1 | PROVISIONAL → FINAL | Trigger met: restcountries#235 reproduced locally on buggy ("Kiev") and patched ("Kyiv") versions (E27); owner approval, 20 Nov 2026. Exclusion of individual holdout projects (D14) is unaffected. |
 | 16 Nov 2026 | D16 | PROPOSED → SUPERSEDED | Replaced by D16.1 (owner's chosen fallback order) |
 | 16 Nov 2026 | D16.1 | new → PROVISIONAL | Owner decision, 16 Nov 2026 |
+| 21 Nov 2026 | D17 | new → PROVISIONAL | Owner chose the conditional go for Dolibarr after dolibarr#23179 was reproduced on buggy and patched versions (E29) |
+| 21 Nov 2026 | D13 | PROVISIONAL → SUPERSEDED | Replaced by D13.1 |
+| 21 Nov 2026 | D13.1, D18, D19, D20, D21 | new → PROVISIONAL | Owner delegated these choices to the drafting assistant (21 Nov 2026) |
 
 ## How to add a decision
 

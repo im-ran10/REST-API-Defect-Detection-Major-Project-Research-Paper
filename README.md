@@ -10,7 +10,7 @@ Final-year B.Tech IT major project and intended IEEE conference paper.
 
 ## Current status
 
-**Methodology provisionally approved (16 Nov 2026); Phase 1 (environment and feasibility checks) is next.** There is no application code yet and **no experimental results**. The novelty of the approach has **not** been established. See [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) for exactly what is and is not done.
+**Methodology provisionally approved (16 Nov 2026); Phase 1 (environment and feasibility checks) is in progress.** One defect of each development project has been reproduced locally (restcountries#235, dolibarr#23179). There is no application code yet and **no experimental results**. The novelty of the approach has **not** been established. See [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) for exactly what is and is not done.
 
 ## Approach (provisional)
 
@@ -25,7 +25,7 @@ Three arms run under equal budgets:
 | C | the same selector with a catalogue derived from the Defects4REST defect taxonomy |
 
 Evaluation:
-- **Benchmark:** **Defects4REST** (pinned commit `265db11`; not yet reproduced locally).
+- **Benchmark:** **Defects4REST** (pinned commit `265db11`).
 - **Development projects:** RESTCountries and Dolibarr.
 - **Final evaluation:** pre-registered, project-level held-out projects.
 
@@ -57,6 +57,10 @@ The benchmark lives outside this repository and is never committed. Holdout proj
 Known quirks:
 - `--stop` and `--clean` need `--buggy` or `--patched` as well.
 - RESTCountries redeploys need `sudo rm -rf ~/tools/Defects4REST/defects4rest/data/temp_project_data/restcountries` first (root-owned build files).
+- WSL DNS: if Docker pulls time out on `10.255.255.254`, add `[network]` / `generateResolvConf = false` to `/etc/wsl.conf`, run `wsl --shutdown` (this also stops Docker Desktop; restart it), then replace `/etc/resolv.conf` with `nameserver 1.1.1.1` and `nameserver 8.8.8.8`.
+- Dolibarr image build fails on `bullseye-security` (Debian 11 is end-of-life). Workaround (policy D18, a recorded deviation): in the generated `Dockerfile`, add `RUN sed -i "/bullseye-security/d" /etc/apt/sources.list` right after `FROM php:7.4-apache`.
+- Dolibarr re-clones ~1.7 GB on every deploy. To switch versions in the prepared folder instead (allowed by D19; check `git log -1` and `git status` first): `docker compose -f docker-compose.yml -f docker-compose.override.yml down -v`, `git checkout <sha>`, then `up -d --build`.
+- Dolibarr install wizard (manual for now): database server `db`, database/login/password `dolibarr`, documents directory `/var/www/documents`; then enable *API / Web services (REST server)* and *Products*, and generate the admin API key (sent as the `DOLAPIKEY` header).
 
 ## Documentation
 

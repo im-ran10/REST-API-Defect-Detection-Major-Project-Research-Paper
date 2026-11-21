@@ -98,13 +98,17 @@ RQ1 and RQ2 are the two pre-registered primary comparisons; C vs A is secondary.
 
 Suites are generated **per project**, never per defect.
 
-## 6. Exploratory API analysis (D13, PROVISIONAL)
+## 6. Exploratory API analysis (D13.1, PROVISIONAL)
 
-**Reference version:** the buggy version of the project's earliest-buggy defect. Two checks per project; if either fails, use the fallback below:
-- every patch is dated after the reference;
-- every patch is a git descendant of the reference.
+**Reference version:** the buggy version of the project's earliest-buggy defect. Two checks per project (D13.1); if either fails, use the fallback below:
+- every patch commit is dated after the reference (committer timestamps);
+- no patch commit is contained in the reference (no patch is a git ancestor of it).
+
+Whether each patch is a git descendant of the reference is reported but not required (D13.1 supersedes the stricter D13 check).
 
 The checks pass for RESTCountries (`aadbd07`) and Dolibarr (`9d4007e`) (E22).
+
+Holdout (E32, metadata only, 21 Nov 2026): the D13.1 checks pass for all remaining holdout projects (awx, flowable-engine, mastodon, netbox, nocodb, podman). Mastodon, netbox and nocodb have some patches that are not descendants of the reference (reported). The hook rule applies to the reference defects of netbox and nocodb.
 
 **Hook rule:** if the reference defect has a setup hook (checked by function name only), that defect is excluded from the primary analysis and included in a sensitivity analysis.
 
@@ -129,6 +133,8 @@ The checks pass for RESTCountries (`aadbd07`) and Dolibarr (`9d4007e`) (E22).
   - Dolibarr (18 usable + 4 needing a fixture; #23345, #26307, #29372 excluded).
   - Fallback if Dolibarr is infeasible (D16.1): add an already-excluded project such as SeaweedFS; else RESTCountries alone. A holdout project is moved only with a compelling, documented justification.
 - **Holdout candidates after X1–X4:** awx, flowable-engine, kafka-rest, mastodon, netbox, nocodb (29 defects) + Podman (23) if X5 passes; X8 may remove nocodb, flowable-engine and kafka-rest.
+  - X8 check (21 Nov 2026, E33): official specs found for nocodb and flowable-engine. **kafka-rest excluded** (D20: X8, and its reference image does not exist).
+  - Current holdout (21 Nov 2026): awx 5, flowable-engine 4, mastodon 5, netbox 6, nocodb 6 = **26**, plus Podman 23 if X5 passes. Primary analysis excludes the hooked reference defects of netbox and nocodb (−2; sensitivity S3). X6/X7 attrition comes after the freeze.
 - **Expected evaluable holdout:**
 
   | Scenario | Expected evaluable defects |
@@ -136,6 +142,8 @@ The checks pass for RESTCountries (`aadbd07`) and Dolibarr (`9d4007e`) (E22).
   | Podman infeasible, X8 removes nothing | ≈ 22–27 |
   | Worst case (Podman infeasible, X8 removes nocodb, flowable-engine, kafka-rest) | ≈ 16 |
   | Podman feasible | ≈ 40–48 |
+
+  *Update 21 Nov 2026 (estimates, before X6/X7 attrition):* X8 removed only kafka-rest; 24 primary-analysis defects without Podman, about 47 with Podman. The scenario rows above are kept as the original planning estimates.
 
 - **Per-defect rules after the freeze:** X6 (validation fails), X7 (needs extra environment; sensitivity subset).
 - **Fixtures:** the benchmark checkout is treated as a black box; a generic project fixture (credentials, ≥ 2 roles where supported) is written only from public documentation, before any holdout ground truth is opened.
@@ -205,7 +213,7 @@ Notes:
 **Project level:** per-project tables; leave-one-project-out estimates with a forest plot.
 
 **Sensitivity analyses:**
-- S1: triggering operation in spec vs not;
+- S1: triggering operation in spec vs not (also covers defects whose operations lie outside the project-level spec, D21);
 - S2: spec source (development set only, Dolibarr);
 - S3: excluding reference defects that had hooks;
 - S4: excluding the 14 holdout defects in the paper's RQ3 sample;
@@ -234,6 +242,12 @@ Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and t
 | Go | 1.22.2 |
 | Git | 2.43.0 |
 | RESTCountries build/run images | see RESEARCH_LOG E27 |
+| Dolibarr images | base `php:7.4-apache@sha256:c9d7e608f73832673479770d66aacc8100011ec751d1905ff63fae3fe2e0ca6d` (locally built as `dolibarr_local:from_source` with the Debian 11 workaround, E30; local image ID not recorded), `mariadb:10.5@sha256:a530aeeefd82f4fa5150f391b6c75462140904780338766f6b03acecb1cca3ce` |
+| PostgreSQL | `postgres:16@sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f` (PostgreSQL 16.16), test container only |
+
+**Recorded deviations from the benchmark recipe** (to be reported in the paper's reproducibility section):
+- Dolibarr: `bullseye-security` removed from the image's apt sources, because Debian 11 LTS ended on 31 Aug 2026 (E30). Policy: D18 (minimal generic repository fix only).
+- Dolibarr: versions switched by `git checkout` and `docker compose` in one prepared clone instead of the CLI's per-deploy re-clone (first used in E29). Policy and equivalence checks: D19.
 
 ## 12. Threats to validity (summary; details in RESEARCH_LOG)
 

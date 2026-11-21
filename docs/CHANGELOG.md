@@ -4,6 +4,53 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-21 — Delegated decisions D13.1, D18–D21; branches merged
+
+Added
+- `DECISIONS.md`: D13.1 (reference-version check: "no patch contained in the reference" replaces "every patch is a descendant"; disclosed as amended after seeing holdout metadata), D18 (EOL base images: minimal generic repository fix), D19 (prepared clones with equivalence checks), D20 (kafka-rest excluded: X8 and missing reference image), D21 (out-of-spec defects kept; sensitivity S1). All PROVISIONAL, decided by the drafting assistant under the owner's explicit delegation.
+
+Changed
+- `DECISIONS.md`: D13 → SUPERSEDED by D13.1; summary, supersession table and status history updated.
+- `EXPERIMENT_PROTOCOL.md`: §6 check wording and holdout result; §7 holdout list (26 + Podman 23) and estimate update; §10 S1 scope; §11 deviations now cite D18/D19.
+- `RESEARCH_LOG.md`: E32 (kafka-rest reference image confirmed missing), R12, R26, R27, R28 updated.
+- `PROJECT_STATUS.md`, `ARCHITECTURE.md`, `README.md`: aligned; no decisions awaiting the owner.
+
+Notes
+- `docs/phase1-restcountries-2026-11-20` and `docs/phase1-dolibarr-2026-11-21` merged into `main` at the owner's delegation.
+
+### 2026-11-21 — Phase 1: holdout reference-version and X8 checks; versions recorded
+
+Added
+- `analysis/benchmark_audit/holdout_refver.py`: metadata-only reference-version check (validated against E22 on RESTCountries and Dolibarr); listed in the audit README as safe for holdout projects.
+- `RESEARCH_LOG.md`: E32 (holdout reference versions, ancestry, hooks), E33 (X8 official specs), R28 (reference-version representativeness), R12 update, findings-log row, contamination-ledger row (holdout metadata only). E29: Dolibarr image digests.
+- `EXPERIMENT_PROTOCOL.md`: §6 holdout check results; §7 X8 result; §11 Dolibarr and PostgreSQL digests.
+- `ARCHITECTURE.md`: open question 7 (OpenAPI 3.1 parsing).
+
+Changed
+- `PROJECT_STATUS.md`: PostgreSQL, X8 and reference-version checklist items done; three new owner decisions listed (reference-version rule for mastodon/netbox/nocodb, kafka-rest X8 exclusion, defects whose API is outside the project spec).
+
+Notes
+- No status changed in `DECISIONS.md` for these checks; every resulting exclusion or rule change awaits the owner.
+
+### 2026-11-21 — Phase 1: dolibarr#23179 reproduced; Dolibarr conditional go (D17)
+
+Added
+- `DECISIONS.md`: D17 (PROVISIONAL, owner 21 Nov 2026): Dolibarr conditional go; setup scripting time-boxed to two working days (first agreed as one, changed by the owner the same day), else D16.1; note on the changed fallback from the earlier plan. Status history row.
+- `RESEARCH_LOG.md`: E29 (dolibarr#23179 buggy/patched reproduction, setup timings and settings, 75-path module-dependent spec); E30 (Debian 11 EOL breaks the Dolibarr image build, with the workaround; 1.7 GB re-clone per deploy; error-handler `TypeError`); E31 (WSL DNS fix); updates to R13 and R14; new R26 (recipe decay) and R27 (deploy cost); findings-log row; contamination-ledger row (development projects only).
+- `EXPERIMENT_PROTOCOL.md` §11: Dolibarr images (digests TBD) and recorded deviations from the benchmark recipe.
+- `README.md`: Dolibarr and WSL DNS known quirks; manual install settings.
+
+Changed
+- `PROJECT_STATUS.md`: Dolibarr reproduction and D17 recorded; checklist updated; decisions awaiting the owner listed; next task = script the Dolibarr setup within the time box.
+- `ARCHITECTURE.md`: open design questions 3–4 updated; new item 6 (deployment handling for the replayer).
+
+Fixed
+- `PROJECT_STATUS.md`: stale blocker "WSL2/Docker integration not yet verified" marked resolved; Phase 1 roadmap status "Next" → "In progress".
+- `README.md`: stale "not yet reproduced locally" and "Phase 1 is next" removed.
+
+Notes
+- No application code; no experimental results. Stacked on the unmerged branch `docs/phase1-restcountries-2026-11-20`.
+
 ### 2026-11-20 — Phase 1: environment ready, first defect reproduced, D1 final
 
 Added

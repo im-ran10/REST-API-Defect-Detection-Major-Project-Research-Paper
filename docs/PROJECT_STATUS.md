@@ -1,10 +1,10 @@
 # Project Status
 
-**Last updated:** 20 Nov 2026 (Phase 1: environment ready; first defect reproduced)
+**Last updated:** 21 Nov 2026 (Phase 1: dolibarr#23179 reproduced; Dolibarr conditional go, D17; holdout reference-version and X8 checks done)
 
 ## Current stage
 
-**Phase 1 in progress (environment setup and feasibility checks).** The environment is ready and the first development defect (restcountries#235) has been reproduced. Methodology provisionally approved 16 Nov 2026.
+**Phase 1 in progress (environment setup and feasibility checks).** The environment is ready and one defect of each development project has been reproduced (restcountries#235, dolibarr#23179). Dolibarr is a conditional go (D17): its setup must be scripted within a two-working-day time box. Methodology provisionally approved 16 Nov 2026.
 - No application code exists.
 - No experiment has been run.
 - There are **no measured results**.
@@ -30,19 +30,25 @@
 | Defects4REST installed at `265db11` in `~/tools/Defects4REST` (venv `~/tools/defects4rest-env`) | Owner's terminal output |
 | **restcountries#235 reproduced locally:** buggy → "Kiev", patched → "Kyiv"; image digests recorded | RESEARCH_LOG E27 |
 | D1, D1.1 → FINAL (owner, 20 Nov 2026) | DECISIONS §5 |
+| **dolibarr#23179 reproduced locally (20–21 Nov 2026):** buggy → notes `null` after PUT; patched (`61ee3a9`) → notes saved. Manual setup ~15 min first time, ~7 min second time. Buggy spec with API + Products: Swagger 2.0, 75 paths | RESEARCH_LOG E29 |
+| Dolibarr deploy issues recorded: Debian 11 EOL breaks the image build (workaround applied, a recipe deviation); 1.7 GB re-clone per deploy; error-handler bug; host DNS fix | E30, E31 |
+| **Dolibarr go/no-go → conditional go** (owner, 21 Nov 2026) | DECISIONS D17 (PROVISIONAL) |
+| Dolibarr image digests recorded; PostgreSQL 16.16 runs in Docker (throwaway test container) | E29; EXPERIMENT_PROTOCOL §11 |
+| **Holdout reference-version checks** (metadata only): no reference version contains a fix; mastodon, netbox, nocodb fail the strict descendant check; reference defects of kafka-rest, netbox, nocodb have setup hooks | E32 (`holdout_refver.py`) |
+| **X8 official specs:** found for nocodb (OpenAPI 3.1) and flowable-engine (OpenAPI 3.0); none for kafka-rest (X8 condition met) | E33 |
+| **Delegated decisions** (21 Nov 2026): reference-version check amended (D13.1); EOL base-image policy (D18); prepared-clone reuse (D19); kafka-rest excluded (D20); out-of-spec defects kept (D21). Holdout now 26 defects + Podman 23 | DECISIONS |
 
 ## What has NOT been done
 
-- Only one defect reproduced (restcountries#235); the rest of the development set is not yet validated.
-- PostgreSQL not yet started.
-- No Phase 1 feasibility checks: Dolibarr automation, Podman (X5), official specs (X8).
+- Two defects reproduced (restcountries#235, dolibarr#23179), one run each; the rest of the development set is not yet validated.
+- Not yet done: Dolibarr setup automation (D17 time box), Dolibarr all-modules spec (R14), Podman (X5), minimal Java program.
 - No code, DSL, catalogues, prompts or generated tests.
 - Systematic novelty check not done (only a targeted search).
 - Protocol **not frozen**; budgets (*s*, tokens, caps), LLM model and reviewers TBD.
 
 ## Decisions awaiting the owner
 
-None at present. D10 approved (FINAL) and D16.1 approved (PROVISIONAL) on 16 Nov 2026.
+None at present. On 21 Nov 2026 the owner delegated the open choices; they are recorded as D13.1 and D18–D21 (PROVISIONAL) with their reasoning, and the owner may revisit any of them. The two docs branches were merged into `main` the same day.
 
 ## Phase 1 checklist (revised 16 Nov 2026)
 
@@ -52,20 +58,21 @@ Environment
 - [x] Confirm dev OS/IDE — Windows + IntelliJ IDEA (D9: Windows + WSL2 + Docker Desktop)
 - [x] Verify WSL2: Ubuntu starts; Docker Desktop running with WSL integration for Ubuntu (`docker run hello-world` inside Ubuntu); files in the WSL filesystem
 - [x] Install toolchain in Ubuntu: Java 21, Maven, Python 3.9+ venv, Go 1.16+, Git, GitHub CLI
-- [ ] PostgreSQL via Docker (needed from Phase 2/3)
+- [x] PostgreSQL via Docker: `postgres:16` (16.16) runs; digest recorded (21 Nov 2026). Project database set up in Phase 2/3
 - [x] Install Defects4REST at commit `265db11` (D1.1); run `defects4rest --help`
 
 Development-set feasibility
 - [x] Deploy restcountries#235 buggy → reproduce "Kiev"; deploy patched → "Kyiv" (20 Nov 2026, E27)
-- [ ] **Dolibarr go/no-go (R13):** deploy one defect, then script the installer + API key for one version within 2 days; reproduce one defect with curl. If no-go, follow D16.1 (SeaweedFS, else RESTCountries alone)
-- [ ] Dolibarr product-generated spec: fetch `/api/index.php/explorer/swagger.json` at the reference version with all API modules enabled (R14)
+- [x] **Dolibarr go/no-go (R13):** deploy dolibarr#23179 buggy and patched; reproduce with curl (E29). Outcome: conditional go (D17, 21 Nov 2026)
+- [ ] **Script the Dolibarr setup** (install wizard, API + Products modules, admin API key) for one version within **two working days** (D17). If not achieved, follow D16.1 (SeaweedFS, else RESTCountries alone)
+- [ ] Dolibarr product-generated spec: fetch `/api/index.php/explorer/swagger.json` at the reference version with all API modules enabled (R14). Partial: API + Products only gives 75 paths (E29)
 - [ ] Minimal Java 21 program: load spec, list operations, send one request, capture status + body
 
 Holdout feasibility (**metadata only — do not open holdout ground truth**; see CLAUDE.md)
 - [ ] **X5 Podman:** deploy its reference version within one working day, in an isolated environment (R21)
-- [ ] **X8 official specs:** for nocodb, flowable-engine and kafka-rest, find a product-generated/official spec of the reference version; record the source or exclude
-- [ ] Reference-version date/ancestry checks and hook check (function names only) for each eligible holdout project
-- [ ] Record exact versions (benchmark commit, Docker images, JDK) — done for the environment and RESTCountries (E27, EXPERIMENT_PROTOCOL §11); repeat per subject
+- [x] **X8 official specs:** nocodb and flowable-engine found; kafka-rest none (E33) → excluded (D20)
+- [x] Reference-version date/ancestry checks and hook check (function names only) for each eligible holdout project (E32); all remaining projects pass under D13.1
+- [ ] Record exact versions (benchmark commit, Docker images, JDK) — done for the environment and RESTCountries (E27, EXPERIMENT_PROTOCOL §11); Dolibarr and PostgreSQL digests recorded (21 Nov 2026); repeat per subject
 
 First concrete milestone (Handover §11, unchanged): a locally running benchmark REST API, a readable OpenAPI spec, and a minimal program that sends a request and captures the response. **Not** a dashboard.
 
@@ -73,7 +80,7 @@ First concrete milestone (Handover §11, unchanged): a locally running benchmark
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | Environment, benchmark setup, feasibility checks (above) | **Next** |
+| 1 | Environment, benchmark setup, feasibility checks (above) | **In progress** |
 | 2 | Arm A end to end on RESTCountries: input loader + manifest, spec normaliser, explorer, LLM generator, DSL, static validator | Not started |
 | 3 | Replayer and verdict engine: snapshots, repetitions, isolated re-runs, outcome classes; results store | Not started |
 | 4 | Feature extractor, selector, catalogues B and C (development set only) | Not started |
@@ -94,18 +101,17 @@ Handover §9 pre-implementation work:
 
 ## Open questions / blockers
 
-1. WSL2/Docker integration not yet verified.
-2. If Dolibarr fails its go/no-go, apply D16.1 (try SeaweedFS as an extra development subject, else RESTCountries alone).
-3. Feasibility of Dolibarr automation, Podman (X5) and official specs (X8) determines the development and holdout sizes (R12).
+1. ~~WSL2/Docker integration not yet verified.~~ Resolved 19–20 Nov 2026 (environment row above).
+2. If the Dolibarr setup cannot be scripted within the D17 time box, apply D16.1 (try SeaweedFS as an extra development subject, else RESTCountries alone).
+3. Feasibility of Dolibarr automation (D17) and Podman (X5) determines the final development and holdout sizes (R12).
 4. Budgets and LLM model choice: TBD in Phase 5 calibration, pinned before the holdout (D15).
 
 ## Next task
 
-**Dolibarr go/no-go (R13):**
-1. Deploy one Dolibarr defect (buggy, then patched).
-2. Complete the install wizard and create an API key by hand.
-3. Try to script that install and API key.
-4. Reproduce the defect with curl.
-5. Fetch the product-generated spec.
+**Script the Dolibarr per-deployment setup (D17; time box: two working days of effort).**
+1. Goal: from a freshly started Dolibarr container, reach a working API key with the API and Products modules enabled, with no browser steps.
+2. Candidate approaches (not yet verified for this Dolibarr version): driving the installer pages with HTTP requests; Dolibarr's forced-install configuration file; setting modules and the API key in the database after install.
+3. Check the script on the buggy and patched versions of dolibarr#23179 (expected results in E29).
+4. Record the time spent. If not achieved within the time box, apply D16.1.
 
-If no-go, apply D16.1.
+The script must follow D19 (prepared clone, equivalence checks) and D18 (minimal base-image fix). In parallel or next: the minimal Java 21 program (Phase 1 milestone) and the Podman X5 check (reference `f65f3320e112`, isolated environment).
