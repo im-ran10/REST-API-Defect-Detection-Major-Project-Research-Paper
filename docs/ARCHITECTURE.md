@@ -62,7 +62,7 @@ RESEARCHER SIDE — may read ground truth; never imported by system code
 | Class | Does |
 |---|---|
 | `SpecLoader` | Loads Swagger 2.0 / OpenAPI 3.x with swagger-parser 2.1.48 (`OpenAPIParser`, `resolve` + `resolveFully`); reports the declared version and parser messages; flags unresolved path-item `$ref`s (E35) |
-| `OperationLister` | (method, path, operationId), sorted by path then method |
+| `OperationLister` | (method, path, operationId), sorted by path then method; matches a concrete path against path templates |
 | `HttpProbe` | One GET with `java.net.http.HttpClient` (30 s timeouts, no redirects); optional auth header; header values never logged |
 | `ProbeMain` | CLI: `--spec --base-url --get [--auth-header --auth-env] [--max-body]`; base URL from the runner, never from the spec's servers/host |
 

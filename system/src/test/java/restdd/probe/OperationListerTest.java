@@ -86,6 +86,16 @@ class OperationListerTest {
     }
 
     @Test
+    void concretePathsMatchTemplates() {
+        assertTrue(OperationLister.matchesTemplate("/v2/capital/{capital}", "/v2/capital/tallinn"));
+        assertTrue(OperationLister.matchesTemplate("/status", "/status"));
+        assertTrue(OperationLister.matchesTemplate("/notes/{id}", "/notes/7"));
+        assertFalse(OperationLister.matchesTemplate("/notes/{id}", "/notes/"));      // empty segment
+        assertFalse(OperationLister.matchesTemplate("/notes/{id}", "/notes/7/x"));   // extra segment
+        assertFalse(OperationLister.matchesTemplate("/v2/capital/{capital}", "/v2/name/x"));
+    }
+
+    @Test
     void buildUriJoinsSlashesOnce() {
         assertEquals("http://h/api/index.php/status",
                 HttpProbe.buildUri("http://h/api/index.php/", "/status").toString());

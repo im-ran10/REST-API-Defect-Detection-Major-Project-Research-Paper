@@ -101,10 +101,15 @@ public final class ProbeMain {
 
         // 2. Send one GET.
         String path = opt.get("--get");
-        boolean inSpec = ops.stream().anyMatch(o -> o.method().equals("GET") && o.path().equals(path));
+        // Path without query string, matched against the spec's path templates.
+        String pathOnly = path.contains("?") ? path.substring(0, path.indexOf('?')) : path;
+        List<String> matches = ops.stream()
+                .filter(o -> o.method().equals("GET") && OperationLister.matchesTemplate(o.path(), pathOnly))
+                .map(OperationLister.Op::path)
+                .toList();
         System.out.println("== Request");
         System.out.println("GET " + opt.get("--base-url") + path);
-        System.out.println("GET " + path + " in spec: " + (inSpec ? "yes" : "no"));
+        System.out.println("matches spec:      " + (matches.isEmpty() ? "no GET operation" : "GET " + String.join(", ", matches)));
         System.out.println("auth:              " + (authHeader == null
                 ? "none" : "header " + authHeader + " from $" + authEnv + " (value not shown)"));
         System.out.println();

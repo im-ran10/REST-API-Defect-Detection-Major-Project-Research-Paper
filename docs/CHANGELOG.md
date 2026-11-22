@@ -4,6 +4,14 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-22 — Probe run against RESTCountries; path-template matching fixed
+
+Fixed
+- `system/`: the probe's "in spec" check compared concrete paths with path templates as plain strings (`/v2/capital/tallinn` was reported as not in the spec). `OperationLister.matchesTemplate` now matches segment by segment; the probe prints the matching template. Unit test added (8 tests).
+
+Changed
+- `RESEARCH_LOG.md`: E35 extended with the restcountries#235 buggy run (10 operations, 0 parser messages, `/v2/capital/tallinn` 200, unknown capital 404; all 16 RESTCountries specs byte-identical); findings-log row. `PROJECT_STATUS.md`: checklist, milestone note, next task (Dolibarr all-modules spec, R14). `ARCHITECTURE.md`: `OperationLister` row.
+
 ### 2026-11-22 — Minimal Java 21 probe (Phase 1 milestone)
 
 Added

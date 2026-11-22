@@ -23,6 +23,25 @@ public final class OperationLister {
 
     private OperationLister() {}
 
+    /**
+     * True if a concrete path (e.g. /v2/capital/tallinn) matches a path template
+     * (e.g. /v2/capital/{capital}). Each {param} matches exactly one non-empty segment.
+     */
+    public static boolean matchesTemplate(String template, String path) {
+        String[] t = template.split("/", -1);
+        String[] p = path.split("/", -1);
+        if (t.length != p.length) {
+            return false;
+        }
+        for (int i = 0; i < t.length; i++) {
+            boolean isParam = t[i].startsWith("{") && t[i].endsWith("}");
+            if (isParam ? p[i].isEmpty() : !t[i].equals(p[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static List<Op> list(OpenAPI openApi) {
         List<Op> ops = new ArrayList<>();
         if (openApi.getPaths() == null) {
