@@ -4,6 +4,16 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-22 — Dolibarr unattended setup script (Phase 1, D17)
+
+Added
+- `scripts/dolibarr/dolibarr_setup.sh`: unattended Dolibarr first-time setup through Dolibarr's forced-install file, installer pages and login API; never prints secrets (credentials written to `~/.dolibarr_credentials`, mode 600).
+- `RESEARCH_LOG.md`: E34 (design, local test on three versions, bugs fixed, pending real-container run); R13 update; findings-log row.
+- `README.md`: usage of the script. `CLAUDE.md`: `scripts/` added to the file list.
+
+Changed
+- `PROJECT_STATUS.md`: next task = validate the script on the owner's machine. `ARCHITECTURE.md`: open question 3 updated.
+
 ### 2026-11-21 — Delegated decisions D13.1, D18–D21; branches merged
 
 Added

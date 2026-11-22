@@ -35,7 +35,7 @@ Planned stack: Java 21, Spring Boot, PostgreSQL, Docker, Python (analysis).
 
 ## Setup and usage
 
-There is no application code to build or run yet. The verified environment for the benchmark is below.
+There is no application code to build or run yet. The verified environment for the benchmark is below, followed by the Phase 1 helper scripts in `scripts/`.
 
 **Environment** (verified 20 Nov 2026; see `docs/EXPERIMENT_PROTOCOL.md` §11):
 - Windows with WSL2 running Ubuntu 24.04.
@@ -60,7 +60,17 @@ Known quirks:
 - WSL DNS: if Docker pulls time out on `10.255.255.254`, add `[network]` / `generateResolvConf = false` to `/etc/wsl.conf`, run `wsl --shutdown` (this also stops Docker Desktop; restart it), then replace `/etc/resolv.conf` with `nameserver 1.1.1.1` and `nameserver 8.8.8.8`.
 - Dolibarr image build fails on `bullseye-security` (Debian 11 is end-of-life). Workaround (policy D18, a recorded deviation): in the generated `Dockerfile`, add `RUN sed -i "/bullseye-security/d" /etc/apt/sources.list` right after `FROM php:7.4-apache`.
 - Dolibarr re-clones ~1.7 GB on every deploy. To switch versions in the prepared folder instead (allowed by D19; check `git log -1` and `git status` first): `docker compose -f docker-compose.yml -f docker-compose.override.yml down -v`, `git checkout <sha>`, then `up -d --build`.
-- Dolibarr install wizard (manual for now): database server `db`, database/login/password `dolibarr`, documents directory `/var/www/documents`; then enable *API / Web services (REST server)* and *Products*, and generate the admin API key (sent as the `DOLAPIKEY` header).
+- Dolibarr install wizard (manual fallback): database server `db`, database/login/password `dolibarr`, documents directory `/var/www/documents`; then enable *API / Web services (REST server)* and *Products*, and generate the admin API key (sent as the `DOLAPIKEY` header). Normally use the script below instead.
+
+**Dolibarr unattended setup** (`scripts/dolibarr/dolibarr_setup.sh`, D17). Run it from the prepared Dolibarr folder after a fresh start:
+```bash
+cd ~/tools/Defects4REST/defects4rest/data/temp_project_data/dolibarr
+docker compose -f docker-compose.yml -f docker-compose.override.yml down -v
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
+bash ~/projects/rest-api-defect-detection/scripts/dolibarr/dolibarr_setup.sh
+source ~/.dolibarr_credentials   # sets DOLIBARR_API_KEY (never printed)
+```
+It runs Dolibarr's own installer (forced-install file + the browser's installer pages), enables the API and Products modules, gets the admin API key from Dolibarr's login API and checks it. It refuses to run on an already-installed database. Settings can be overridden with environment variables (see the script header).
 
 ## Documentation
 

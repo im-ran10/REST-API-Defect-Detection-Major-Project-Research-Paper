@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 21 Nov 2026 (Phase 1: dolibarr#23179 reproduced; Dolibarr conditional go, D17; holdout reference-version and X8 checks done)
+**Last updated:** 22 Nov 2026 (Phase 1: Dolibarr unattended setup script written and tested locally; owner-machine run pending)
 
 ## Current stage
 
@@ -36,6 +36,7 @@
 | Dolibarr image digests recorded; PostgreSQL 16.16 runs in Docker (throwaway test container) | E29; EXPERIMENT_PROTOCOL §11 |
 | **Holdout reference-version checks** (metadata only): no reference version contains a fix; mastodon, netbox, nocodb fail the strict descendant check; reference defects of kafka-rest, netbox, nocodb have setup hooks | E32 (`holdout_refver.py`) |
 | **X8 official specs:** found for nocodb (OpenAPI 3.1) and flowable-engine (OpenAPI 3.0); none for kafka-rest (X8 condition met) | E33 |
+| **Dolibarr unattended setup script** (22 Nov 2026): `scripts/dolibarr/dolibarr_setup.sh`; local test passes on `9d4007e`, `61ee3a9` and a 2025 version, reproducing #23179's buggy/patched behaviour. About 1 hour of the D17 time box used | RESEARCH_LOG E34 |
 | **Delegated decisions** (21 Nov 2026): reference-version check amended (D13.1); EOL base-image policy (D18); prepared-clone reuse (D19); kafka-rest excluded (D20); out-of-spec defects kept (D21). Holdout now 26 defects + Podman 23 | DECISIONS |
 
 ## What has NOT been done
@@ -64,7 +65,7 @@ Environment
 Development-set feasibility
 - [x] Deploy restcountries#235 buggy → reproduce "Kiev"; deploy patched → "Kyiv" (20 Nov 2026, E27)
 - [x] **Dolibarr go/no-go (R13):** deploy dolibarr#23179 buggy and patched; reproduce with curl (E29). Outcome: conditional go (D17, 21 Nov 2026)
-- [ ] **Script the Dolibarr setup** (install wizard, API + Products modules, admin API key) for one version within **two working days** (D17). If not achieved, follow D16.1 (SeaweedFS, else RESTCountries alone)
+- [ ] **Script the Dolibarr setup** (install wizard, API + Products modules, admin API key) for one version within **two working days** (D17). If not achieved, follow D16.1 (SeaweedFS, else RESTCountries alone). *Script written and locally tested (E34); run with the real containers on the owner's machine pending*
 - [ ] Dolibarr product-generated spec: fetch `/api/index.php/explorer/swagger.json` at the reference version with all API modules enabled (R14). Partial: API + Products only gives 75 paths (E29)
 - [ ] Minimal Java 21 program: load spec, list operations, send one request, capture status + body
 
@@ -108,10 +109,9 @@ Handover §9 pre-implementation work:
 
 ## Next task
 
-**Script the Dolibarr per-deployment setup (D17; time box: two working days of effort).**
-1. Goal: from a freshly started Dolibarr container, reach a working API key with the API and Products modules enabled, with no browser steps.
-2. Candidate approaches (not yet verified for this Dolibarr version): driving the installer pages with HTTP requests; Dolibarr's forced-install configuration file; setting modules and the API key in the database after install.
-3. Check the script on the buggy and patched versions of dolibarr#23179 (expected results in E29).
-4. Record the time spent. If not achieved within the time box, apply D16.1.
+**Validate the Dolibarr setup script on the owner's machine (D17).** In the prepared Dolibarr folder:
+1. Patched (`61ee3a9`, currently checked out): `down -v`, `up -d --build`, run `scripts/dolibarr/dolibarr_setup.sh`, then the #23179 curl test with `$DOLIBARR_API_KEY` → expect notes saved.
+2. Buggy (`9d4007e`): `down -v`, `git checkout 9d4007e…`, `up -d --build`, script, curl test → expect notes `null`.
+3. Record times and outcome in RESEARCH_LOG (E34) and close the D17 time box.
 
-The script must follow D19 (prepared clone, equivalence checks) and D18 (minimal base-image fix). In parallel or next: the minimal Java 21 program (Phase 1 milestone) and the Podman X5 check (reference `f65f3320e112`, isolated environment).
+Then: the minimal Java 21 program (Phase 1 milestone), the Dolibarr all-modules spec (R14), and the Podman X5 check (reference `f65f3320e112`).

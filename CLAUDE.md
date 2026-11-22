@@ -107,6 +107,7 @@ docs/CHANGELOG.md            dated history of changes
 docs/proposals/              dated, immutable reasoning documents (never edited after approval;
                              later proposals supersede earlier ones; DECISIONS.md is authoritative)
 analysis/benchmark_audit/    researcher-side scripts; may read ground truth; system code must never import them
+scripts/                     deployment helper scripts (e.g. Dolibarr unattended setup); never read benchmark ground truth
 ```
 
 ## Source of truth
