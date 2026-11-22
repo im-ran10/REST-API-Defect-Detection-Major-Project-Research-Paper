@@ -1,8 +1,12 @@
 # Project Status
 
-**Last updated:** 22 Nov 2026 (**Phase 1 complete**: Podman X5 passed; holdout fixed at 6 projects / 49 defects; Phase 2 waits for the owner's checkpoint approval)
+**Last updated:** 23 Nov 2026 (**ten-day design adopted** (D23–D43); D32 and D41 approved; implementation starting (T0–T17); D30 people still to be named by the owner)
 
 ## Current stage
+
+**23 Nov 2026 — Day 1 of the ten-day plan (D23).** Phase 1 is complete. The owner fixed a 10-day deadline for a complete first draft with measured results (Day 10 = Wed 2 Dec 2026) and a zero LLM budget. The design keeps the research question, all three arms, D4.1 and the firewall; the scale is reduced to RESTCountries development validation and two held-out projects (Podman + nocodb, 28 primary defects), with a local 4B model (D24–D27). Literature integration (E38) and a final quality-control pass (E39) are done. Reasoning: [`proposals/2026-11-23_ten_day_design_and_qc.md`](proposals/2026-11-23_ten_day_design_and_qc.md). **Nothing beyond the Phase 1 probe is implemented; no experiment has been run; there are no measured results.**
+
+*Earlier status (22 Nov 2026), kept for history:*
 
 **Phase 1 complete (22 Nov 2026); Phase 2 (Arm A end to end) not started, pending the owner's checkpoint approval.** The environment is ready; one defect of each development project is reproduced (restcountries#235, dolibarr#23179); Dolibarr's setup is scripted (D17 met) with the approved module configuration (D22, R14); the Phase 1 Java probe runs against both development APIs. Podman passed its feasibility check (X5), so the holdout is fixed at 6 projects and 49 defects. Methodology provisionally approved 16 Nov 2026.
 - The only code is the Phase 1 probe in `system/` (load spec, list operations, one GET). The pipeline is not implemented.
@@ -42,20 +46,29 @@
 | **R14 Dolibarr module configuration** (22 Nov 2026, owner approved option A → D22): 28 API-capable modules by Dolibarr's own rule, frozen in `scripts/dolibarr/modules_r14.txt`. Real containers: 28/28 enabled, 0 failures, identical fingerprint on buggy and patched; #23179 reproduces both ways; spec at `9d4007e` = 256 paths / 392 operations, containing all 387 operations of the benchmark's same-version spec | RESEARCH_LOG E36; DECISIONS D22 |
 | **X5 Podman passed** (22 Nov 2026): reference `f65f3320e112` built and served its API (`_ping` OK, 4.0.0-dev) in an isolated WSL distribution in about 1.5 min. **Holdout fixed:** awx, flowable-engine, mastodon, netbox, nocodb, podman = 49 defects (47 in the primary analysis) | RESEARCH_LOG E37; EXPERIMENT_PROTOCOL §7, §13 |
 
+| **Ten-day design** (22–23 Nov 2026): local-LLM feasibility, scale reduction, model choice, statistics, review protocol, literature improvements L1–L7 approved by the owner | DECISIONS D23–D29, D31–D38, D40–D43 (PROVISIONAL; D39 superseded by D43); D30 PROPOSED (people pending) |
+| **Stage 0 GPU check** (22 Nov 2026): RTX 3050 6 GB Laptop GPU visible inside WSL2 Ubuntu, driver 610.60, CUDA 13.3, 0 MiB used | Owner's `nvidia-smi` output; EXPERIMENT_PROTOCOL §11 |
+| **Focused novelty check + seven full-text reviews** (23 Nov 2026) | RESEARCH_LOG §5, E38 |
+| **Final quality control** (23 Nov 2026): predicate counts per project, executability per C strategy, prompt sizes, statistical sensitivity | RESEARCH_LOG E39; proposal §3 |
+
 ## What has NOT been done
 
 - Two defects reproduced (restcountries#235, dolibarr#23179), one run each; the rest of the development set is not yet validated.
 - The Dolibarr spec is not yet sanitised (D5.1 keyword scan and owner review happen in Phase 2, in the input loader).
 - The probe is not the D5.1 input loader: no allow-list, no manifest, no spec normalisation.
 - No pipeline code, DSL, catalogues, prompts or generated tests.
-- Systematic novelty check not done (only a targeted search).
+- Systematic novelty check: focused check done (E38); saved-string database recheck still due before submission.
+- Ollama not installed; no model tested; no prompt, catalogue text, DSL or executor exists.
 - Protocol **not frozen**; budgets (*s*, tokens, caps), LLM model and reviewers TBD.
 
 ## Decisions awaiting the owner
 
-1. **Approve the start of Phase 2** (Phase 1 checkpoint, 22 Nov 2026).
-2. **LLM provider and model** for the generator (EXPERIMENT_PROTOCOL §4, TBD), including who pays for API usage. Needed before the generator step of Phase 2, not before the input loader.
-3. **Primary statistical procedure** (Phase 2 criterion 1): recommendation in the 22 Nov 2026 checkpoint; nothing changes in EXPERIMENT_PROTOCOL §10 until approved.
+1. **D30 (owner action, before the freeze on Day 6):** name the validator and the two arm-blind reviewers and confirm availability (validator Days 7–8, reviewers Days 8–9). Roles and independence rules: DECISIONS D30.
+2. **D43 threshold:** strategy adherence ≥ 50% per arm is a default set by the drafting assistant; change it before Day 5 if wanted.
+
+*Resolved 23 Nov 2026:* D32 (option b, 5 seeds kept), D41 (QC corrections), D42 (Podman reporting), D43 (mandatory feasibility checks); documentation commit approved.
+
+*Resolved 23 Nov 2026:* Phase 2 start (ten-day plan, D23); LLM provider/model (D27: local, no cost); primary statistical procedure (D29).
 
 ## Phase 1 checklist (revised 16 Nov 2026)
 
@@ -114,12 +127,33 @@ Handover §9 pre-implementation work:
 3. Podman feasibility (X5) determines the final holdout size (R12).
 4. Budgets and LLM model choice: TBD in Phase 5 calibration, pinned before the holdout (D15).
 
+## Ten-day schedule (D23; gates G1–G4)
+
+| Day | Work | Gate |
+|---|---|---|
+| 1 Mon 23 Nov | Owner: install Ollama + 2 models; name D30 people before Day 6. Build: T1 project-level specs + normaliser | — |
+| 2 Tue | T2 DSL + validator, T3 LLM client, T4 speed/VRAM/truncation test with the largest held-out prompt; nocodb reference deploy (4 h box) | G1 |
+| 3 Wed | T5 executor + reset adapters, T6 Arm A + model test (60 + 10 calls) | G2 |
+| 4 Thu | T7 feature extractor, T8 catalogues B/C (structured, examples, parity), overlap table, selector; T9 divergence; T10 verdict engine | D12 rule |
+| 5 Fri | T11 analysis scripts; T12 development validation (RESTCountries 15 defects × 3 arms × 2 seeds; Dolibarr breadth; C∅); timing → binding 40-hour rule | G3 |
+| 6 Sat | T13 freeze + tag; evening: held-out generation (Podman) | G4 |
+| 7 Sun | nocodb generation; Podman builds + execution; X6/X7 by the validator | — |
+| 8 Mon | nocodb execution; re-runs, isolation, attribution, arm-blind confirmation | time rule (D32) |
+| 9 Tue | Analysis (D29, A1–A4); results writing | D11 rule |
+| 10 Wed | Complete first draft | — |
+
+Paper sections (introduction, related work, approach, design, threats) are drafted in parallel on Days 1–8.
+
 ## Next task
 
-**Phase 1 checkpoint with the owner** (22 Nov 2026), then Phase 2: Arm A end to end on RESTCountries, starting with the allow-listed input loader, run manifest and spec normaliser (D5.1). Two owner inputs are needed before the LLM generator is built: the LLM provider/model, and approval of the primary statistical procedure (criterion 1 below).
+**23 Nov 2026 (supersedes the 22 Nov text below):** doc update committed; Day 1 tasks T0 (Ollama install) and T1 (project-level specs for Podman and nocodb, spec normaliser). Implementation order: proposal §7 (T0–T17).
+
+*Earlier (22 Nov 2026):* **Phase 1 checkpoint with the owner** (22 Nov 2026), then Phase 2: Arm A end to end on RESTCountries, starting with the allow-listed input loader, run manifest and spec normaliser (D5.1). Two owner inputs are needed before the LLM generator is built: the LLM provider/model, and approval of the primary statistical procedure (criterion 1 below).
 
 **Phase 2 (owner instruction, 22 Nov 2026): Arm A end to end first; B and C are not implemented in Phase 2.** Phase 2 is complete only when these are also done and recorded:
 1. **Statistics:** reconcile the progress report with EXPERIMENT_PROTOCOL §10 and confirm one primary statistical procedure, with justification (owner approval).
 2. **Arms B and C:** check that they stay substantively distinct and experimentally fair (D3.1, D12; divergence rule, overlap table, R15).
 3. **Spec normalisation:** decide how `$ref`s are resolved (ARCHITECTURE question 9; prompt size under D12) and how Dolibarr's non-standard `defaultValue` is handled (question 8, R29).
 4. **Novelty:** the systematic prior-art check (R19) stays an explicit gate. No publication-level novelty claim anywhere until it is done and recorded in RESEARCH_LOG.
+
+*Status of these criteria on 23 Nov 2026:* (1) settled by D29; (2) addressed by D31, D34, D35 and the QC pass (E39, D41 proposed); (3) still open, part of task T1; (4) focused check done (E38), pre-submission recheck still due. The "Arm A first; B and C not in Phase 2" sequencing is superseded by the ten-day schedule (D23): Arm A works end to end on Day 3, B and C are built on Day 4.

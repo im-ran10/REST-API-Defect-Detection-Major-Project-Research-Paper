@@ -4,6 +4,24 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-23 — Ten-day design, literature integration and final quality control (docs only)
+
+**Added**
+- `docs/proposals/2026-11-23_ten_day_design_and_qc.md`: ten-day design, owner's four QC checks, implementation tasks T0–T17.
+- DECISIONS D23–D43: PROVISIONAL except D30 (PROPOSED, owner names the people); D32 approved as option (b); D41 approved; D42 Podman-dominance reporting; D43 mandatory model-feasibility checks (supersedes D39).
+- RESEARCH_LOG: E38 (focused novelty check, seven full-text reviews), E39 (predicate counts, executability, prompt sizes, deployment mechanisms); risks R30–R34; novelty status update; two contamination-ledger rows (holdout deployment keywords and spec aggregates only).
+- EXPERIMENT_PROTOCOL: amendment notes in the header, §2, §4, §7–§13.
+- ARCHITECTURE: ten-day amendment (Ollama client, catalogue file schema, C∅ flag, reset adapters, DSL additions).
+- PROJECT_OVERVIEW: contribution wording after the literature integration.
+- PROJECT_STATUS: ten-day schedule, owner decisions, next task.
+
+**Changed**
+- D15 FINAL → SUPERSEDED by D23; D7.1, D11, D12, D3.1 amended or clarified (no status change).
+- RESEARCH_LOG §6b: RESTestBench first author corrected to Kogler; DOIs, venues and full/partial-text labels added; FDRRestTest and RESTestBench verified.
+
+**Removed**
+- Nothing; earlier text kept and annotated.
+
 ### 2026-11-22 — X5 Podman passed; Phase 1 complete
 
 Added

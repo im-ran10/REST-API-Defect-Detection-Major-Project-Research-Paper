@@ -4,6 +4,15 @@
 >
 > **History:** the handover (§5–6) proposed a single pipeline: spec parser → feature extractor → taxonomy selector → LLM generator → executor → reporting. The 16 Nov 2026 checkpoint kept that pipeline and added the stages, switches and safeguards below. The earlier single-arm description is superseded, not discarded: it is still the core path of Arms B/C.
 
+> **Amended 23 Nov 2026 (D23–D43; reasoning in [`proposals/2026-11-23_ten_day_design_and_qc.md`](proposals/2026-11-23_ten_day_design_and_qc.md)).** The pipeline is unchanged; the items below fill in components for the 10-day design. Still not implemented.
+>
+> - **LLM generator (D27):** local Ollama through its native `/api/chat` endpoint (the OpenAI-compatible endpoint ignores `num_ctx`); JSON-schema `format` = the test DSL schema; `think` off; one fixed `num_ctx` for all calls; seed per call; truncation guard comparing `prompt_eval_count` with the counted prompt tokens (fails the call); **no retries** (D26); resumable queue with a cache keyed by prompt hash, model digest, options and seed; manifest records Ollama version, model digest, quantisation, options, token counts and speed. Provider-independent interface kept, but no paid provider is planned.
+> - **Catalogue files (D35, D36):** one entry per strategy with name, applicability, how to probe, oracle template, worked example (fictional API), source; one rule per trigger with ID, observable predicate, strategy, applicability, source, rationale, oracle template, leakage control, validation status. B2 carries the Vieira et al. operators (D34). An overlap table file is committed before divergence is computed (D31).
+> - **Selector:** unchanged mechanism, plus a development-only flag that ignores predicates (C∅ ablation, D37); the flag cannot be enabled for held-out runs.
+> - **Executor/replayer (D28):** screening run, full re-runs for suites with candidates, isolated re-runs. Reset adapters: RESTCountries none; Dolibarr DB dump; Podman fixture image pre-loaded, cleanup reset keeping it, Docker Desktop stopped (R21); nocodb container/SQLite restore. DSL additions: one multipart part with a small inline text file; fixture variables (image name, second-role credentials).
+> - **Spec slices (D41):** one shared slice per operation for all arms; if the largest held-out prompt does not fit the context window chosen at G1, a deterministic slice-compaction rule is applied to every slice before the freeze.
+> - **Researcher side:** blinded candidate export; adherence sample sheet (A4); analysis scripts for D29 and A1–A4.
+
 ## Design principles
 
 **FINAL — D0.3–D0.6:**
@@ -82,7 +91,7 @@ The DSL is the same for all arms. Its assertion vocabulary must be fixed **befor
 |---|---|
 | Backend/orchestration | Java 21, Spring Boot |
 | Spec parsing | swagger-parser v3 (D8) |
-| LLM integration | Provider-independent client; provider/model **TBD** |
+| LLM integration | Provider-independent client; provider/model **TBD** → *23 Nov 2026:* local Ollama, Qwen3 4B Instruct-2507 else Gemma 3 4B (D27) |
 | HTTP execution | RestAssured or Java HTTP Client — **TBD** |
 | Persistence | PostgreSQL (Docker) |
 | Benchmark | Defects4REST CLI, pinned commit `265db11` (D1.1) |
@@ -97,7 +106,7 @@ Not designed yet. Expected entities: Project, SpecVersion (hash), FeatureRecord 
 ## Open design questions
 
 1. HTTP client choice (the Phase 1 probe uses `java.net.http`; not a decision); DSL details; how captures and cross-step comparisons are expressed.
-2. LLM provider/model; whether the provider supports seeds; token accounting.
+2. LLM provider/model; whether the provider supports seeds; token accounting. *Answered 23 Nov 2026 (D27): local Ollama; seeds and token counts from `/api/chat`.*
 3. Automating the Dolibarr installer, modules and API key (R13). Go/no-go outcome: conditional go, with scripting time-boxed to two working days (D17). The replayer needs it. Solved: `scripts/dolibarr/dolibarr_setup.sh` (E34), driven through Dolibarr's own installer and login API; validated on the real containers (~45 s per deployment).
 4. Product-generated spec configuration ("all API modules") for Dolibarr (R14). Confirmed module-dependent: API + Products gives 75 paths (E29). **Resolved (D22, E36):** 28 API-capable modules by Dolibarr's own rule, enabled after installation with `activateModule()` (`scripts/dolibarr/activate_modules.php`); 392 operations at `9d4007e`. The replayer uses the same setup script and module list for every Dolibarr deployment.
 5. Snapshot mechanism per project (DB dump vs volume copy).

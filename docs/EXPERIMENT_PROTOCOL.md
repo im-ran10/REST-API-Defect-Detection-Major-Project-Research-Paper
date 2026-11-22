@@ -6,6 +6,8 @@
 > - **Undecided values:** items marked **TBD** are deliberately undecided — do not fill them with guesses.
 > - **Decision status:** items tagged D# carry the status shown in [DECISIONS.md](DECISIONS.md).
 > - **Full reasoning:** `docs/proposals/2026-11-16_final_methodology.md`, as amended by `docs/proposals/2026-11-16_methodology_revision_2.md` (the latter takes precedence).
+>
+> **Amended 23 Nov 2026 — ten-day design (D23–D43).** Scale reduced for a 10-day first draft; design, arms, detection protocol and safeguards unchanged. Reasoning: [`proposals/2026-11-23_ten_day_design_and_qc.md`](proposals/2026-11-23_ten_day_design_and_qc.md). Where a section below carries an *Amendment 23 Nov 2026* note, the note takes precedence over the earlier text, which is kept for history. D30 (people) is still PROPOSED; all other D23–D43 rows are PROVISIONAL.
 
 ## 1. Research questions
 
@@ -44,6 +46,13 @@ RQ1 and RQ2 are the two pre-registered primary comparisons; C vs A is secondary.
 
 **Two-arm fallback.** At the freeze, compute *catalogue divergence* on the development subjects: the share of (operation, slot) assignments whose strategy family has no counterpart in the other catalogue. If it is < 20%, run A vs C only and report RQ2 as not testable.
 
+**Amendment 23 Nov 2026 (D34, D35, D36, D41).**
+- **B2** carries the Vieira et al. (DSN 2007) input-mutation operators by data type as its operator detail, disambiguated for HTTP (key absent / value empty / value null); no new B entry; B's provenance rule gains this source.
+- **Entry format (B and C):** name; applicability; how to probe; oracle template; one worked example on a small **fictional** API (never a development or held-out project); source. Mean tokens per entry within ±20% between B and C, measured and reported. The shared system prompt (identical for A, B, C) contains one JSON-format example.
+- **Mapping artefact:** each trigger rule records ID, observable predicate, strategy, applicability, source, rationale, oracle template, leakage control and validation status (Illustrative → Development-checked → Held-out evaluated).
+- **Predicate corrections (D41):** filter names (`filter`, `filters`, `sqlfilters`, `search`, `q`, `query`, `where`) → C2/B12; pagination/projection/sort names (`limit`, `offset`, `page`, `per_page`, `fields`, `sort*`, `order*`) → C8/B11/B15; C6 = action sub-resource or create–read–(update or delete) lifecycle; C10 = multipart bodies only; C7 only where the generic fixture provides a second role.
+- **Divergence (D31):** Div_C = share of C's (operation, slot) assignments, over development operations, *s* slots and the 5 seed offsets, with no B counterpart; Div_B reported; the overlap table is committed before the first computation; the fallback triggers if Div_C < 20%.
+
 **Development effort parity.** A, B and C each get the same number of logged revision rounds on the development set.
 
 **External tools.** Schemathesis, RESTler, EvoMaster and AutoRestTest are not run in the initial plan (scope). Their published RQ3 results for 6 development defects (E20) are context only, not comparable baselines.
@@ -67,6 +76,15 @@ RQ1 and RQ2 are the two pre-registered primary comparisons; C vs A is secondary.
 | Request caps (per test, per suite) | **TBD** |
 | Token budget (per call, per arm, total) | **TBD**, pinned before the holdout (D15) |
 | LLM provider/model | **TBD** |
+
+**Amendment 23 Nov 2026 (D26, D27, D39).** Values above that conflict with this note are superseded:
+- **LLM:** local Ollama (native `/api/chat`, JSON-schema `format`, `think` off, fixed `num_ctx`, fixed seed list), model selected on development data only: Qwen3 4B Instruct-2507 if it passes, else Gemma 3 4B. Model digest, quantisation, Ollama version, GPU driver and all decoding settings are recorded and frozen. No paid APIs, no fine-tuning.
+- **Model test (G2):** fixed sample of 30 development operations (RESTCountries 10 + 20 Dolibarr operations chosen by the defect-blind cap rule) × 2 seeds = 60 calls per model, neutral Arm A prompt, provisional *s* = 3. Gate 0: no truncated prompt. T1 schema-valid calls ÷ 60 ≥ 95%; T2 spec-valid tests ÷ tests in schema-valid calls ≥ 80%; T3 executable tests (no ERROR-TEST/ERROR-INFRA) ÷ spec-valid tests ≥ 70%; T4 tests with a non-trivial assertion beyond the status code ÷ executable tests ≥ 60% (automatic classification, checked on 20 random tests). Plus 10 strategy-slot calls, which feed the mandatory adherence check (D39, superseded by D43).
+- ***k*** = 5 seeds; **40-hour rule:** projected held-out generation time (actual held-out prompts token-counted before the freeze, per-arm rates from the Day 5 development runs, +15%) above 40 h → 3 seeds for all arms, then a lower operation cap. Provisional at G1, binding at the freeze. The *raise to 10* clause is superseded.
+- **No retries:** exactly one call per (operation, arm, seed); a schema-invalid response = zero tests for that call.
+- **Operation cap** per project, fixed on Day 2; selection by path group, proportional share, hash order; identical for all arms.
+- **Context (D41):** G1 uses the largest held-out prompt; one context window for all calls, or an arm-independent slice-compaction rule fixed before the freeze.
+- **Mandatory feasibility checks (D43)** before the model configuration is frozen: full-prompt context test (zero truncation; truncation always fails the call, never silent); JSON validity (T1 ≥ 95%, T2–T4 as above); strategy adherence of B and C on the Day 5 development sample (≥ 50% per arm, default); per-arm generation time and the binding 40-hour projection. The 10 strategy-slot calls of the model test feed the adherence check (D39 superseded).
 
 ## 5. Inputs, spec source and leakage control (D5.1)
 
@@ -146,6 +164,10 @@ Holdout (E32, metadata only, 21 Nov 2026): the D13.1 checks pass for all remaini
 
   *Update 21 Nov 2026 (estimates, before X6/X7 attrition):* X8 removed only kafka-rest; 24 primary-analysis defects without Podman, about 47 with Podman. The scenario rows above are kept as the original planning estimates.
 
+- **Amendment 23 Nov 2026 (D24, D25, D33).**
+  - **Development runs:** RESTCountries, all 15 usable defects, 3 arms × 2 seeds, one logged revision round per arm. Dolibarr R14: generation validity, trigger coverage, divergence and #23179 only; no Dolibarr per-defect runs.
+  - **Held-out evaluation:** Podman (23) + nocodb (6; 5 primary) = 28 primary defects before X6/X7. Fallback for nocodb: flowable-engine (4). awx, mastodon and netbox are reserved and stay behind the firewall.
+  - **Extension after the draft:** the unchanged frozen system may run on flowable-engine; reported separately.
 - **Per-defect rules after the freeze:** X6 (validation fails), X7 (needs extra environment; sensitivity subset).
 - **Fixtures:** the benchmark checkout is treated as a black box; a generic project fixture (credentials, ≥ 2 roles where supported) is written only from public documentation, before any holdout ground truth is opened.
 - **Claims:** "pre-registered, project-level, design-frozen held-out evaluation with partial researcher exposure" — **not blind** (ledger: RESEARCH_LOG §9).
@@ -163,6 +185,12 @@ Notes:
 - **Same deployments for all arms:** every arm runs against the same deployments.
 - **Test independence:** the DSL requires self-contained tests (own resources, run-scoped unique names, bound IDs, no global counts).
 - **Isolated re-runs:** every candidate is re-run alone (restore → single test) *r* times on both versions.
+
+**Amendment 23 Nov 2026 (D28, D32, D41).**
+- Step 2 becomes: one **screening** run per arm × seed; every suite run with at least one candidate (FAIL on buggy, PASS on patched) gets 2 more **full** runs from fresh snapshots in the same order; then isolated re-runs. Detections are identical to running every suite *r* = 3 times; the flaky rate is reported for re-run suites.
+- **Reset adapters:** RESTCountries none; Dolibarr DB dump; Podman: fixture pre-loads one small image before the snapshot, reset removes containers, pods, volumes, networks and secrets but keeps it (Docker Desktop stopped, R21); nocodb: container/SQLite restore.
+- **Order:** Podman first, then nocodb; never both at once.
+- **Execution projection** at the freeze from measured deploy, reset and suite times. Overrun (D32): 5 seeds kept, nocodb finishes late; 3 seeds only if the 40-hour generation rule makes 5 infeasible, recorded with its reason and written into the protocol before any comparative result is examined.
 
 ## 9. Outcomes, detection and attribution (D4.1)
 
@@ -185,6 +213,8 @@ Notes:
 - **Evidence recorded:** defect, test hash, both exchanges, failing assertion, rationale.
 - **Who and when:** reviewer, date.
 - **Reviewers:** two independent reviewers preferred; otherwise ≥ 30% double-coded with κ reported.
+
+**Amendment 23 Nov 2026 (D30 PROPOSED — owner names the people; D38).** Roles and independence rules: DECISIONS D30. Validator (X6/X7, attribution; post-freeze only; X6/X7 verdicts committed before any candidate is exported) and two arm-blind reviewers are named before the freeze. A script exports each candidate with a random ID, both exchanges, the failing assertion and the fix material; arm, seed and strategy removed; the mapping stays closed until all verdicts are committed. Unresolved disagreements: the conservative verdict counts in the primary analysis, the other in a sensitivity analysis. **Strategy adherence (A4):** on a random sample of B/C tests a reviewer judges whether each test implements its assigned strategy.
 
 **Detection(d, arm, seed)** ⇔ at least one Confirmed candidate. Related results are reported as a sensitivity count.
 
@@ -221,6 +251,18 @@ Notes:
 - X7 subset;
 - Related counted as detected.
 
+**Amendment 23 Nov 2026 (D29, D37, D38).** Supersedes the primary/secondary lists above where they differ:
+- Y(d,a,j) = 1 if the suite has ≥ 1 Confirmed candidate; invalid/empty output and ERROR-TEST count as Y = 0 for that arm. Missing only for ERROR-INFRA after 2 redeploys; K_d = seeds with outcomes for all compared arms; p(d,a) = mean Y over K_d; |K_d| < 3 → defect leaves the primary analysis (listed).
+- D1(d) = p(d,B) − p(d,A) (RQ1), D2(d) = p(d,C) − p(d,B) (RQ2); all-zero defects stay in (D = 0), counted.
+- **Primary:** two-sided sign-flip on mean D, exact when ≤ 20 non-zero differences, else 10,000 flips (seed recorded); Holm over RQ1 and RQ2 at α = 0.05; under the D12 fallback, C − A alone.
+- **Effect size:** mean D with a defect-level percentile bootstrap 95% CI; per-project means; project-balanced mean (sensitivity). Wilcoxon becomes a sensitivity analysis.
+- **Dropped at this scale:** binomial GLMM, project-cluster bootstrap, leave-one-project-out (two projects). S2 is development-only and not run.
+- **Minimum for significance:** the smallest exact two-sided p is 2/2^*n* for *n* non-zero differences, so Holm's first step needs ≥ 7 consistent non-zero differences; a descriptive outcome is pre-stated as likely.
+- **Supported vs descriptive:** only a Holm-significant RQ1/RQ2 result is a statistically supported conclusion, and only for these defects in Podman and nocodb. Per-project results, C vs A, McNemar, per-strategy attribution, A1–A4, the C∅ ablation and RQ3 are descriptive.
+- **New analyses (D38):** A1 assertion type of each Confirmed detection (status / body / cross-request); A2 status-only sensitivity; A3 cross-seed diversity (Jaccard of detected-defect sets); A4 strategy adherence.
+- **Podman dominance (D42):** per-project results; a Podman-only sensitivity analysis of RQ1/RQ2; strategy applicability by project; explicit limitations from Podman's 23/28 share; no broad generalisation claims.
+- **C∅ ablation (D37):** development only; catalogue C with predicates ignored (round-robin over all entries, same seed rotation); RESTCountries + the 20-operation Dolibarr sample × 2 seeds; measures validity, executability, applicability, adherence and meaningful-assertion rates; does not trigger catalogue changes.
+
 **Claim discipline:**
 - Inference covers the sampled defects and projects only; no per-type significance tests.
 - If fewer than 20 evaluable holdout defects remain, report descriptively.
@@ -229,6 +271,8 @@ Notes:
 ## 11. Reproducibility record (per run)
 
 Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and tool versions, LLM provider/model/version and date, prompts, decoding settings, seeds, spec hash, feature-record hash, catalogue versions, budget counters, code commit.
+
+*Amendment 23 Nov 2026 (D27):* each run also records the Ollama version, model name and digest, quantisation, `num_ctx`, decoding options, seed, `prompt_eval_count`/`eval_count` per call, GPU and driver (RTX 3050 6 GB Laptop GPU, driver 610.60, CUDA 13.3 inside WSL2, Stage 0 on 22 Nov 2026), and the speed log.
 
 **Environment baseline (recorded 20 Nov 2026):**
 
@@ -271,6 +315,7 @@ Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and t
   - T2-dominated sample;
   - RESTCountries has a single detection mechanism.
 - **Statistical:** small *n* (R12); no per-type claims.
+- *Added 23 Nov 2026:* two held-out projects, Podman dominant (23 of 28); a free 4B model (R30); C's distinct families unevenly applicable per project (R31); RQ1 bundles selection, strategy text and examples; no refinement loop, so tests are never adapted to buggy behaviour (RESTestBench lesson, E39).
 
 ## 13. Freeze checklist (all before the first holdout deployment)
 
@@ -283,7 +328,11 @@ Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and t
 - [ ] Generic fixtures per holdout project written from public docs
 - [ ] Reference-version checks and hook rule applied per holdout project
 - [ ] Reviewers named; confirmation sheet and arm-anonymisation script ready
-- [ ] Focused novelty check completed (R19)
+- [ ] Focused novelty check completed (R19) — *focused check and seven full-text reviews done 23 Nov 2026 (E38, E39); pre-submission recheck still due*
+- [ ] *Added 23 Nov 2026:* model digest, quantisation, `num_ctx` (or compaction rule), decoding settings, seed list, *s*, *k*, operation cap and the binding 40-hour check recorded
+- [ ] *Added 23 Nov 2026:* overlap table committed before divergence; Div_C computed; catalogue token parity measured
+- [ ] *Added 23 Nov 2026:* Podman fixture image and reset script; second-role fixtures (or C7 marked inactive per project)
+- [ ] *Added 23 Nov 2026:* execution projection recorded (D32)
 
 ## 14. Post-freeze change log
 

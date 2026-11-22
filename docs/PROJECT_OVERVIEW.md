@@ -44,8 +44,17 @@ REST API testing tools and LLM-based approaches can generate requests and tests,
 
 The intended contribution is the **empirical evaluation of this strategy-selection approach**, not the mere use of an LLM, a defect taxonomy, API testing, or multi-agent architecture.
 
+*As refined after the literature integration (23 Nov 2026; D36, D40; wording PROVISIONAL, subject to the pre-submission novelty recheck):*
+1. **A pre-registered, three-arm controlled study** on real-world REST API defects (Defects4REST) with a buggy/patched differential oracle, fix attribution and arm-blind confirmation. It tests whether strategy guidance helps (B vs A) and whether strategies derived from an empirical REST defect taxonomy help beyond established general guidance that includes the prior mutation-taxonomy approach (C vs B).
+2. **A frozen, traceable feature-to-strategy mapping** (the released artefact): deterministic rules from observable API features to strategies, each citing its taxonomy subtype, tool check or standard, released with all prompts, generated tests and run records.
+3. **Evidence from a free, local 4B model.**
+
+**Not ours (credit, never claim):** LLM test generation for REST APIs; taxonomy-guided prompting (Tigulla & Vieira); oracles beyond 5xx (LogiAgent, FDRRestTest, RBCTest); small models for API testing (LlamaRestTest). Never "first"; "to our knowledge, no prior study …" only for the combination, after the recheck (RESEARCH_LOG §5, E38).
+
+**Scale for the first draft (D23–D25):** two held-out projects (Podman, nocodb; 28 primary defects); results are conditional on these projects and this model class.
+
 **Current uncertainty:**
-- **Novelty:** the novelty of this exact combination has **not** been established; only a targeted search has been done (see [RESEARCH_LOG.md §5](RESEARCH_LOG.md)).
+- **Novelty:** the novelty of this exact combination has **not** been established; only a targeted search has been done (see [RESEARCH_LOG.md §5](RESEARCH_LOG.md)). *Update 23 Nov 2026:* focused check and seven full-text reviews done (E38); no study combines our four elements; the saved-string database recheck is still due before submission.
 - **Label–mechanism mismatch (risk R1):** defect-type labels demonstrably do not match detection mechanisms in RESTCountries (E13). Whether this hurts taxonomy-guided generation is untested.
 
 ## Scope and non-goals
