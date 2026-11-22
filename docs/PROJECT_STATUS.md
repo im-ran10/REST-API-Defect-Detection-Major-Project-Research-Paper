@@ -1,10 +1,10 @@
 # Project Status
 
-**Last updated:** 22 Nov 2026 (Phase 1: minimal Java 21 probe run against Dolibarr and RESTCountries; OpenAPI 3.1 parsing checked)
+**Last updated:** 22 Nov 2026 (Phase 1: R14 Dolibarr module configuration done, D22; Podman X5 is the last Phase 1 item)
 
 ## Current stage
 
-**Phase 1 in progress (environment setup and feasibility checks).** The environment is ready and one defect of each development project has been reproduced (restcountries#235, dolibarr#23179). Dolibarr is a conditional go (D17): its setup must be scripted within a two-working-day time box. Methodology provisionally approved 16 Nov 2026.
+**Phase 1 in progress (environment setup and feasibility checks).** The environment is ready; one defect of each development project is reproduced (restcountries#235, dolibarr#23179); Dolibarr's setup is scripted (D17 met) with the approved module configuration (D22, R14); the Phase 1 Java probe runs against both development APIs. The last Phase 1 item is the Podman feasibility check (X5). Methodology provisionally approved 16 Nov 2026.
 - The only code is the Phase 1 probe in `system/` (load spec, list operations, one GET). The pipeline is not implemented.
 - No experiment has been run.
 - There are **no measured results**.
@@ -39,11 +39,13 @@
 | **Dolibarr unattended setup script** (22 Nov 2026): `scripts/dolibarr/dolibarr_setup.sh`. Owner's machine: ~45 s per fresh deployment, #23179 reproduces on buggy and patched. **D17 condition met** (~1.5 h of the 2-day box); D16.1 not triggered | RESEARCH_LOG E34; DECISIONS §5 |
 | **Minimal Java 21 probe** (22 Nov 2026): `system/` (Maven, swagger-parser 2.1.48). Dolibarr `9d4007e`: 75 paths / 94 operations; `GET /status` 200 with key, 401 without; key never printed. 7/7 unit tests (2.0, 3.0, 3.1 fixtures). Findings: OpenAPI 3.1 parses cleanly except a silently dropped path-item `$ref` under `resolve=true` (fixed with `resolveFully`); Dolibarr's 100 `defaultValue` attributes are dropped (R29); credentials file lacked `export` (setup script fixed). **RESTCountries #235 buggy:** 10 paths / 10 operations, 0 parser messages; `GET /v2/capital/tallinn` 200 (Estonia), unknown capital 404; all 16 RESTCountries specs byte-identical; probe path-template matching bug fixed (8/8 tests) | RESEARCH_LOG E35 |
 | **Delegated decisions** (21 Nov 2026): reference-version check amended (D13.1); EOL base-image policy (D18); prepared-clone reuse (D19); kafka-rest excluded (D20); out-of-spec defects kept (D21). Holdout now 26 defects + Podman 23 | DECISIONS |
+| **R14 Dolibarr module configuration** (22 Nov 2026, owner approved option A → D22): 28 API-capable modules by Dolibarr's own rule, frozen in `scripts/dolibarr/modules_r14.txt`. Real containers: 28/28 enabled, 0 failures, identical fingerprint on buggy and patched; #23179 reproduces both ways; spec at `9d4007e` = 256 paths / 392 operations, containing all 387 operations of the benchmark's same-version spec | RESEARCH_LOG E36; DECISIONS D22 |
 
 ## What has NOT been done
 
 - Two defects reproduced (restcountries#235, dolibarr#23179), one run each; the rest of the development set is not yet validated.
-- Not yet done: Dolibarr all-modules spec (R14), Podman (X5).
+- Not yet done: Podman feasibility check (X5).
+- The Dolibarr spec is not yet sanitised (D5.1 keyword scan and owner review happen in Phase 2, in the input loader).
 - The probe is not the D5.1 input loader: no allow-list, no manifest, no spec normalisation.
 - No pipeline code, DSL, catalogues, prompts or generated tests.
 - Systematic novelty check not done (only a targeted search).
@@ -68,7 +70,7 @@ Development-set feasibility
 - [x] Deploy restcountries#235 buggy → reproduce "Kiev"; deploy patched → "Kyiv" (20 Nov 2026, E27)
 - [x] **Dolibarr go/no-go (R13):** deploy dolibarr#23179 buggy and patched; reproduce with curl (E29). Outcome: conditional go (D17, 21 Nov 2026)
 - [x] **Script the Dolibarr setup** (install wizard, API + Products modules, admin API key) within two working days (D17): done 22 Nov 2026, validated on both #23179 versions (E34)
-- [ ] Dolibarr product-generated spec: fetch `/api/index.php/explorer/swagger.json` at the reference version with all API modules enabled (R14). Partial: API + Products only gives 75 paths (E29)
+- [x] Dolibarr product-generated spec at the reference version with all API-capable modules enabled (R14 → D22, 22 Nov 2026): 392 operations (E36)
 - [x] Minimal Java 21 program: load spec, list operations, send one request, capture status + body — done 22 Nov 2026 against Dolibarr (E35)
 - [x] Run the probe against RESTCountries — done 22 Nov 2026 on #235 buggy (E35)
 
@@ -112,7 +114,10 @@ Handover §9 pre-implementation work:
 
 ## Next task
 
-**Dolibarr all-modules spec (R14):** first agree with the owner which modules to enable (a spec-source decision under D5.1), then run the setup script with that `MODULES` list at the reference version, fetch `/api/index.php/explorer/swagger.json`, and parse it with the probe (operation count, parser messages). Note: RESTCountries and Dolibarr both use port 8080; stop one before deploying the other.
+**Podman feasibility check (X5)**, the last Phase 1 item: deploy Podman's reference version (`f65f3320e112`) within one working day, in an isolated environment (R21), metadata only (holdout firewall). Then a **Phase 1 checkpoint** for the owner before Phase 2 starts.
 
-Also open in Phase 1:
-- Podman X5 check (reference `f65f3320e112`, isolated environment, one working day).
+**Phase 2 (owner instruction, 22 Nov 2026): Arm A end to end first; B and C are not implemented in Phase 2.** Phase 2 is complete only when these are also done and recorded:
+1. **Statistics:** reconcile the progress report with EXPERIMENT_PROTOCOL §10 and confirm one primary statistical procedure, with justification (owner approval).
+2. **Arms B and C:** check that they stay substantively distinct and experimentally fair (D3.1, D12; divergence rule, overlap table, R15).
+3. **Spec normalisation:** decide how `$ref`s are resolved (ARCHITECTURE question 9; prompt size under D12) and how Dolibarr's non-standard `defaultValue` is handled (question 8, R29).
+4. **Novelty:** the systematic prior-art check (R19) stays an explicit gate. No publication-level novelty claim anywhere until it is done and recorded in RESEARCH_LOG.

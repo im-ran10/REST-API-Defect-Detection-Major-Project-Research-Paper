@@ -71,7 +71,7 @@ RQ1 and RQ2 are the two pre-registered primary comparisons; C vs A is secondary.
 ## 5. Inputs, spec source and leakage control (D5.1)
 
 **Spec source, in order of preference:**
-1. The product-generated/official spec of the project's reference version, generated with a documented, defect-independent configuration. For Dolibarr this is `/api/index.php/explorer/swagger.json` with all API-capable modules enabled.
+1. The product-generated/official spec of the project's reference version, generated with a documented, defect-independent configuration. For Dolibarr this is `/api/index.php/explorer/swagger.json` with all API-capable modules enabled: the 28 modules selected by Dolibarr's own API-discovery rule at `9d4007e` (`scripts/dolibarr/modules_r14.txt`, D22). The **same** module list is used for every Dolibarr buggy and patched deployment; each deployment records its enabled-module fingerprint (E36).
 2. Otherwise, a benchmark spec that is identical across the project's defects, or differs only by version with zero single-defect operations; use the reference defect's copy.
 3. **Never** a union, and never a per-defect spec.
 
@@ -245,6 +245,8 @@ Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and t
 | Dolibarr images | base `php:7.4-apache@sha256:c9d7e608f73832673479770d66aacc8100011ec751d1905ff63fae3fe2e0ca6d` (locally built as `dolibarr_local:from_source` with the Debian 11 workaround, E30; local image IDs on 22 Nov 2026: `ef167d0be7cf…` for `61ee3a9`, `a771bfffe4a4…` for `9d4007e`), `mariadb:10.5@sha256:a530aeeefd82f4fa5150f391b6c75462140904780338766f6b03acecb1cca3ce` |
 | Java libraries (`system/pom.xml`, 22 Nov 2026) | swagger-parser 2.1.48 (pulls swagger-core 2.2.53), slf4j 2.0.17, JUnit 5.10.2 (tests); build plugins: compiler 3.13.0, surefire 3.2.5, shade 3.6.0 |
 | PostgreSQL | `postgres:16@sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f` (PostgreSQL 16.16), test container only |
+| Dolibarr module configuration | 28 modules (`modules_r14.txt`, D22); enabled-module fingerprint `f4eda97f4d8218cf` on `9d4007e` and `61ee3a9` (E36) |
+| Dolibarr project-level spec (pre-sanitisation) | `/api/index.php/explorer/swagger.json` at `9d4007e` under D22: 256 paths / 392 operations; operation-list fingerprint `da2bd2592c1d09ab` (E36); stored outside the repository on the owner's machine |
 
 **Recorded deviations from the benchmark recipe** (to be reported in the paper's reproducibility section):
 - Dolibarr: `bullseye-security` removed from the image's apt sources, because Debian 11 LTS ended on 31 Aug 2026 (E30). Policy: D18 (minimal generic repository fix only).

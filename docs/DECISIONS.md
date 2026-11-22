@@ -43,6 +43,7 @@ Rules for editing this file are in [CLAUDE.md](../CLAUDE.md). Never delete or si
 | D19 | Reuse one prepared clone per project instead of the CLI's per-deploy re-clone, with equivalence checks | PROVISIONAL (delegated, 21 Nov 2026) |
 | D20 | kafka-rest excluded from the holdout (X8; reference version not deployable) | PROVISIONAL (delegated, 21 Nov 2026) |
 | D21 | Defects whose operations lie outside the project-level spec stay in the primary analysis; covered by sensitivity analysis S1 | PROVISIONAL (delegated, 21 Nov 2026) |
+| D22 | Dolibarr module configuration: all 28 API-capable modules (Dolibarr's own discovery rule), frozen list for spec, buggy and patched | PROVISIONAL (owner, 22 Nov 2026) |
 | D2–D7 (original) | Phase 1 proposals of 16 Nov 2026 | SUPERSEDED by D2.1–D7.1 |
 | D16 (original options) | Fallback options (a)/(b)/(c) | SUPERSEDED by D16.1 |
 | D13 (original) | Exploration with strict ancestry check | SUPERSEDED by D13.1 |
@@ -140,6 +141,12 @@ Decided by the drafting assistant under the owner's explicit delegation (21 Nov 
 | D20 | 21 Nov 2026 | **kafka-rest is excluded from the holdout** (3 defects). | Two independent, ground-truth-free reasons: (a) X8 — its benchmark specs contain single-defect operations and no official spec exists for its 2015 reference version (E33); (b) the reference version maps to image `confluentinc/cp-kafka-rest:0`, which does not exist on Docker Hub (owner check, 21 Nov 2026, E32), so the reference cannot be deployed as the benchmark specifies. kafka-rest stays under the ground-truth firewall. | E17, E32, E33; D14 | **PROVISIONAL** (delegated) |
 | D21 | 21 Nov 2026 | **Defects whose operations are outside the project-level spec** (e.g. one nocodb defect, one flowable-engine defect, E33) **stay in the primary analysis**. They are analysed by the existing sensitivity analysis S1 (triggering operation in spec vs not), decided by the validator after the freeze. | Excluding them now would select defects using per-defect spec content, which sits close to ground truth. In the paired per-defect comparison a defect no arm can reach adds a zero difference and does not bias the arm contrast; it only lowers absolute detection rates, which are reported as such. | E33; EXPERIMENT_PROTOCOL §10 | **PROVISIONAL** (delegated) |
 
+### D22 — R14 Dolibarr module configuration (22 Nov 2026)
+
+| # | Date | Decision | Reason | Evidence | Status |
+|---|---|---|---|---|---|
+| D22 | 22 Nov 2026 | **Dolibarr module configuration = option A: every module that provides REST API classes**, under one generic, defect-independent rule.<br>1. **Rule:** Dolibarr's own API discovery (`api/index.php` + `getModuleDirForApiClass()`): a module is enabled if its API directory holds an `api_*.class.php` file. Computed once at the reference version `9d4007e` by `scripts/dolibarr/list_api_modules.php`: **28 modules**, frozen in `scripts/dolibarr/modules_r14.txt`.<br>2. **Same configuration everywhere:** the frozen list is used unchanged for spec extraction and for every buggy and patched deployment; each deployment records its enabled-module list and fingerprint.<br>3. **Method:** the installer enables `modApi` only; the other modules are enabled after installation with Dolibarr's own `activateModule()`, application fully loaded, one process per module, as the web server user. Activation failures are recorded, not fatal (only `modApi` is required).<br>4. **Spec:** `/api/index.php/explorer/swagger.json` from the reference version under this configuration is the Dolibarr project-level spec (D5.1 preference 1), still subject to D5.1 sanitisation.<br>5. Deployments of later Dolibarr versions use the same 28-module list; a module missing in such a version is recorded as an activation failure, and API modules added after `9d4007e` are not enabled (consistent with the single reference-version spec, D5.1/D21). | Owner's choice among the options in the 22 Nov 2026 progress report. It matches EXPERIMENT_PROTOCOL §5 ("all API-capable modules enabled") and the benchmark's own spec for the same version (E36). Enabling modules without APIs (option B) could change behaviour without adding operations; the minimal set (option C) would hide most operations from every arm. | E29, E36; R14 | **PROVISIONAL** (owner approved option A, 22 Nov 2026) |
+
 ---
 
 ## 4. Superseded or reopened decisions
@@ -173,6 +180,7 @@ Decided by the drafting assistant under the owner's explicit delegation (21 Nov 
 | 21 Nov 2026 | D13 | PROVISIONAL → SUPERSEDED | Replaced by D13.1 |
 | 21 Nov 2026 | D13.1, D18, D19, D20, D21 | new → PROVISIONAL | Owner delegated these choices to the drafting assistant (21 Nov 2026) |
 | 22 Nov 2026 | D17 | no status change | **Condition met:** Dolibarr setup scripted and validated on the real containers in ~1.5 h of the 2-day time box (E34). Dolibarr stays in the development set; the D16.1 fallback is not triggered. |
+| 22 Nov 2026 | D22 | new → PROVISIONAL | Owner approved R14 option A with six conditions (generic rule; spec from `9d4007e`; coverage comparison; #23179 still reproduces; same configuration for spec, buggy and patched; failures recorded). All six met (E36). |
 
 ## How to add a decision
 

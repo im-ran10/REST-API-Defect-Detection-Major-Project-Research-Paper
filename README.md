@@ -71,7 +71,7 @@ bash ~/projects/rest-api-defect-detection/scripts/dolibarr/dolibarr_setup.sh
 source ~/.dolibarr_credentials   # exports DOLIBARR_API_KEY (never printed)
 ```
 A credentials file written before 22 Nov 2026 has no `export` lines; use `set -a; source ~/.dolibarr_credentials; set +a` or rerun the setup.
-It runs Dolibarr's own installer (forced-install file + the browser's installer pages), enables the API and Products modules, gets the admin API key from Dolibarr's login API and checks it. It refuses to run on an already-installed database. Settings can be overridden with environment variables (see the script header).
+It runs Dolibarr's own installer (forced-install file + the browser's installer pages), then enables the **R14 module configuration** (D22): the 28 API-capable modules listed in `scripts/dolibarr/modules_r14.txt`, one at a time with Dolibarr's own `activateModule()`. It records activation failures and the enabled-module list with a fingerprint in its log folder, gets the admin API key from Dolibarr's login API and checks it. It refuses to run on an already-installed database. Optional settings: `LOG_DIR=<folder>` keeps the logs there; `SPEC_OUT=<file>` also saves `/api/index.php/explorer/swagger.json`; `MODULES=modApi,modProduct` gives the earlier minimal setup. The module list itself is regenerated only with `php scripts/dolibarr/list_api_modules.php <htdocs>` at the reference version.
 
 **Phase 1 probe** (`system/`, plain Java 21 + Maven, swagger-parser 2.1.48). Loads a Swagger 2.0 / OpenAPI 3.x spec, lists its operations, sends one GET and prints status and body:
 ```bash

@@ -4,6 +4,16 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-22 — R14 Dolibarr module configuration (D22)
+
+Added
+- `scripts/dolibarr/list_api_modules.php` (Dolibarr's own API-discovery rule), `modules_r14.txt` (the 28 modules at `9d4007e`, frozen), `activate_modules.php` (`activateModule()` with Dolibarr fully loaded, failures recorded).
+- `DECISIONS.md`: D22 (owner approved R14 option A; status history row). `RESEARCH_LOG.md`: E36 (rule, installer crash on `modBom` and the fix, real-container results, coverage against the 24 benchmark specs), R14 resolved, findings-log and contamination-ledger rows (development project only).
+
+Changed
+- `scripts/dolibarr/dolibarr_setup.sh`: default module set is now the R14 list; installer enables `modApi` only, then one activation process per module; records failures, the enabled-module list and its fingerprint; optional `SPEC_OUT`.
+- `PROJECT_STATUS.md`: R14 done; stale "Current stage" text fixed; next task Podman X5 then a Phase 1 checkpoint; the owner's four Phase 2 completion criteria recorded. `EXPERIMENT_PROTOCOL.md` §5 and §11, `ARCHITECTURE.md` question 4, `README.md`: aligned with D22.
+
 ### 2026-11-22 — Probe run against RESTCountries; path-template matching fixed
 
 Fixed
