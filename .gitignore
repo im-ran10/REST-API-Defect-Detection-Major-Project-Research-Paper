@@ -1,0 +1,11 @@
+# Build output
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Never commit credentials (Dolibarr API key lives in ~/.dolibarr_credentials, outside the repo)
+.env
+*credentials*

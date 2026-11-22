@@ -1,11 +1,11 @@
 # Project Status
 
-**Last updated:** 22 Nov 2026 (Phase 1: Dolibarr setup scripted and validated on the real containers; D17 condition met)
+**Last updated:** 22 Nov 2026 (Phase 1: minimal Java 21 probe built and run against Dolibarr; OpenAPI 3.1 parsing checked)
 
 ## Current stage
 
 **Phase 1 in progress (environment setup and feasibility checks).** The environment is ready and one defect of each development project has been reproduced (restcountries#235, dolibarr#23179). Dolibarr is a conditional go (D17): its setup must be scripted within a two-working-day time box. Methodology provisionally approved 16 Nov 2026.
-- No application code exists.
+- The only code is the Phase 1 probe in `system/` (load spec, list operations, one GET). The pipeline is not implemented.
 - No experiment has been run.
 - There are **no measured results**.
 
@@ -37,13 +37,15 @@
 | **Holdout reference-version checks** (metadata only): no reference version contains a fix; mastodon, netbox, nocodb fail the strict descendant check; reference defects of kafka-rest, netbox, nocodb have setup hooks | E32 (`holdout_refver.py`) |
 | **X8 official specs:** found for nocodb (OpenAPI 3.1) and flowable-engine (OpenAPI 3.0); none for kafka-rest (X8 condition met) | E33 |
 | **Dolibarr unattended setup script** (22 Nov 2026): `scripts/dolibarr/dolibarr_setup.sh`. Owner's machine: ~45 s per fresh deployment, #23179 reproduces on buggy and patched. **D17 condition met** (~1.5 h of the 2-day box); D16.1 not triggered | RESEARCH_LOG E34; DECISIONS §5 |
+| **Minimal Java 21 probe** (22 Nov 2026): `system/` (Maven, swagger-parser 2.1.48). Dolibarr `9d4007e`: 75 paths / 94 operations; `GET /status` 200 with key, 401 without; key never printed. 7/7 unit tests (2.0, 3.0, 3.1 fixtures). Findings: OpenAPI 3.1 parses cleanly except a silently dropped path-item `$ref` under `resolve=true` (fixed with `resolveFully`); Dolibarr's 100 `defaultValue` attributes are dropped (R29); credentials file lacked `export` (setup script fixed) | RESEARCH_LOG E35 |
 | **Delegated decisions** (21 Nov 2026): reference-version check amended (D13.1); EOL base-image policy (D18); prepared-clone reuse (D19); kafka-rest excluded (D20); out-of-spec defects kept (D21). Holdout now 26 defects + Podman 23 | DECISIONS |
 
 ## What has NOT been done
 
 - Two defects reproduced (restcountries#235, dolibarr#23179), one run each; the rest of the development set is not yet validated.
-- Not yet done: Dolibarr setup automation (D17 time box), Dolibarr all-modules spec (R14), Podman (X5), minimal Java program.
-- No code, DSL, catalogues, prompts or generated tests.
+- Not yet done: Dolibarr all-modules spec (R14), Podman (X5), running the probe against RESTCountries.
+- The probe is not the D5.1 input loader: no allow-list, no manifest, no spec normalisation.
+- No pipeline code, DSL, catalogues, prompts or generated tests.
 - Systematic novelty check not done (only a targeted search).
 - Protocol **not frozen**; budgets (*s*, tokens, caps), LLM model and reviewers TBD.
 
@@ -67,7 +69,8 @@ Development-set feasibility
 - [x] **Dolibarr go/no-go (R13):** deploy dolibarr#23179 buggy and patched; reproduce with curl (E29). Outcome: conditional go (D17, 21 Nov 2026)
 - [x] **Script the Dolibarr setup** (install wizard, API + Products modules, admin API key) within two working days (D17): done 22 Nov 2026, validated on both #23179 versions (E34)
 - [ ] Dolibarr product-generated spec: fetch `/api/index.php/explorer/swagger.json` at the reference version with all API modules enabled (R14). Partial: API + Products only gives 75 paths (E29)
-- [ ] Minimal Java 21 program: load spec, list operations, send one request, capture status + body
+- [x] Minimal Java 21 program: load spec, list operations, send one request, capture status + body — done 22 Nov 2026 against Dolibarr (E35)
+- [ ] Run the probe against RESTCountries (shares port 8080 with Dolibarr: stop Dolibarr first)
 
 Holdout feasibility (**metadata only — do not open holdout ground truth**; see CLAUDE.md)
 - [ ] **X5 Podman:** deploy its reference version within one working day, in an isolated environment (R21)
@@ -75,7 +78,7 @@ Holdout feasibility (**metadata only — do not open holdout ground truth**; see
 - [x] Reference-version date/ancestry checks and hook check (function names only) for each eligible holdout project (E32); all remaining projects pass under D13.1
 - [ ] Record exact versions (benchmark commit, Docker images, JDK) — done for the environment and RESTCountries (E27, EXPERIMENT_PROTOCOL §11); Dolibarr and PostgreSQL digests recorded (21 Nov 2026); repeat per subject
 
-First concrete milestone (Handover §11, unchanged): a locally running benchmark REST API, a readable OpenAPI spec, and a minimal program that sends a request and captures the response. **Not** a dashboard.
+First concrete milestone (Handover §11, unchanged): a locally running benchmark REST API, a readable OpenAPI spec, and a minimal program that sends a request and captures the response. **Not** a dashboard. Reached for Dolibarr on 22 Nov 2026 (E35); RESTCountries run still open.
 
 ## Roadmap (Handover §10, mapped to the approved methodology)
 
@@ -109,7 +112,7 @@ Handover §9 pre-implementation work:
 
 ## Next task
 
-**Minimal Java 21 program (Phase 1 milestone):** load a spec, list its operations, send one request, capture status and body. Run against RESTCountries and Dolibarr (key from `~/.dolibarr_credentials`). Built with Claude Code on the owner's machine.
+**Run the probe against RESTCountries** (open follow-up of the minimal Java program, E35): stop Dolibarr (both use port 8080), deploy restcountries#235 buggy, run `java -jar system/target/probe.jar` with its spec and no auth flags, and record the result.
 
 Also open in Phase 1:
 - Dolibarr all-modules spec (R14): run the setup script with a longer `MODULES` list at the reference version and fetch `/api/index.php/explorer/swagger.json`. Which modules to enable is a spec-source decision (D5.1).

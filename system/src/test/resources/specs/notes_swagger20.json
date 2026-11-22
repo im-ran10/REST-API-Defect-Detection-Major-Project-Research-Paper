@@ -1,0 +1,47 @@
+{
+  "swagger": "2.0",
+  "info": { "title": "Notes API (test fixture)", "version": "1.0.0" },
+  "host": "localhost:9999",
+  "basePath": "/api",
+  "schemes": ["http"],
+  "securityDefinitions": {
+    "api_key": { "type": "apiKey", "name": "X-API-KEY", "in": "header" }
+  },
+  "security": [{ "api_key": [] }],
+  "paths": {
+    "/notes": {
+      "get": {
+        "operationId": "listNotes",
+        "parameters": [
+          { "name": "limit", "in": "query", "type": "integer", "minimum": 1 }
+        ],
+        "responses": {
+          "200": { "description": "ok", "schema": { "type": "array", "items": { "$ref": "#/definitions/Note" } } }
+        }
+      },
+      "post": {
+        "operationId": "createNote",
+        "parameters": [
+          { "name": "body", "in": "body", "required": true, "schema": { "$ref": "#/definitions/Note" } }
+        ],
+        "responses": { "201": { "description": "created" } }
+      }
+    },
+    "/notes/{id}": {
+      "parameters": [ { "name": "id", "in": "path", "required": true, "type": "integer" } ],
+      "get": { "operationId": "getNote", "responses": { "200": { "description": "ok" } } },
+      "put": { "responses": { "200": { "description": "ok" } } },
+      "delete": { "operationId": "deleteNote", "responses": { "204": { "description": "deleted" } } }
+    }
+  },
+  "definitions": {
+    "Note": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "id": { "type": "integer" },
+        "text": { "type": "string" }
+      }
+    }
+  }
+}

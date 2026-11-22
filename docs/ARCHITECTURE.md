@@ -1,6 +1,6 @@
 # Architecture
 
-> **Status: PROVISIONAL DESIGN (methodology provisionally approved 16 Nov 2026). Nothing described here has been implemented.** No application code exists in this repository. Update this document whenever the design changes (see [CLAUDE.md](../CLAUDE.md)).
+> **Status: PROVISIONAL DESIGN (methodology provisionally approved 16 Nov 2026). The pipeline below is not implemented.** The only system-side code is the Phase 1 probe in `system/` (see "Implemented so far"). Update this document whenever the design changes (see [CLAUDE.md](../CLAUDE.md)).
 >
 > **History:** the handover (§5–6) proposed a single pipeline: spec parser → feature extractor → taxonomy selector → LLM generator → executor → reporting. The 16 Nov 2026 checkpoint kept that pipeline and added the stages, switches and safeguards below. The earlier single-arm description is superseded, not discarded: it is still the core path of Arms B/C.
 
@@ -44,7 +44,7 @@ RESEARCHER SIDE — may read ground truth; never imported by system code
 | # | Component | Responsibility | Status |
 |---|---|---|---|
 | 0 | Input loader + manifest | Single file-reading path; allow-list; SHA-256 of every input; full prompts and responses; model metadata; code and benchmark commits | Not started |
-| 1 | Spec normaliser | Parse Swagger 2.0 and OpenAPI 3.x (D8: swagger-parser v3); neutral name; fix servers; keyword scan; hash | Not started |
+| 1 | Spec normaliser | Parse Swagger 2.0 and OpenAPI 3.x (D8: swagger-parser v3); neutral name; fix servers; keyword scan; hash; count operations/attributes before and after parsing (R29) | Not started (parsing and operation listing exist in the Phase 1 probe) |
 | 2 | Explorer | GET-only HTTP wrapper; ≤ 2 requests per GET operation; deterministic ID choice; double run; shape inference; values never exported | Not started |
 | 3 | Feature extractor | Operation/resource features (methods, params, filter-like params, CRUD sets, action sub-resources, auth), plus shape features | Not started |
 | 4 | Planner / selector | Arm A slot allocation; B/C trigger predicates, catalogue order, seed-rotated round-robin, reason log; catalogue files versioned | Not started |
@@ -54,6 +54,19 @@ RESEARCHER SIDE — may read ground truth; never imported by system code
 | 8 | Verdict engine | Outcome classes; differential candidates; flaky detection | Not started |
 | 9 | Results store | PostgreSQL schema for runs, tests, exchanges, verdicts, budgets | Not started |
 | R | Researcher tools | Attribution (RESTCountries fix-delta script), confirmation sheet with arm anonymisation, statistics (Python) | Partly: audit scripts exist in `analysis/benchmark_audit/` |
+
+## Implemented so far (Phase 1 probe, 22 Nov 2026)
+
+`system/`: a Maven project (plain Java 21, no Spring Boot), package `restdd.probe`, built to `system/target/probe.jar`. It is a feasibility probe, **not** the D5.1 input loader: it writes no manifest and enforces no allow-list.
+
+| Class | Does |
+|---|---|
+| `SpecLoader` | Loads Swagger 2.0 / OpenAPI 3.x with swagger-parser 2.1.48 (`OpenAPIParser`, `resolve` + `resolveFully`); reports the declared version and parser messages; flags unresolved path-item `$ref`s (E35) |
+| `OperationLister` | (method, path, operationId), sorted by path then method |
+| `HttpProbe` | One GET with `java.net.http.HttpClient` (30 s timeouts, no redirects); optional auth header; header values never logged |
+| `ProbeMain` | CLI: `--spec --base-url --get [--auth-header --auth-env] [--max-body]`; base URL from the runner, never from the spec's servers/host |
+
+Unit tests use three hand-written fixtures (Swagger 2.0, OpenAPI 3.0.3, OpenAPI 3.1.0) with the same operations. Using `java.net.http` here does **not** settle the HTTP-client question below.
 
 ## Test DSL (to be specified before any arm is run)
 
@@ -83,10 +96,12 @@ Not designed yet. Expected entities: Project, SpecVersion (hash), FeatureRecord 
 
 ## Open design questions
 
-1. HTTP client choice; DSL details; how captures and cross-step comparisons are expressed.
+1. HTTP client choice (the Phase 1 probe uses `java.net.http`; not a decision); DSL details; how captures and cross-step comparisons are expressed.
 2. LLM provider/model; whether the provider supports seeds; token accounting.
 3. Automating the Dolibarr installer, modules and API key (R13). Go/no-go outcome: conditional go, with scripting time-boxed to two working days (D17). The replayer needs it. Solved: `scripts/dolibarr/dolibarr_setup.sh` (E34), driven through Dolibarr's own installer and login API; validated on the real containers (~45 s per deployment).
 4. Product-generated spec configuration ("all API modules") for Dolibarr (R14). Confirmed module-dependent: API + Products gives 75 paths (E29).
 5. Snapshot mechanism per project (DB dump vs volume copy).
 6. Deployment handling the replayer must include: root-owned build files (R25), recipe decay such as the Debian 11 workaround (R26), avoiding the per-deploy 1.7 GB Dolibarr re-clone (R27), database host `db` in the Dolibarr install. Policies decided: D18 (base images), D19 (prepared clones with equivalence checks).
-7. The spec parser must also read **OpenAPI 3.1** (nocodb's official spec, E33). Whether swagger-parser v3 (D8) handles it adequately is not yet verified.
+7. The spec parser must also read **OpenAPI 3.1** (nocodb's official spec, E33). **Partly answered (E35):** swagger-parser 2.1.48 parses a hand-written 3.1 fixture with no messages and keeps 3.1-only constructs, but with `resolve=true` alone it silently drops path items referenced from `components/pathItems`; `resolveFully=true` fixes that. nocodb's actual spec is not yet parsed (holdout; do it in the spec normaliser with before/after operation counts, R29).
+8. Dolibarr's spec uses the non-standard parameter attribute `defaultValue` (100 of 304 parameters), which the parser drops (E35, R29). Whether the normaliser maps it to `default` is a spec-normalisation choice under D5.1, to be decided in Phase 2.
+9. **How the Phase 2 spec normaliser resolves `$ref`s is open.** The probe uses `resolveFully=true` only to list operations reliably (E35). It is **not** adopted for the normaliser: full inlining enlarges the spec text that reaches prompts, which matters for the equal token budgets across arms (D12), and it has to cope with circular schemas. Options (e.g. resolving only path-item `$ref`s and keeping schema `$ref`s) are to be decided in Phase 2.

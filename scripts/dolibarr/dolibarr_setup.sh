@@ -19,8 +19,9 @@
 # (`down -v` first if Dolibarr was installed before).
 #
 # Output: progress lines only. The API key and admin password are never printed; they are written
-# to $CRED_FILE (default ~/.dolibarr_credentials, permissions 600) as shell variables:
-#   DOLIBARR_API_KEY=...   DOLIBARR_ADMIN_PASSWORD=...
+# to $CRED_FILE (default ~/.dolibarr_credentials, permissions 600) as exported shell variables,
+# so that child processes (e.g. the Java probe) see them too:
+#   export DOLIBARR_API_KEY=...   export DOLIBARR_ADMIN_PASSWORD=...
 # Use them with:  source ~/.dolibarr_credentials; curl -H "DOLAPIKEY: $DOLIBARR_API_KEY" ...
 #
 # Every setting below can be overridden with an environment variable of the same name.
@@ -172,7 +173,7 @@ try: print(json.load(sys.stdin)["success"]["token"])
 except Exception: pass')
 [ -n "$API_KEY" ] || fail "login API returned no token (response not printed; it may contain secrets)"
 
-( umask 077; printf 'DOLIBARR_API_KEY=%s\nDOLIBARR_ADMIN_PASSWORD=%s\n' "$API_KEY" "$ADMIN_PASS" > "$CRED_FILE" )
+( umask 077; printf 'export DOLIBARR_API_KEY=%s\nexport DOLIBARR_ADMIN_PASSWORD=%s\n' "$API_KEY" "$ADMIN_PASS" > "$CRED_FILE" )
 say "API key obtained and saved to $CRED_FILE (not printed)"
 
 # ---------------------------------------------------------------- 6. check the key works

@@ -4,6 +4,18 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-22 — Minimal Java 21 probe (Phase 1 milestone)
+
+Added
+- `system/`: Maven project (plain Java 21, swagger-parser 2.1.48, package `restdd.probe`): `SpecLoader`, `OperationLister`, `HttpProbe`, `ProbeMain`; runnable `target/probe.jar`. Loads a spec, lists operations, sends one GET, prints status and body; API key from an environment variable, sent as a header, never printed.
+- Unit tests with three hand-written fixtures (Swagger 2.0, OpenAPI 3.0.3, OpenAPI 3.1.0) giving identical operation lists, plus 3.1 feature checks (7 tests).
+- `.gitignore` (build output, IDE files, credentials).
+- `RESEARCH_LOG.md`: E35 (Dolibarr run, OpenAPI 3.1 result, `defaultValue` loss, credentials `export` issue), R29, findings-log row.
+
+Changed
+- `scripts/dolibarr/dolibarr_setup.sh`: writes `export DOLIBARR_API_KEY=…` / `export DOLIBARR_ADMIN_PASSWORD=…` so child processes see the key after `source` (E35).
+- `ARCHITECTURE.md`: status note, "Implemented so far" section, component 1, open questions 1 and 7 (partly answered), new questions 8 (`defaultValue`) and 9 (`$ref` resolution in the normaliser is open; `resolveFully` is probe-only). `EXPERIMENT_PROTOCOL.md` §11: Java library and plugin versions. `PROJECT_STATUS.md`: checklist, done/not done, next task (run the probe against RESTCountries). `README.md`: probe build and usage; credentials note.
+
 ### 2026-11-22 — Dolibarr setup script validated on the real containers (D17 met)
 
 Changed

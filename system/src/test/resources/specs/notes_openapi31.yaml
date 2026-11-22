@@ -1,0 +1,80 @@
+# Hand-written OpenAPI 3.1 fixture. Uses 3.1-only features on purpose:
+# info.summary, license.identifier, jsonSchemaDialect, webhooks, type arrays with "null",
+# const, numeric exclusiveMinimum, $ref with sibling keywords, path items in components.
+openapi: 3.1.0
+info:
+  title: Notes API (test fixture)
+  summary: Same operations as the 2.0 and 3.0 fixtures
+  version: 1.0.0
+  license:
+    name: Apache 2.0
+    identifier: Apache-2.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+  - url: http://localhost:9999/api
+paths:
+  /notes:
+    get:
+      operationId: listNotes
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, exclusiveMinimum: 0 }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Note' }
+    post:
+      operationId: createNote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+              description: sibling keyword next to $ref (allowed in 3.1)
+      responses:
+        '201': { description: created }
+  /notes/{id}:
+    $ref: '#/components/pathItems/NoteById'
+webhooks:
+  noteCreated:
+    post:
+      operationId: noteCreatedHook
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Note' }
+      responses:
+        '200': { description: ack }
+components:
+  schemas:
+    Note:
+      type: object
+      required: [text]
+      properties:
+        id: { type: integer }
+        text: { type: [string, 'null'] }
+        kind: { const: note }
+  pathItems:
+    NoteById:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      get:
+        operationId: getNote
+        responses:
+          '200': { description: ok }
+      put:
+        responses:
+          '200': { description: ok }
+      delete:
+        operationId: deleteNote
+        responses:
+          '204': { description: deleted }

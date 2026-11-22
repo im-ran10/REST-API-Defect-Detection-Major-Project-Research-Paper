@@ -35,7 +35,7 @@ Planned stack: Java 21, Spring Boot, PostgreSQL, Docker, Python (analysis).
 
 ## Setup and usage
 
-There is no application code to build or run yet. The verified environment for the benchmark is below, followed by the Phase 1 helper scripts in `scripts/`.
+The only code so far is the Phase 1 probe in `system/` (see below). The verified environment for the benchmark is below, followed by the Phase 1 helper scripts in `scripts/`.
 
 **Environment** (verified 20 Nov 2026; see `docs/EXPERIMENT_PROTOCOL.md` §11):
 - Windows with WSL2 running Ubuntu 24.04.
@@ -68,9 +68,23 @@ cd ~/tools/Defects4REST/defects4rest/data/temp_project_data/dolibarr
 docker compose -f docker-compose.yml -f docker-compose.override.yml down -v
 docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
 bash ~/projects/rest-api-defect-detection/scripts/dolibarr/dolibarr_setup.sh
-source ~/.dolibarr_credentials   # sets DOLIBARR_API_KEY (never printed)
+source ~/.dolibarr_credentials   # exports DOLIBARR_API_KEY (never printed)
 ```
+A credentials file written before 22 Nov 2026 has no `export` lines; use `set -a; source ~/.dolibarr_credentials; set +a` or rerun the setup.
 It runs Dolibarr's own installer (forced-install file + the browser's installer pages), enables the API and Products modules, gets the admin API key from Dolibarr's login API and checks it. It refuses to run on an already-installed database. Settings can be overridden with environment variables (see the script header).
+
+**Phase 1 probe** (`system/`, plain Java 21 + Maven, swagger-parser 2.1.48). Loads a Swagger 2.0 / OpenAPI 3.x spec, lists its operations, sends one GET and prints status and body:
+```bash
+cd ~/projects/rest-api-defect-detection/system
+mvn package                      # builds target/probe.jar and runs the unit tests
+source ~/.dolibarr_credentials
+java -jar target/probe.jar \
+  --spec ~/tools/dolibarr_9d4007e_swagger.json \
+  --base-url http://localhost:8080/api/index.php \
+  --get /status \
+  --auth-header DOLAPIKEY --auth-env DOLIBARR_API_KEY
+```
+The key is read from the environment variable named by `--auth-env`, sent as a header, and never printed. Without the two auth flags no key is sent (e.g. RESTCountries). `--max-body N` limits the printed body (default 4000; 0 = all). The base URL always comes from `--base-url`, never from the spec.
 
 ## Documentation
 

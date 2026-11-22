@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Notes API (test fixture)
+  version: 1.0.0
+servers:
+  - url: http://localhost:9999/api
+paths:
+  /notes:
+    get:
+      operationId: listNotes
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Note' }
+    post:
+      operationId: createNote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Note' }
+      responses:
+        '201': { description: created }
+  /notes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      operationId: getNote
+      responses:
+        '200': { description: ok }
+    put:
+      responses:
+        '200': { description: ok }
+    delete:
+      operationId: deleteNote
+      responses:
+        '204': { description: deleted }
+components:
+  schemas:
+    Note:
+      type: object
+      required: [text]
+      properties:
+        id: { type: integer }
+        text: { type: string, nullable: true }
