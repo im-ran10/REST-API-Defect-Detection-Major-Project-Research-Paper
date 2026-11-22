@@ -4,6 +4,14 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-22 — X5 Podman passed; Phase 1 complete
+
+Added
+- `RESEARCH_LOG.md`: E37 (X5 run, checks, isolation note), R12 and R21 updates, findings-log row, contamination-ledger rows (holdout deployment metadata only).
+
+Changed
+- `EXPERIMENT_PROTOCOL.md`: §7 holdout list fixed (6 projects, 49 defects; 47 primary); §11 Podman environment; §13 X5/X8 and D16.1 items ticked. `ARCHITECTURE.md`: Podman deployment rule (own WSL distribution, Docker Desktop stopped). `PROJECT_STATUS.md`: Phase 1 complete; next = owner checkpoint, then Phase 2 (Arm A).
+
 ### 2026-11-22 — R14 Dolibarr module configuration (D22)
 
 Added

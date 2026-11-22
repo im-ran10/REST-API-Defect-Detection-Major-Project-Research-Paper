@@ -135,6 +135,7 @@ Holdout (E32, metadata only, 21 Nov 2026): the D13.1 checks pass for all remaini
 - **Holdout candidates after X1–X4:** awx, flowable-engine, kafka-rest, mastodon, netbox, nocodb (29 defects) + Podman (23) if X5 passes; X8 may remove nocodb, flowable-engine and kafka-rest.
   - X8 check (21 Nov 2026, E33): official specs found for nocodb and flowable-engine. **kafka-rest excluded** (D20: X8, and its reference image does not exist).
   - Current holdout (21 Nov 2026): awx 5, flowable-engine 4, mastodon 5, netbox 6, nocodb 6 = **26**, plus Podman 23 if X5 passes. Primary analysis excludes the hooked reference defects of netbox and nocodb (−2; sensitivity S3). X6/X7 attrition comes after the freeze.
+  - **Holdout list fixed (22 Nov 2026):** Podman passed X5 (E37). Projects: awx, flowable-engine, mastodon, netbox, nocodb, podman = **49 defects**; **47** in the primary analysis. Podman runs in an isolated WSL distribution with Docker Desktop stopped (R21).
 - **Expected evaluable holdout:**
 
   | Scenario | Expected evaluable defects |
@@ -247,6 +248,7 @@ Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and t
 | PostgreSQL | `postgres:16@sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f` (PostgreSQL 16.16), test container only |
 | Dolibarr module configuration | 28 modules (`modules_r14.txt`, D22); enabled-module fingerprint `f4eda97f4d8218cf` on `9d4007e` and `61ee3a9` (E36) |
 | Dolibarr project-level spec (pre-sanitisation) | `/api/index.php/explorer/swagger.json` at `9d4007e` under D22: 256 paths / 392 operations; operation-list fingerprint `da2bd2592c1d09ab` (E36); stored outside the repository on the owner's machine |
+| Podman (X5, holdout) | Isolated WSL distribution `Ubuntu-24.04`; Go 1.22.2 (Ubuntu package); Podman built from `f65f3320e112` by `defects4rest checkout`, reports 4.0.0-dev, API on `127.0.0.1:8082` (E37) |
 
 **Recorded deviations from the benchmark recipe** (to be reported in the paper's reproducibility section):
 - Dolibarr: `bullseye-security` removed from the image's apt sources, because Debian 11 LTS ended on 31 Aug 2026 (E30). Policy: D18 (minimal generic repository fix only).
@@ -276,8 +278,8 @@ Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and t
 - [ ] Owner check: no catalogue entry, predicate or prompt mentions holdout resources or endpoints
 - [ ] Catalogue divergence computed → three-arm or two-arm design fixed
 - [ ] Power/precision estimate from dev variance recorded
-- [ ] X5 and X8 outcomes recorded; holdout project list fixed
-- [ ] D16.1 applied and recorded (if Dolibarr was infeasible)
+- [x] X5 and X8 outcomes recorded; holdout project list fixed (22 Nov 2026: X8 → kafka-rest excluded, D20; X5 → Podman passes, E37; 6 projects, 49 defects)
+- [x] D16.1 applied and recorded (if Dolibarr was infeasible) — not needed: Dolibarr feasible (D17 met, E34)
 - [ ] Generic fixtures per holdout project written from public docs
 - [ ] Reference-version checks and hook rule applied per holdout project
 - [ ] Reviewers named; confirmation sheet and arm-anonymisation script ready
