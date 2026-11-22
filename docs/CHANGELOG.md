@@ -9,7 +9,7 @@ All notable changes to project documentation, decisions, design and code. Newest
 Added
 - `system/`: Maven project (plain Java 21, swagger-parser 2.1.48, package `restdd.probe`): `SpecLoader`, `OperationLister`, `HttpProbe`, `ProbeMain`; runnable `target/probe.jar`. Loads a spec, lists operations, sends one GET, prints status and body; API key from an environment variable, sent as a header, never printed.
 - Unit tests with three hand-written fixtures (Swagger 2.0, OpenAPI 3.0.3, OpenAPI 3.1.0) giving identical operation lists, plus 3.1 feature checks (7 tests).
-- `.gitignore` (build output, IDE files, credentials).
+- `.gitignore` (build output, IDE files, credentials). Credentials rule narrowed from `*credentials*` to `.dolibarr_credentials` and `.env` after review.
 - `RESEARCH_LOG.md`: E35 (Dolibarr run, OpenAPI 3.1 result, `defaultValue` loss, credentials `export` issue), R29, findings-log row.
 
 Changed
