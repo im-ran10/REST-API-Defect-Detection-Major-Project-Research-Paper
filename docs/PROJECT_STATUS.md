@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 22 Nov 2026 (Phase 1: Dolibarr unattended setup script written and tested locally; owner-machine run pending)
+**Last updated:** 22 Nov 2026 (Phase 1: Dolibarr setup scripted and validated on the real containers; D17 condition met)
 
 ## Current stage
 
@@ -36,7 +36,7 @@
 | Dolibarr image digests recorded; PostgreSQL 16.16 runs in Docker (throwaway test container) | E29; EXPERIMENT_PROTOCOL §11 |
 | **Holdout reference-version checks** (metadata only): no reference version contains a fix; mastodon, netbox, nocodb fail the strict descendant check; reference defects of kafka-rest, netbox, nocodb have setup hooks | E32 (`holdout_refver.py`) |
 | **X8 official specs:** found for nocodb (OpenAPI 3.1) and flowable-engine (OpenAPI 3.0); none for kafka-rest (X8 condition met) | E33 |
-| **Dolibarr unattended setup script** (22 Nov 2026): `scripts/dolibarr/dolibarr_setup.sh`; local test passes on `9d4007e`, `61ee3a9` and a 2025 version, reproducing #23179's buggy/patched behaviour. About 1 hour of the D17 time box used | RESEARCH_LOG E34 |
+| **Dolibarr unattended setup script** (22 Nov 2026): `scripts/dolibarr/dolibarr_setup.sh`. Owner's machine: ~45 s per fresh deployment, #23179 reproduces on buggy and patched. **D17 condition met** (~1.5 h of the 2-day box); D16.1 not triggered | RESEARCH_LOG E34; DECISIONS §5 |
 | **Delegated decisions** (21 Nov 2026): reference-version check amended (D13.1); EOL base-image policy (D18); prepared-clone reuse (D19); kafka-rest excluded (D20); out-of-spec defects kept (D21). Holdout now 26 defects + Podman 23 | DECISIONS |
 
 ## What has NOT been done
@@ -65,7 +65,7 @@ Environment
 Development-set feasibility
 - [x] Deploy restcountries#235 buggy → reproduce "Kiev"; deploy patched → "Kyiv" (20 Nov 2026, E27)
 - [x] **Dolibarr go/no-go (R13):** deploy dolibarr#23179 buggy and patched; reproduce with curl (E29). Outcome: conditional go (D17, 21 Nov 2026)
-- [ ] **Script the Dolibarr setup** (install wizard, API + Products modules, admin API key) for one version within **two working days** (D17). If not achieved, follow D16.1 (SeaweedFS, else RESTCountries alone). *Script written and locally tested (E34); run with the real containers on the owner's machine pending*
+- [x] **Script the Dolibarr setup** (install wizard, API + Products modules, admin API key) within two working days (D17): done 22 Nov 2026, validated on both #23179 versions (E34)
 - [ ] Dolibarr product-generated spec: fetch `/api/index.php/explorer/swagger.json` at the reference version with all API modules enabled (R14). Partial: API + Products only gives 75 paths (E29)
 - [ ] Minimal Java 21 program: load spec, list operations, send one request, capture status + body
 
@@ -103,15 +103,14 @@ Handover §9 pre-implementation work:
 ## Open questions / blockers
 
 1. ~~WSL2/Docker integration not yet verified.~~ Resolved 19–20 Nov 2026 (environment row above).
-2. If the Dolibarr setup cannot be scripted within the D17 time box, apply D16.1 (try SeaweedFS as an extra development subject, else RESTCountries alone).
-3. Feasibility of Dolibarr automation (D17) and Podman (X5) determines the final development and holdout sizes (R12).
+2. ~~If the Dolibarr setup cannot be scripted within the D17 time box, apply D16.1.~~ Resolved 22 Nov 2026: scripted (E34).
+3. Podman feasibility (X5) determines the final holdout size (R12).
 4. Budgets and LLM model choice: TBD in Phase 5 calibration, pinned before the holdout (D15).
 
 ## Next task
 
-**Validate the Dolibarr setup script on the owner's machine (D17).** In the prepared Dolibarr folder:
-1. Patched (`61ee3a9`, currently checked out): `down -v`, `up -d --build`, run `scripts/dolibarr/dolibarr_setup.sh`, then the #23179 curl test with `$DOLIBARR_API_KEY` → expect notes saved.
-2. Buggy (`9d4007e`): `down -v`, `git checkout 9d4007e…`, `up -d --build`, script, curl test → expect notes `null`.
-3. Record times and outcome in RESEARCH_LOG (E34) and close the D17 time box.
+**Minimal Java 21 program (Phase 1 milestone):** load a spec, list its operations, send one request, capture status and body. Run against RESTCountries and Dolibarr (key from `~/.dolibarr_credentials`). Built with Claude Code on the owner's machine.
 
-Then: the minimal Java 21 program (Phase 1 milestone), the Dolibarr all-modules spec (R14), and the Podman X5 check (reference `f65f3320e112`).
+Also open in Phase 1:
+- Dolibarr all-modules spec (R14): run the setup script with a longer `MODULES` list at the reference version and fetch `/api/index.php/explorer/swagger.json`. Which modules to enable is a spec-source decision (D5.1).
+- Podman X5 check (reference `f65f3320e112`, isolated environment, one working day).

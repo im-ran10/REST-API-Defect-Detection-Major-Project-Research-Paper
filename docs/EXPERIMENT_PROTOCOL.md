@@ -242,7 +242,7 @@ Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and t
 | Go | 1.22.2 |
 | Git | 2.43.0 |
 | RESTCountries build/run images | see RESEARCH_LOG E27 |
-| Dolibarr images | base `php:7.4-apache@sha256:c9d7e608f73832673479770d66aacc8100011ec751d1905ff63fae3fe2e0ca6d` (locally built as `dolibarr_local:from_source` with the Debian 11 workaround, E30; local image ID not recorded), `mariadb:10.5@sha256:a530aeeefd82f4fa5150f391b6c75462140904780338766f6b03acecb1cca3ce` |
+| Dolibarr images | base `php:7.4-apache@sha256:c9d7e608f73832673479770d66aacc8100011ec751d1905ff63fae3fe2e0ca6d` (locally built as `dolibarr_local:from_source` with the Debian 11 workaround, E30; local image IDs on 22 Nov 2026: `ef167d0be7cf…` for `61ee3a9`, `a771bfffe4a4…` for `9d4007e`), `mariadb:10.5@sha256:a530aeeefd82f4fa5150f391b6c75462140904780338766f6b03acecb1cca3ce` |
 | PostgreSQL | `postgres:16@sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f` (PostgreSQL 16.16), test container only |
 
 **Recorded deviations from the benchmark recipe** (to be reported in the paper's reproducibility section):

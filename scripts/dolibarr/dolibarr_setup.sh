@@ -49,8 +49,9 @@ mkdir -p "$LOG_DIR"
 START=$(date +%s)
 say()  { printf '[%4ss] %s\n' "$(( $(date +%s) - START ))" "$*"; }
 fail() { say "FAILED: $*"; say "Installer pages saved in $LOG_DIR (no secrets in them)"; exit 1; }
-web()  { ${WEB_EXEC:-} sh -c "$1"; }
-sql()  { $SQL_CMD -e "$1" 2>/dev/null; }
+# docker compose repeats a harmless warning about the benchmark's compose files on every call; hide only that line
+web()  { ${WEB_EXEC:-} sh -c "$1" 2> >(grep -v 'attribute .version. is obsolete' >&2); }
+sql()  { $SQL_CMD -e "$1" 2>/dev/null; }  # read-only checks; errors show up as failed checks
 
 post() {  # post <page> <name=value>... ; saves the returned page, fails on HTTP errors
   local page=$1; shift

@@ -172,6 +172,7 @@ Decided by the drafting assistant under the owner's explicit delegation (21 Nov 
 | 21 Nov 2026 | D17 | new → PROVISIONAL | Owner chose the conditional go for Dolibarr after dolibarr#23179 was reproduced on buggy and patched versions (E29) |
 | 21 Nov 2026 | D13 | PROVISIONAL → SUPERSEDED | Replaced by D13.1 |
 | 21 Nov 2026 | D13.1, D18, D19, D20, D21 | new → PROVISIONAL | Owner delegated these choices to the drafting assistant (21 Nov 2026) |
+| 22 Nov 2026 | D17 | no status change | **Condition met:** Dolibarr setup scripted and validated on the real containers in ~1.5 h of the 2-day time box (E34). Dolibarr stays in the development set; the D16.1 fallback is not triggered. |
 
 ## How to add a decision
 

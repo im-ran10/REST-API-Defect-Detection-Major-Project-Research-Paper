@@ -4,6 +4,12 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-22 — Dolibarr setup script validated on the real containers (D17 met)
+
+Changed
+- `scripts/dolibarr/dolibarr_setup.sh`: hides only the harmless `version is obsolete` warning from `docker compose`.
+- `RESEARCH_LOG.md`: E34 owner-machine results (43 s / 46 s; #23179 reproduced both ways); R13 resolved. `DECISIONS.md` §5: D17 condition met (no status change). `PROJECT_STATUS.md`: checklist, blockers and next task (minimal Java program). `EXPERIMENT_PROTOCOL.md` §11: local Dolibarr image IDs. `ARCHITECTURE.md`: open question 3 solved.
+
 ### 2026-11-22 — Dolibarr unattended setup script (Phase 1, D17)
 
 Added
