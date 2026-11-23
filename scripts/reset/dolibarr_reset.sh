@@ -31,8 +31,9 @@ dump()  { db mysqldump -u"$DB_USER" -p"$DB_PASS" --single-transaction --skip-dum
 
 case "${1:-}" in
   snapshot)
+    umask 077                                   # snapshot files readable by this user only
     mkdir -p "$SNAP_DIR"
-    chmod 700 "$SNAP_DIR"
+    chmod 700 "$HOME/.restdd" "$(dirname "$SNAP_DIR")" "$SNAP_DIR" 2>/dev/null || chmod 700 "$SNAP_DIR"
     dump > "$SNAP_DIR/db.sql.tmp"
     mv "$SNAP_DIR/db.sql.tmp" "$SNAP_DIR/db.sql"
     web tar -C "$DATA_PARENT" -cf - "$DATA_NAME" > "$SNAP_DIR/documents.tar.tmp"

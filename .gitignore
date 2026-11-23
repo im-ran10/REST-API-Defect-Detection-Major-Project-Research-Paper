@@ -13,3 +13,7 @@ target/
 # LLM caches and call logs (model outputs; large; regenerable from manifests)
 llm-check/
 runs/
+
+# private reset snapshots (contain full databases); they live in ~/.restdd, never in the repo
+.restdd/
+.restdd_snapshot/
