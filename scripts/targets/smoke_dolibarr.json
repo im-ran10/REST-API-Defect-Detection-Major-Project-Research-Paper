@@ -1,0 +1,15 @@
+{"tests": [
+  {"title": "create, read back and delete a product",
+   "steps": [
+     {"method": "POST", "path": "/products", "body": {"ref": "${fixture.uid}", "label": "Smoke test product"},
+      "extract": {"pid": "$"},
+      "assertions": [{"type": "status", "op": "equals", "value": 200}]},
+     {"method": "GET", "path": "/products/{id}", "pathParams": {"id": "${pid}"},
+      "assertions": [{"type": "status", "op": "equals", "value": 200},
+                     {"type": "body", "path": "$.ref", "op": "equals", "value": "${fixture.uid}"}]},
+     {"method": "DELETE", "path": "/products/{id}", "pathParams": {"id": "${pid}"},
+      "assertions": [{"type": "status", "op": "equals", "value": 200}]}]},
+  {"title": "request without the API key is refused",
+   "steps": [{"method": "GET", "path": "/products", "auth": "none",
+              "assertions": [{"type": "status", "op": "equals", "value": 401}]}]}
+]}

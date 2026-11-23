@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 23 Nov 2026 night (G1 passed (E43); **D44 approved** with archiving and monitoring conditions; D45 adherence procedure PROPOSED; next: T5 executor; D30 people still to be named and confirmed)
+**Last updated:** 23 Nov 2026 night (G1 passed (E43); **D44 approved**; D45 PROPOSED; **T5 test runner written** on branch `t5-exec`: 14 new unit tests pass in the assistant workspace, owner build and smoke runs on RESTCountries and Dolibarr pending; D30 people still to be named and confirmed)
 
 ## Current stage
 
@@ -52,6 +52,7 @@
 | **T0: local LLM** (23 Nov 2026): Ollama 0.40.17 in the main WSL Ubuntu, Qwen3 4B Instruct-2507 and Gemma 3 4B pulled; runs 100% on the GPU after a service restart (~53 tokens/s on short prompts) | RESEARCH_LOG E40; README |
 | **T1–T3 code** (23 Nov 2026, branch `t1-t3`): spec normaliser + D5.1 keyword scan, test format + static validator, Ollama client with GPU/truncation guards and resume cache, CLI. Compiled and partly tested in the assistant's workspace with stand-ins (Maven Central blocked there); `mvn package` on the owner's machine: 26/26 tests; compaction rule measured | ARCHITECTURE (implemented 23 Nov); E41, E42 |
 | **T4 + G1 test** (23 Nov 2026): shared system prompt, prompt builder, `g1` command. G1 on the owner's machine: fp16 KV cache did not fit at 12,288 or 16,384; with flash attention + q8_0 KV cache both fit fully (3.56 / 3.90 GB); largest held-out prompt 8,973 tokens, no truncation; median call ~12.7 s; projection 17.8 h for 4,365 calls (within the 40-hour rule, five seeds kept); outputs not bit-reproducible (R36). One hard reset in performance mode (R35); completed in balanced mode | RESEARCH_LOG E43; DECISIONS D44 (PROPOSED) |
+| **T5 test runner** (23 Nov 2026, branch `t5-exec`): HTTP step runner with reference substitution, assertions, extraction, run-level outcomes, secret redaction and full exchange records; suite runner (D26, reset before each run, isolated re-runs); reset adapters (none; command + health check) with the Dolibarr database/documents reset script; target files; `exec` command. 14 unit tests against a fake API pass in the assistant workspace; **not yet built or run on the owner's machine**; Podman and nocodb reset scripts not yet written | ARCHITECTURE (T5) |
 | **Final quality control** (23 Nov 2026): predicate counts per project, executability per C strategy, prompt sizes, statistical sensitivity | RESEARCH_LOG E39; proposal §3 |
 
 ## What has NOT been done
@@ -152,7 +153,7 @@ Paper sections (introduction, related work, approach, design, threats) are draft
 
 ## Next task
 
-**23 Nov 2026 night:** D44 approved; owner to agree D45 and name the D30 people. Now **T5: executor + reset adapters** (RESTCountries none; Dolibarr database dump; Podman fixture image + cleanup reset; nocodb container/SQLite restore) and second-role fixtures (2 h box), followed by T6 (Arm A prompt + model test, D43 checks 2–4). Before every long model run: balanced power mode, plugged in, GPU temperature log running (R35).
+**23 Nov 2026 night:** D44 approved; owner to agree D45 and name the D30 people. **T5 next steps:** owner builds `t5-exec` (`mvn package`), runs the RESTCountries and Dolibarr smoke suites and the Dolibarr reset check; then merge. Remaining T5 parts: Podman fixture image + cleanup reset script, nocodb deployment (4 h box) + container/SQLite reset script, second-role fixtures (2 h box). Then T6 (Arm A prompt + model test, D43 checks 2–4). Before every long model run: balanced power mode, plugged in, GPU temperature log running (R35).
 
 *Earlier the same night:* **23 Nov 2026 late:** owner runs `g1` on branch `t4-g1` (performance mode, plugged in) with Podman's spec, context windows 12,288 and 16,384, compaction rule from E42; result decides `num_ctx` (or KV-cache quantisation) before T5. *Earlier:* owner builds branch `t1-t3` (`mvn package`), runs `normalise` on the four specs and `llm-check`; on success the branch is merged to `main`. Then T4 (G1 speed/VRAM/truncation test with the largest held-out prompt) and T5 (executor). *Earlier the same day:* doc update committed; Day 1 tasks T0 (Ollama install) and T1 (project-level specs for Podman and nocodb, spec normaliser). Implementation order: proposal §7 (T0–T17).
 

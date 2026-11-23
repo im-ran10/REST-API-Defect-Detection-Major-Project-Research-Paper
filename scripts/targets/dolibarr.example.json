@@ -1,0 +1,16 @@
+{
+  "baseUrl": "http://localhost:8080/api/index.php",
+  "auth": {"kind": "header", "name": "DOLAPIKEY", "env": "DOLIBARR_API_KEY"},
+  "fixtures": {},
+  "reset": {
+    "kind": "command",
+    "name": "dolibarr-db-dump",
+    "dir": "~/tools/Defects4REST/defects4rest/data/temp_project_data/dolibarr",
+    "snapshot": "bash ~/projects/rest-api-defect-detection/scripts/reset/dolibarr_reset.sh snapshot",
+    "restore": "bash ~/projects/rest-api-defect-detection/scripts/reset/dolibarr_reset.sh restore",
+    "healthUrl": "http://localhost:8080/api/index.php/status",
+    "healthUsesAuth": true,
+    "healthTimeoutSec": 120,
+    "commandTimeoutSec": 600
+  }
+}

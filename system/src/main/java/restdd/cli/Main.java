@@ -32,6 +32,8 @@ import java.util.Set;
  *                                         GPU preflight + one structured call on the first operation
  *   g1 --spec FILE[,FILE...] --model NAME --num-ctx N[,N...] [--compact RULE] [--task-tokens N] [--projected-calls N]
  *                                         G1 speed / VRAM / truncation test with the largest real prompt (D43)
+ *   exec --target FILE --spec FILE --suite FILE [--s N] [--label L] [--out FILE] [--snapshot] [--only I,J]
+ *                                         T5: run one suite against one deployment (reset first), write the record
  *   probe ...                             the Phase 1 probe (unchanged)
  * </pre>
  */
@@ -39,7 +41,7 @@ public final class Main {
 
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
-            System.err.println("usage: normalise | sanitise | llm-check | probe  (see class javadoc)");
+            System.err.println("usage: normalise | sanitise | llm-check | g1 | exec | probe  (see class javadoc)");
             System.exit(2);
         }
         String cmd = args[0];
@@ -49,6 +51,7 @@ public final class Main {
             case "sanitise" -> sanitise(a);
             case "llm-check" -> llmCheck(a);
             case "g1" -> G1.run(a);
+            case "exec" -> Exec.run(a);
             case "probe" -> ProbeMain.main(Arrays.copyOfRange(args, 1, args.length));
             default -> {
                 System.err.println("unknown command " + cmd);

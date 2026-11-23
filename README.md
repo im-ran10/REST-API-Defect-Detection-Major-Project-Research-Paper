@@ -103,6 +103,13 @@ java -jar target/restdd.jar g1 --spec <spec>[,<spec>] --model <model> --num-ctx 
 ```
 `g1` (D41/D43) builds the real prompt (shared system prompt + operation context + a task section padded to the expected longest B/C size) for the largest operation over the given specs and a median one, and for each context window checks that the model loads fully on the GPU, processes the largest prompt without truncation, and how fast it runs; it prints a projection for the 40-hour rule. It prints sizes and timings only, never operation names.
 
+**Running a suite against a deployment (T5).** A target file (kept outside the repository; examples in `scripts/targets/`) gives the base URL, the auth environment variable and the reset commands:
+```bash
+mkdir -p ~/restdd-targets && cp ~/projects/rest-api-defect-detection/scripts/targets/*.example.json ~/restdd-targets/   # once; edit paths if needed
+java -jar target/restdd.jar exec --target <target.json> --spec <spec> --suite <suite.json> [--snapshot] [--label buggy] [--only 2] [--out runs/x.json]
+```
+`--snapshot` takes the deployment's snapshot first (once per deployment, right after setup); every run then restores it before the tests. Each test prints PASS / FAIL / SETUP_ERROR / INFRA_ERROR / INVALID with a reason; the full record (requests, responses, assertion results, validation result) goes to `--out`, with the API key replaced by `<redacted>`. Dolibarr reset by hand: `bash scripts/reset/dolibarr_reset.sh snapshot|restore|check` from the Dolibarr folder (snapshots in `~/.restdd/snapshots/`, private: they contain the database).
+
 `llm-check` prints the Ollama version and model digest, verifies the model is 100% on the GPU with the requested context window, makes one structured-output call for the spec's first operation and validates it. Its cache and call log go to `./llm-check/` (not committed).
 
 **Phase 1 probe** (now the `probe` subcommand). Loads a Swagger 2.0 / OpenAPI 3.x spec, lists its operations, sends one GET and prints status and body:

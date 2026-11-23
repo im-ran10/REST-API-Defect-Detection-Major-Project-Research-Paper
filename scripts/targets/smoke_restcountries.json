@@ -1,0 +1,13 @@
+{"tests": [
+  {"title": "capital lookup returns the country",
+   "steps": [{"method": "GET", "path": "/v2/capital/{capital}", "pathParams": {"capital": "tallinn"},
+              "assertions": [{"type": "status", "op": "equals", "value": 200},
+                             {"type": "body", "path": "$[0].alpha3Code", "op": "equals", "value": "EST"},
+                             {"type": "responseSchema", "op": "conformsToSpec"}]}]},
+  {"title": "unknown capital is 404",
+   "steps": [{"method": "GET", "path": "/v2/capital/{capital}", "pathParams": {"capital": "nosuchcity"},
+              "assertions": [{"type": "status", "op": "equals", "value": 404}]}]},
+  {"title": "deliberately failing assertion (checks that FAIL is reported)",
+   "steps": [{"method": "GET", "path": "/v2/capital/{capital}", "pathParams": {"capital": "tallinn"},
+              "assertions": [{"type": "body", "path": "$[0].alpha3Code", "op": "equals", "value": "XXX"}]}]}
+]}

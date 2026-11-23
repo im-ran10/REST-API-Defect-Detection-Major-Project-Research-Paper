@@ -207,6 +207,8 @@ Notes:
 
 **Candidate:** FAIL on buggy and PASS on patched, with no ERROR-INFRA, and reproduced in isolation.
 
+*Implementation note, 23 Nov 2026 (T5; PROVISIONAL until the freeze):* gateway errors are statuses 502, 503 and 504; a response body is read for at most 30 s and 2 MB (streaming endpoints are cut); a test whose `extract` finds nothing is a set-up failure (ERROR-TEST if on both versions, otherwise FAIL on the version where it happened); a structurally invalid test is never sent (ERROR-TEST). Assertion semantics are listed in ARCHITECTURE (T5). Response conformance is checked against the uncompacted project spec.
+
 **Attribution to the defect's own fix-commit delta:**
 - **RESTCountries — mechanical:** the failing assertion must read a (country, field) changed by *d*'s own fix commit. Example: a "UKR capital = Kyiv" test failing on `aadbd07` and passing on #199's patch is **not** a #199 detection (E15).
 - **Dolibarr — reviewer-judged** against the fix commit and README. `#24661` is flagged (E19).

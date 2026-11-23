@@ -210,7 +210,7 @@ public final class StaticValidator {
     }
 
     /** Exact template match first; otherwise a concrete path matching exactly one template. */
-    OperationSlice resolveOperation(String method, String path) {
+    public OperationSlice resolveOperation(String method, String path) {
         OperationSlice exact = spec.find(method, path);
         if (exact != null) {
             return exact;
@@ -279,6 +279,9 @@ public final class StaticValidator {
                 if (needsValue(op) && !a.has("value")) {
                     return "body assertion '" + op + "' without value";
                 }
+                if (op.equals("matches") && !validRegex(a.path("value").asText())) {
+                    return "body assertion 'matches' with an invalid regular expression";
+                }
             }
             case "header" -> {
                 if (a.path("name").asText("").isBlank()) {
@@ -286,6 +289,9 @@ public final class StaticValidator {
                 }
                 if (needsValue(op) && !a.has("value")) {
                     return "header assertion '" + op + "' without value";
+                }
+                if (op.equals("matches") && !validRegex(a.path("value").asText())) {
+                    return "header assertion 'matches' with an invalid regular expression";
                 }
             }
             case "responseSchema" -> {
@@ -303,6 +309,22 @@ public final class StaticValidator {
             }
         }
         return null;
+    }
+
+    private static boolean validRegex(String re) {
+        try {
+            Pattern.compile(re);
+            return true;
+        } catch (java.util.regex.PatternSyntaxException e) {
+            return false;
+        }
+    }
+
+    /** Light schema check of a value (used by the executor for {@code responseSchema conformsToSpec}). */
+    public static List<String> schemaIssues(JsonNode value, JsonNode schema) {
+        List<String> issues = new ArrayList<>();
+        checkValue(value, schema, "body", issues, 0);
+        return List.copyOf(issues);
     }
 
     private static boolean needsValue(String op) {
@@ -410,7 +432,7 @@ public final class StaticValidator {
      * Body schema to check against: {@code application/json}, else any JSON media type, else {@code *}{@code /*}
      * (what swagger-parser assigns when a Swagger 2.0 spec declares no {@code consumes}).
      */
-    static JsonNode bodySchema(JsonNode content) {
+    public static JsonNode bodySchema(JsonNode content) {
         if (content.has("application/json")) {
             return content.get("application/json").path("schema");
         }

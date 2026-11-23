@@ -4,6 +4,17 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-23 (night, 3) — T5 test runner (branch `t5-exec`)
+
+**Added**
+- `restdd.exec`: `TestExecutor`, `AssertionEvaluator`, `Refs`, `Redactor`, `SuiteRunner`, `ResetAdapter` (+ `NoReset`), `CommandReset`, `TargetConfig`, `ExecConfig`, `AuthConfig`, `Outcome`; CLI `exec`.
+- `scripts/reset/dolibarr_reset.sh` (snapshot / restore / check); `scripts/targets/` (example targets, RESTCountries and Dolibarr smoke suites).
+- `ExecutorTest` (14 tests against a fake API).
+
+**Changed**
+- `StaticValidator`: rejects invalid regular expressions in `matches` assertions; `resolveOperation`, `bodySchema` and a new `schemaIssues` are public for the runner.
+- ARCHITECTURE (T5 components and assertion semantics), EXPERIMENT_PROTOCOL §9 implementation note, README (`exec` usage), PROJECT_STATUS.
+
 ### 2026-11-23 (night, 2) — D44 approved, D45 proposed, archiving of rejected responses
 
 **Added**
