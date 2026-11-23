@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 23 Nov 2026 evening (T0 done: Ollama 0.40.17 + both models on the GPU; T1–T3 code written on branch `t1-t3`, awaiting a Maven build on the owner's machine; D30 people still to be named)
+**Last updated:** 23 Nov 2026 late (T1–T3 merged to `main`, 26/26 tests on the owner's machine; compaction rule measured (E42); T4 G1 command on branch `t4-g1` awaiting the owner's run; D30 people still to be named)
 
 ## Current stage
 
@@ -148,7 +148,7 @@ Paper sections (introduction, related work, approach, design, threats) are draft
 
 ## Next task
 
-**23 Nov 2026 evening:** owner builds branch `t1-t3` (`mvn package`), runs `normalise` on the four specs and `llm-check`; on success the branch is merged to `main`. Then T4 (G1 speed/VRAM/truncation test with the largest held-out prompt) and T5 (executor). *Earlier the same day:* doc update committed; Day 1 tasks T0 (Ollama install) and T1 (project-level specs for Podman and nocodb, spec normaliser). Implementation order: proposal §7 (T0–T17).
+**23 Nov 2026 late:** owner runs `g1` on branch `t4-g1` (performance mode, plugged in) with Podman's spec, context windows 12,288 and 16,384, compaction rule from E42; result decides `num_ctx` (or KV-cache quantisation) before T5. *Earlier:* owner builds branch `t1-t3` (`mvn package`), runs `normalise` on the four specs and `llm-check`; on success the branch is merged to `main`. Then T4 (G1 speed/VRAM/truncation test with the largest held-out prompt) and T5 (executor). *Earlier the same day:* doc update committed; Day 1 tasks T0 (Ollama install) and T1 (project-level specs for Podman and nocodb, spec normaliser). Implementation order: proposal §7 (T0–T17).
 
 *Earlier (22 Nov 2026):* **Phase 1 checkpoint with the owner** (22 Nov 2026), then Phase 2: Arm A end to end on RESTCountries, starting with the allow-listed input loader, run manifest and spec normaliser (D5.1). Two owner inputs are needed before the LLM generator is built: the LLM provider/model, and approval of the primary statistical procedure (criterion 1 below).
 

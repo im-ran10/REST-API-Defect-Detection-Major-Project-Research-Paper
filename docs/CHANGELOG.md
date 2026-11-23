@@ -4,6 +4,16 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-23 (late) — T4 G1 command and prompt skeleton (branch `t4-g1`)
+
+**Added**
+- `restdd.prompt.PromptBuilder`, `resources/prompts/system.txt` (shared system prompt with format, rules and a fictional-API example); `restdd.cli.G1` (`g1` command); `PromptBuilderTest`.
+- `SpecNormaliser.Compaction`: `dropSchemaDescriptions`, `responseSchemaDepth`; CLI `--compact` parts `drop-schema-descriptions`, `resp-depth=N`.
+- RESEARCH_LOG E42 (build result, spec sizes, compaction trials).
+
+**Changed**
+- Branch `t1-t3` merged into `main` after 26/26 tests passed on the owner's machine.
+
 ### 2026-11-23 (evening) — T0 local LLM, T1–T3 code (branch `t1-t3`)
 
 **Added**

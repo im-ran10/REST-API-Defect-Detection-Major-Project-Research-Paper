@@ -91,6 +91,12 @@ java -jar target/restdd.jar normalise --spec <spec file> [--out <dir>] [--compac
 java -jar target/restdd.jar sanitise  --spec <spec file>                 # D5.1 keyword hits for owner review
 java -jar target/restdd.jar llm-check --spec <spec file> --model qwen3:4b-instruct-2507-q4_K_M [--num-ctx 8192]
 ```
+java -jar target/restdd.jar g1 --spec <spec>[,<spec>] --model <model> --num-ctx 12288,16384 --compact <rule>   # G1 test
+```
+`g1` (D41/D43) builds the real prompt (shared system prompt + operation context + a task section padded to the expected longest B/C size) for the largest operation over the given specs and a median one, and for each context window checks that the model loads fully on the GPU, processes the largest prompt without truncation, and how fast it runs; it prints a projection for the 40-hour rule. It prints sizes and timings only, never operation names.
+```bash
+# (the block above continues)
+```
 `llm-check` prints the Ollama version and model digest, verifies the model is 100% on the GPU with the requested context window, makes one structured-output call for the spec's first operation and validates it. Its cache and call log go to `./llm-check/` (not committed).
 
 **Phase 1 probe** (now the `probe` subcommand). Loads a Swagger 2.0 / OpenAPI 3.x spec, lists its operations, sends one GET and prints status and body:
