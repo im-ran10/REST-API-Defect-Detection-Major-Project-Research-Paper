@@ -1,0 +1,18 @@
+{
+  "swagger": "2.0",
+  "info": {"title": "Tree API (test fixture)", "version": "1.0"},
+  "paths": {
+    "/nodes": {
+      "get": {
+        "parameters": [
+          {"name": "limit", "in": "query", "type": "integer", "defaultValue": 100},
+          {"name": "sortorder", "in": "query", "type": "string", "default": "ASC", "defaultValue": "DESC"}
+        ],
+        "responses": {"200": {"description": "ok", "schema": {"type": "array", "items": {"$ref": "#/definitions/Node"}}}}
+      }
+    }
+  },
+  "definitions": {
+    "Node": {"type": "object", "properties": {"name": {"type": "string"}, "children": {"type": "array", "items": {"$ref": "#/definitions/Node"}}}}
+  }
+}

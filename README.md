@@ -73,12 +73,30 @@ source ~/.dolibarr_credentials   # exports DOLIBARR_API_KEY (never printed)
 A credentials file written before 22 Nov 2026 has no `export` lines; use `set -a; source ~/.dolibarr_credentials; set +a` or rerun the setup.
 It runs Dolibarr's own installer (forced-install file + the browser's installer pages), then enables the **R14 module configuration** (D22): the 28 API-capable modules listed in `scripts/dolibarr/modules_r14.txt`, one at a time with Dolibarr's own `activateModule()`. It records activation failures and the enabled-module list with a fingerprint in its log folder, gets the admin API key from Dolibarr's login API and checks it. It refuses to run on an already-installed database. Optional settings: `LOG_DIR=<folder>` keeps the logs there; `SPEC_OUT=<file>` also saves `/api/index.php/explorer/swagger.json`; `MODULES=modApi,modProduct` gives the earlier minimal setup. The module list itself is regenerated only with `php scripts/dolibarr/list_api_modules.php <htdocs>` at the reference version.
 
-**Phase 1 probe** (`system/`, plain Java 21 + Maven, swagger-parser 2.1.48). Loads a Swagger 2.0 / OpenAPI 3.x spec, lists its operations, sends one GET and prints status and body:
+**Local LLM (D27; Day 1 of the ten-day plan).** Ollama runs as a service inside the main WSL Ubuntu (not the separate Podman distribution):
+```bash
+sudo apt-get install -y zstd                       # the Ollama installer needs it
+curl -fsSL https://ollama.com/install.sh | sh      # installs to /usr/local, service on 127.0.0.1:11434
+ollama pull qwen3:4b-instruct-2507-q4_K_M
+ollama pull gemma3:4b
+ollama ps                                          # PROCESSOR must read "100% GPU"
+```
+Models are stored by the service under `/usr/share/ollama/.ollama/models`, outside the repository. In WSL the GPU can fail to initialise within Ollama's 30-second discovery window right after a boot (the service then silently uses the CPU); `sudo systemctl restart ollama` fixes it. The client refuses to run unless the model is fully on the GPU.
+
+**System CLI** (`system/`, plain Java 21 + Maven, swagger-parser 2.1.48), built to `target/restdd.jar`:
 ```bash
 cd ~/projects/rest-api-defect-detection/system
-mvn package                      # builds target/probe.jar and runs the unit tests
+mvn package                                        # builds target/restdd.jar and runs the unit tests
+java -jar target/restdd.jar normalise --spec <spec file> [--out <dir>]   # per-operation slices + statistics
+java -jar target/restdd.jar sanitise  --spec <spec file>                 # D5.1 keyword hits for owner review
+java -jar target/restdd.jar llm-check --spec <spec file> --model qwen3:4b-instruct-2507-q4_K_M [--num-ctx 8192]
+```
+`llm-check` prints the Ollama version and model digest, verifies the model is 100% on the GPU with the requested context window, makes one structured-output call for the spec's first operation and validates it. Its cache and call log go to `./llm-check/` (not committed).
+
+**Phase 1 probe** (now the `probe` subcommand). Loads a Swagger 2.0 / OpenAPI 3.x spec, lists its operations, sends one GET and prints status and body:
+```bash
 source ~/.dolibarr_credentials
-java -jar target/probe.jar \
+java -jar target/restdd.jar probe \
   --spec ~/tools/dolibarr_9d4007e_swagger.json \
   --base-url http://localhost:8080/api/index.php \
   --get /status \

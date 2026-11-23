@@ -9,3 +9,7 @@ target/
 # Never commit credentials (Dolibarr API key lives in ~/.dolibarr_credentials, outside the repo)
 .env
 .dolibarr_credentials
+
+# LLM caches and call logs (model outputs; large; regenerable from manifests)
+llm-check/
+runs/

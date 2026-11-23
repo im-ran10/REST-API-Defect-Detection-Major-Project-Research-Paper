@@ -12,6 +12,14 @@
 > - **Executor/replayer (D28):** screening run, full re-runs for suites with candidates, isolated re-runs. Reset adapters: RESTCountries none; Dolibarr DB dump; Podman fixture image pre-loaded, cleanup reset keeping it, Docker Desktop stopped (R21); nocodb container/SQLite restore. DSL additions: one multipart part with a small inline text file; fixture variables (image name, second-role credentials).
 > - **Spec slices (D41):** one shared slice per operation for all arms; if the largest held-out prompt does not fit the context window chosen at G1, a deterministic slice-compaction rule is applied to every slice before the freeze.
 > - **Researcher side:** blinded candidate export; adherence sample sheet (A4); analysis scripts for D29 and A1–A4.
+>
+> **Implemented 23 Nov 2026 (T1–T3; unit tests to be run with Maven on the owner's machine):**
+> - `restdd.spec.SpecNormaliser` — one self-contained JSON slice per operation, identical for all arms. Swagger 2.0 converted to OpenAPI 3.0 by swagger-parser; OpenAPI 3.x used as written. **Normalisation choices (answers open questions 8 and 9):** Dolibarr's non-standard `defaultValue` is copied to `default` before conversion when no `default` exists; `$ref`s are inlined **per slice**, and a reference already open on the current path becomes `{"$recursive": "<name>"}`; `x-*` extensions and `servers` dropped; every response code kept with its description, schemas only for 2xx; descriptions and examples kept unless the D41 compaction rule (description cap, drop examples, schema depth) is switched on. Operations ordered by path, then method (same as `OperationLister`).
+> - `restdd.spec.SpecSanitiser` — D5.1 keyword scan; reports hits only, the owner reviews.
+> - `restdd.dsl.SuiteSchema` — the test format: exactly *s* tests per call; steps (method, path, pathParams, query, headers, auth `default`/`none`/`secondary`, body, multipart text part, extract), assertions `status`/`body`/`header`/`responseSchema`/`compare`; `${var}` and `${fixture.name}` references; paths `$`, `$.a.b`, `$.a[0]`, `$.a[*].b`; at most 6 steps and 6 assertions per step. The same schema is the Ollama `format`.
+> - `restdd.dsl.StaticValidator` — schema validity (T1), structural validity (operation exists, path parameters supplied, references defined, assertions well formed; invalid tests are not executed and count as the arm's outcome), spec conformance (T2; reported, not enforced, so negative tests still run), assertion class for T4/A1 (status-only / meaningful / none; trivially true assertions excluded).
+> - `restdd.llm.OllamaClient` — native `/api/chat` with JSON-schema `format`, `truncate=false` and `shift=false` (an over-long prompt is an error, never cut), an extra check that prompt + output stay below `num_ctx`, a GPU preflight via `/api/ps` (100% in VRAM, expected context), disk cache keyed by the full request plus model digest (resume), JSONL call log; `think` is sent only when configured; no content retries.
+> - `restdd.cli.Main` — `normalise`, `sanitise`, `llm-check`, `probe`.
 
 ## Design principles
 
@@ -66,7 +74,7 @@ RESEARCHER SIDE — may read ground truth; never imported by system code
 
 ## Implemented so far (Phase 1 probe, 22 Nov 2026)
 
-`system/`: a Maven project (plain Java 21, no Spring Boot), package `restdd.probe`, built to `system/target/probe.jar`. It is a feasibility probe, **not** the D5.1 input loader: it writes no manifest and enforces no allow-list.
+`system/`: a Maven project (plain Java 21, no Spring Boot), built to `system/target/restdd.jar` (*renamed 23 Nov 2026; was `probe.jar`*). Package `restdd.probe` is the Phase 1 probe, now the `probe` subcommand. *Added 23 Nov 2026 (T1–T3, see below).* Original text: It is a feasibility probe, **not** the D5.1 input loader: it writes no manifest and enforces no allow-list.
 
 | Class | Does |
 |---|---|

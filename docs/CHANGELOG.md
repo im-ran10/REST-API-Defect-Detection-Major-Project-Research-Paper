@@ -4,6 +4,18 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-23 (evening) — T0 local LLM, T1–T3 code (branch `t1-t3`)
+
+**Added**
+- `system/`: `restdd.spec` (SpecNormaliser, SpecSanitiser), `restdd.dsl` (SuiteSchema, StaticValidator, JsonPathLite), `restdd.llm` (OllamaClient, GenerationOptions, ChatResult, LlmException), `restdd.cli.Main` (`normalise`, `sanitise`, `llm-check`, `probe`); tests for each, plus a recursive Swagger 2.0 fixture with `defaultValue`.
+- README: Ollama setup (incl. the WSL GPU-discovery restart), CLI usage.
+- RESEARCH_LOG E40 (Ollama install, GPU discovery, first speeds), E41 (project-level specs; Podman via D5.1 preference 2; workload 4,365 calls); contamination-ledger row.
+- `.gitignore`: `llm-check/`, `runs/`.
+
+**Changed**
+- Jar renamed `target/probe.jar` → `target/restdd.jar`; the probe is now the `probe` subcommand.
+- ARCHITECTURE: implemented components; open questions 8 (`defaultValue`) and 9 (`$ref`) answered by the normaliser's choices.
+
 ### 2026-11-23 — Ten-day design, literature integration and final quality control (docs only)
 
 **Added**

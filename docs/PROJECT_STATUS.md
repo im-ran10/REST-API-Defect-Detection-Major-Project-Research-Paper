@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 23 Nov 2026 (**ten-day design adopted** (D23–D43); D32 and D41 approved; implementation starting (T0–T17); D30 people still to be named by the owner)
+**Last updated:** 23 Nov 2026 evening (T0 done: Ollama 0.40.17 + both models on the GPU; T1–T3 code written on branch `t1-t3`, awaiting a Maven build on the owner's machine; D30 people still to be named)
 
 ## Current stage
 
@@ -49,6 +49,8 @@
 | **Ten-day design** (22–23 Nov 2026): local-LLM feasibility, scale reduction, model choice, statistics, review protocol, literature improvements L1–L7 approved by the owner | DECISIONS D23–D29, D31–D38, D40–D43 (PROVISIONAL; D39 superseded by D43); D30 PROPOSED (people pending) |
 | **Stage 0 GPU check** (22 Nov 2026): RTX 3050 6 GB Laptop GPU visible inside WSL2 Ubuntu, driver 610.60, CUDA 13.3, 0 MiB used | Owner's `nvidia-smi` output; EXPERIMENT_PROTOCOL §11 |
 | **Focused novelty check + seven full-text reviews** (23 Nov 2026) | RESEARCH_LOG §5, E38 |
+| **T0: local LLM** (23 Nov 2026): Ollama 0.40.17 in the main WSL Ubuntu, Qwen3 4B Instruct-2507 and Gemma 3 4B pulled; runs 100% on the GPU after a service restart (~53 tokens/s on short prompts) | RESEARCH_LOG E40; README |
+| **T1–T3 code** (23 Nov 2026, branch `t1-t3`): spec normaliser + D5.1 keyword scan, test format + static validator, Ollama client with GPU/truncation guards and resume cache, CLI. Compiled and partly tested in the assistant's workspace with stand-ins (Maven Central blocked there); **full `mvn package` on the owner's machine pending** | ARCHITECTURE (implemented 23 Nov); E41 |
 | **Final quality control** (23 Nov 2026): predicate counts per project, executability per C strategy, prompt sizes, statistical sensitivity | RESEARCH_LOG E39; proposal §3 |
 
 ## What has NOT been done
@@ -146,7 +148,7 @@ Paper sections (introduction, related work, approach, design, threats) are draft
 
 ## Next task
 
-**23 Nov 2026 (supersedes the 22 Nov text below):** doc update committed; Day 1 tasks T0 (Ollama install) and T1 (project-level specs for Podman and nocodb, spec normaliser). Implementation order: proposal §7 (T0–T17).
+**23 Nov 2026 evening:** owner builds branch `t1-t3` (`mvn package`), runs `normalise` on the four specs and `llm-check`; on success the branch is merged to `main`. Then T4 (G1 speed/VRAM/truncation test with the largest held-out prompt) and T5 (executor). *Earlier the same day:* doc update committed; Day 1 tasks T0 (Ollama install) and T1 (project-level specs for Podman and nocodb, spec normaliser). Implementation order: proposal §7 (T0–T17).
 
 *Earlier (22 Nov 2026):* **Phase 1 checkpoint with the owner** (22 Nov 2026), then Phase 2: Arm A end to end on RESTCountries, starting with the allow-listed input loader, run manifest and spec normaliser (D5.1). Two owner inputs are needed before the LLM generator is built: the LLM provider/model, and approval of the primary statistical procedure (criterion 1 below).
 
