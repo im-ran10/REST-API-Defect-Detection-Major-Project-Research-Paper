@@ -4,6 +4,15 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-23 (night, 5) — T5 smoke tests passed; `t5-exec` merged
+
+**Added**
+- RESEARCH_LOG E44 (T5 smoke tests: Dolibarr 2/2 PASS with the reset verified identical; RESTCountries as expected; no key in saved records).
+
+**Changed**
+- `dolibarr_reset.sh`: snapshot files private to the user (umask 077, folders 700); `.gitignore` ignores snapshot folders.
+- PROJECT_STATUS: T5 core done; branch `t5-exec` merged into `main`.
+
 ### 2026-11-23 (night, 4) — D45 approved; snapshot rule restated
 
 **Changed**
