@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 23 Nov 2026 night (G1 passed (E43); D44 and D45 approved; **T5 core verified on the owner's machine and merged** (E44: Dolibarr smoke 2/2 PASS, reset verified identical; RESTCountries smoke as expected); remaining T5: Podman and nocodb reset scripts, nocodb deployment, second-role fixtures; D30 reviewers being arranged by the owner)
+**Last updated:** 23 Nov 2026 night (G1 passed (E43); D44 and D45 approved; **T5 core verified on the owner's machine and merged** (E44: Dolibarr smoke 2/2 PASS, reset verified identical; RESTCountries smoke as expected); remaining T5: Podman and nocodb reset scripts, nocodb deployment, second-role fixtures; D46 PROPOSED: review roles without outside humans)
 
 ## Current stage
 

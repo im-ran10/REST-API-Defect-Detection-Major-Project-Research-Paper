@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-24 — D46 proposed (review roles without outside human reviewers)
+
+**Added**
+- DECISIONS D46 (PROPOSED): fresh blind Claude session as reviewer 1, the owner as blind reviewer 2 (all candidates if ≤ 60, else ≥ 30%), the assistant as post-freeze validator; mapping stays on the owner's machine; reporting wording fixed.
+
 ### 2026-11-23 (night, 5) — T5 smoke tests passed; `t5-exec` merged
 
 **Added**
