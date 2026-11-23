@@ -47,7 +47,8 @@ case "${1:-}" in
     { echo "SET FOREIGN_KEY_CHECKS=0;"; echo "$drops"; echo "SET FOREIGN_KEY_CHECKS=1;"; } \
       | db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME"
     db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$SNAP_DIR/db.sql"
-    web sh -c "rm -rf '$DATA_PARENT/$DATA_NAME' && mkdir -p '$DATA_PARENT'"
+    # empty the folder instead of removing it: it is usually a mounted volume, which cannot be deleted
+    web sh -c "mkdir -p '$DATA_PARENT/$DATA_NAME' && find '$DATA_PARENT/$DATA_NAME' -mindepth 1 -delete"
     web tar -C "$DATA_PARENT" -xf - < "$SNAP_DIR/documents.tar"
     echo "restored: $(echo "$drops" | grep -c DROP) tables dropped and reloaded; documents restored"
     ;;

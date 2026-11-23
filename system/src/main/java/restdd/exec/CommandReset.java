@@ -91,7 +91,10 @@ public final class CommandReset implements ResetAdapter {
             r.put("exitCode", p.exitValue());
             r.put("ms", (System.nanoTime() - t0) / 1_000_000);
             if (p.exitValue() != 0) {
-                throw new ResetException(what + " failed with exit code " + p.exitValue());
+                String tail = text.strip();
+                tail = tail.length() > 400 ? "..." + tail.substring(tail.length() - 400) : tail;
+                throw new ResetException(what + " failed with exit code " + p.exitValue()
+                        + (tail.isEmpty() ? "" : ": " + tail.replace('\n', ' ')));
             }
         } catch (IOException e) {
             throw new ResetException(what + " could not start: " + e.getMessage());
