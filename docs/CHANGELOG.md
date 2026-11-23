@@ -4,6 +4,17 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-23 (night, 2) — D44 approved, D45 proposed, archiving of rejected responses
+
+**Added**
+- DECISIONS D45 (PROPOSED): strategy-adherence measurement (unit, rubric, sample, score, coders) and the procedure when schema validity passes but adherence fails.
+- `OllamaClientTest`: a rejected (over-long) response is archived and a resumed run reaches the same verdict without a new request.
+
+**Changed**
+- DECISIONS D44: PROPOSED → PROVISIONAL (owner, 23 Nov 2026) with archiving, monitoring, resumability and no-early-claims conditions; scope limited to Qwen3 4B (G1 repeated if the fallback model is selected).
+- `OllamaClient.chat`: archives every response before the context guard and re-applies the guard to cached entries.
+- EXPERIMENT_PROTOCOL, PROJECT_STATUS updated accordingly.
+
 ### 2026-11-23 (night) — G1 result, model run configuration, merge of `t4-g1`
 
 **Added**

@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 23 Nov 2026 night (G1 passed on the owner's machine (E43): `num_ctx` 16384 with a q8_0 KV cache fits fully on the GPU, projection 17.8 h; D44 model run configuration PROPOSED; `t4-g1` merged to `main`; one laptop hard-reset under GPU load (R35); next: T5 executor; D30 people still to be named)
+**Last updated:** 23 Nov 2026 night (G1 passed (E43); **D44 approved** with archiving and monitoring conditions; D45 adherence procedure PROPOSED; next: T5 executor; D30 people still to be named and confirmed)
 
 ## Current stage
 
@@ -68,7 +68,9 @@
 
 1. **D30 (owner action, before the freeze on Day 6):** name the validator and the two arm-blind reviewers and confirm availability (validator Days 7–8, reviewers Days 8–9). Roles and independence rules: DECISIONS D30.
 2. **D43 threshold:** strategy adherence ≥ 50% per arm is a default set by the drafting assistant; change it before Day 5 if wanted.
-3. **D44 (PROPOSED):** model run configuration from G1: `num_ctx` 16384, flash attention + q8_0 KV cache, balanced power mode with PCIe link-state power management off. Needs the owner's agreement before T6.
+3. **D45 (PROPOSED):** how strategy adherence is measured (60 tests per arm, Adherent only, B and C each ≥ 50%, 30% double-coded) and the failure procedure (one symmetric revision round, then the fallback model, then escalation). Needs the owner's agreement before T8.
+
+*Resolved 23 Nov 2026 (night):* D44 approved with conditions (archiving of every raw response, prompt, configuration, seed, model details and validation result; GPU monitoring; resumable runs).
 
 *Resolved 23 Nov 2026:* D32 (option b, 5 seeds kept), D41 (QC corrections), D42 (Podman reporting), D43 (mandatory feasibility checks); documentation commit approved.
 
@@ -150,7 +152,7 @@ Paper sections (introduction, related work, approach, design, threats) are draft
 
 ## Next task
 
-**23 Nov 2026 night:** owner agrees (or not) to D44. Then **T5: executor + reset adapters** (RESTCountries none; Dolibarr database dump; Podman fixture image + cleanup reset; nocodb container/SQLite restore) and second-role fixtures (2 h box), followed by T6 (Arm A prompt + model test, D43 checks 2–4). Before every long model run: balanced power mode, plugged in, GPU temperature log running (R35).
+**23 Nov 2026 night:** D44 approved; owner to agree D45 and name the D30 people. Now **T5: executor + reset adapters** (RESTCountries none; Dolibarr database dump; Podman fixture image + cleanup reset; nocodb container/SQLite restore) and second-role fixtures (2 h box), followed by T6 (Arm A prompt + model test, D43 checks 2–4). Before every long model run: balanced power mode, plugged in, GPU temperature log running (R35).
 
 *Earlier the same night:* **23 Nov 2026 late:** owner runs `g1` on branch `t4-g1` (performance mode, plugged in) with Podman's spec, context windows 12,288 and 16,384, compaction rule from E42; result decides `num_ctx` (or KV-cache quantisation) before T5. *Earlier:* owner builds branch `t1-t3` (`mvn package`), runs `normalise` on the four specs and `llm-check`; on success the branch is merged to `main`. Then T4 (G1 speed/VRAM/truncation test with the largest held-out prompt) and T5 (executor). *Earlier the same day:* doc update committed; Day 1 tasks T0 (Ollama install) and T1 (project-level specs for Podman and nocodb, spec normaliser). Implementation order: proposal §7 (T0–T17).
 

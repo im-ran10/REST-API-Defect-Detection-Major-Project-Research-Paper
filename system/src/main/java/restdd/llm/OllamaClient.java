@@ -137,6 +137,7 @@ public final class OllamaClient {
                 JsonNode c = JSON.readTree(cached.toFile());
                 ChatResult r = toResult(key, true, c.path("response"));
                 log(r, o, seed, modelDigest, tags);
+                checkWithinContext(r, o);
                 return r;
             } catch (IOException e) {
                 throw new LlmException(LlmException.Kind.INFRASTRUCTURE, "unreadable cache entry " + cached);
@@ -148,10 +149,8 @@ public final class OllamaClient {
         if (r.promptEvalCount() <= 0) {
             throw new LlmException(LlmException.Kind.INFRASTRUCTURE, "response without prompt_eval_count");
         }
-        if (r.promptEvalCount() + r.evalCount() >= o.numCtx()) {
-            throw new LlmException(LlmException.Kind.PROMPT_TOO_LONG, "prompt " + r.promptEvalCount() + " + output "
-                    + r.evalCount() + " tokens reach num_ctx " + o.numCtx());
-        }
+        // Archive first (D44: every raw response is kept, including rejected ones), then apply the context guard,
+        // which is re-applied to cached entries so that a resumed run reaches the same verdict.
         ObjectNode store = JSON.createObjectNode();
         store.set("request", req);
         store.put("modelDigest", modelDigest);
@@ -165,7 +164,15 @@ public final class OllamaClient {
             throw new LlmException(LlmException.Kind.INFRASTRUCTURE, "cannot write cache: " + e.getMessage());
         }
         log(r, o, seed, modelDigest, tags);
+        checkWithinContext(r, o);
         return r;
+    }
+
+    private static void checkWithinContext(ChatResult r, GenerationOptions o) {
+        if (r.promptEvalCount() + r.evalCount() >= o.numCtx()) {
+            throw new LlmException(LlmException.Kind.PROMPT_TOO_LONG, "prompt " + r.promptEvalCount() + " + output "
+                    + r.evalCount() + " tokens reach num_ctx " + o.numCtx() + " (response archived as " + r.cacheKey() + ")");
+        }
     }
 
     private static ChatResult toResult(String key, boolean fromCache, JsonNode resp) {

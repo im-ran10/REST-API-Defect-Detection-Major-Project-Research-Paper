@@ -115,6 +115,11 @@ class OllamaClientTest {
         LlmException e2 = assertThrows(LlmException.class,
                 () -> client.chat("s", "u2", new ObjectMapper().readTree("{}"), opts, 1, "abc123", Map.of()));
         assertEquals(LlmException.Kind.PROMPT_TOO_LONG, e2.kind());
+        int before = chatCalls.get();
+        LlmException e3 = assertThrows(LlmException.class,
+                () -> client.chat("s", "u2", new ObjectMapper().readTree("{}"), opts, 1, "abc123", Map.of()));
+        assertEquals(LlmException.Kind.PROMPT_TOO_LONG, e3.kind(), "a resumed run reaches the same verdict");
+        assertEquals(before, chatCalls.get(), "the rejected response was archived, not requested again");
     }
 
     @Test
