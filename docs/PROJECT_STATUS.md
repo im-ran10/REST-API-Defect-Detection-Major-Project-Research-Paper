@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 23 Nov 2026 evening (T0 done: Ollama 0.40.17 + both models on the GPU; T1–T3 code written on branch `t1-t3`, awaiting a Maven build on the owner's machine; D30 people still to be named)
+**Last updated:** 23 Nov 2026 night (G1 passed on the owner's machine (E43): `num_ctx` 16384 with a q8_0 KV cache fits fully on the GPU, projection 17.8 h; D44 model run configuration PROPOSED; `t4-g1` merged to `main`; one laptop hard-reset under GPU load (R35); next: T5 executor; D30 people still to be named)
 
 ## Current stage
 
@@ -50,7 +50,8 @@
 | **Stage 0 GPU check** (22 Nov 2026): RTX 3050 6 GB Laptop GPU visible inside WSL2 Ubuntu, driver 610.60, CUDA 13.3, 0 MiB used | Owner's `nvidia-smi` output; EXPERIMENT_PROTOCOL §11 |
 | **Focused novelty check + seven full-text reviews** (23 Nov 2026) | RESEARCH_LOG §5, E38 |
 | **T0: local LLM** (23 Nov 2026): Ollama 0.40.17 in the main WSL Ubuntu, Qwen3 4B Instruct-2507 and Gemma 3 4B pulled; runs 100% on the GPU after a service restart (~53 tokens/s on short prompts) | RESEARCH_LOG E40; README |
-| **T1–T3 code** (23 Nov 2026, branch `t1-t3`): spec normaliser + D5.1 keyword scan, test format + static validator, Ollama client with GPU/truncation guards and resume cache, CLI. Compiled and partly tested in the assistant's workspace with stand-ins (Maven Central blocked there); **full `mvn package` on the owner's machine pending** | ARCHITECTURE (implemented 23 Nov); E41 |
+| **T1–T3 code** (23 Nov 2026, branch `t1-t3`): spec normaliser + D5.1 keyword scan, test format + static validator, Ollama client with GPU/truncation guards and resume cache, CLI. Compiled and partly tested in the assistant's workspace with stand-ins (Maven Central blocked there); `mvn package` on the owner's machine: 26/26 tests; compaction rule measured | ARCHITECTURE (implemented 23 Nov); E41, E42 |
+| **T4 + G1 test** (23 Nov 2026): shared system prompt, prompt builder, `g1` command. G1 on the owner's machine: fp16 KV cache did not fit at 12,288 or 16,384; with flash attention + q8_0 KV cache both fit fully (3.56 / 3.90 GB); largest held-out prompt 8,973 tokens, no truncation; median call ~12.7 s; projection 17.8 h for 4,365 calls (within the 40-hour rule, five seeds kept); outputs not bit-reproducible (R36). One hard reset in performance mode (R35); completed in balanced mode | RESEARCH_LOG E43; DECISIONS D44 (PROPOSED) |
 | **Final quality control** (23 Nov 2026): predicate counts per project, executability per C strategy, prompt sizes, statistical sensitivity | RESEARCH_LOG E39; proposal §3 |
 
 ## What has NOT been done
@@ -60,13 +61,14 @@
 - The probe is not the D5.1 input loader: no allow-list, no manifest, no spec normalisation.
 - No pipeline code, DSL, catalogues, prompts or generated tests.
 - Systematic novelty check: focused check done (E38); saved-string database recheck still due before submission.
-- Ollama not installed; no model tested; no prompt, catalogue text, DSL or executor exists.
+- No executor, reset adapters, feature extractor, catalogue text, selector or verdict engine yet (T5–T10). The model-quality test (T6, D43 checks 2–4) has not been run; G1 covers check (1) and a first speed estimate only.
 - Protocol **not frozen**; budgets (*s*, tokens, caps), LLM model and reviewers TBD.
 
 ## Decisions awaiting the owner
 
 1. **D30 (owner action, before the freeze on Day 6):** name the validator and the two arm-blind reviewers and confirm availability (validator Days 7–8, reviewers Days 8–9). Roles and independence rules: DECISIONS D30.
 2. **D43 threshold:** strategy adherence ≥ 50% per arm is a default set by the drafting assistant; change it before Day 5 if wanted.
+3. **D44 (PROPOSED):** model run configuration from G1: `num_ctx` 16384, flash attention + q8_0 KV cache, balanced power mode with PCIe link-state power management off. Needs the owner's agreement before T6.
 
 *Resolved 23 Nov 2026:* D32 (option b, 5 seeds kept), D41 (QC corrections), D42 (Podman reporting), D43 (mandatory feasibility checks); documentation commit approved.
 
@@ -148,7 +150,9 @@ Paper sections (introduction, related work, approach, design, threats) are draft
 
 ## Next task
 
-**23 Nov 2026 evening:** owner builds branch `t1-t3` (`mvn package`), runs `normalise` on the four specs and `llm-check`; on success the branch is merged to `main`. Then T4 (G1 speed/VRAM/truncation test with the largest held-out prompt) and T5 (executor). *Earlier the same day:* doc update committed; Day 1 tasks T0 (Ollama install) and T1 (project-level specs for Podman and nocodb, spec normaliser). Implementation order: proposal §7 (T0–T17).
+**23 Nov 2026 night:** owner agrees (or not) to D44. Then **T5: executor + reset adapters** (RESTCountries none; Dolibarr database dump; Podman fixture image + cleanup reset; nocodb container/SQLite restore) and second-role fixtures (2 h box), followed by T6 (Arm A prompt + model test, D43 checks 2–4). Before every long model run: balanced power mode, plugged in, GPU temperature log running (R35).
+
+*Earlier the same night:* **23 Nov 2026 late:** owner runs `g1` on branch `t4-g1` (performance mode, plugged in) with Podman's spec, context windows 12,288 and 16,384, compaction rule from E42; result decides `num_ctx` (or KV-cache quantisation) before T5. *Earlier:* owner builds branch `t1-t3` (`mvn package`), runs `normalise` on the four specs and `llm-check`; on success the branch is merged to `main`. Then T4 (G1 speed/VRAM/truncation test with the largest held-out prompt) and T5 (executor). *Earlier the same day:* doc update committed; Day 1 tasks T0 (Ollama install) and T1 (project-level specs for Podman and nocodb, spec normaliser). Implementation order: proposal §7 (T0–T17).
 
 *Earlier (22 Nov 2026):* **Phase 1 checkpoint with the owner** (22 Nov 2026), then Phase 2: Arm A end to end on RESTCountries, starting with the allow-listed input loader, run manifest and spec normaliser (D5.1). Two owner inputs are needed before the LLM generator is built: the LLM provider/model, and approval of the primary statistical procedure (criterion 1 below).
 

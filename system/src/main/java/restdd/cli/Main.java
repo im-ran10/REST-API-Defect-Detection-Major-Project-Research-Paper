@@ -30,6 +30,8 @@ import java.util.Set;
  *   sanitise  --spec FILE                 D5.1 keyword hits for the owner to review
  *   llm-check --spec FILE --model NAME [--num-ctx N] [--ollama URL]
  *                                         GPU preflight + one structured call on the first operation
+ *   g1 --spec FILE[,FILE...] --model NAME --num-ctx N[,N...] [--compact RULE] [--task-tokens N] [--projected-calls N]
+ *                                         G1 speed / VRAM / truncation test with the largest real prompt (D43)
  *   probe ...                             the Phase 1 probe (unchanged)
  * </pre>
  */
@@ -46,6 +48,7 @@ public final class Main {
             case "normalise" -> normalise(a);
             case "sanitise" -> sanitise(a);
             case "llm-check" -> llmCheck(a);
+            case "g1" -> G1.run(a);
             case "probe" -> ProbeMain.main(Arrays.copyOfRange(args, 1, args.length));
             default -> {
                 System.err.println("unknown command " + cmd);
@@ -64,7 +67,7 @@ public final class Main {
         return m;
     }
 
-    private static String need(Map<String, String> a, String k) {
+    static String need(Map<String, String> a, String k) {
         String v = a.get(k);
         if (v == null) {
             System.err.println("missing --" + k);

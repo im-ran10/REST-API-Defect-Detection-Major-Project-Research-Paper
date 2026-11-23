@@ -65,6 +65,7 @@ Rules for editing this file are in [CLAUDE.md](../CLAUDE.md). Never delete or si
 | D41 | Final quality-control corrections (predicates, executability, fixtures, context rule) | PROVISIONAL (owner, 23 Nov 2026) |
 | D42 | Reporting requirements for Podman's dominance (23 of 28 defects) | PROVISIONAL (owner, 23 Nov 2026) |
 | D43 | Mandatory model-feasibility checks before the model configuration is frozen | PROVISIONAL (owner, 23 Nov 2026) |
+| D44 | Model run configuration from G1 (num_ctx 16384, q8_0 KV cache with flash attention, balanced power mode) | PROPOSED (23 Nov 2026) |
 | D2–D7 (original) | Phase 1 proposals of 16 Nov 2026 | SUPERSEDED by D2.1–D7.1 |
 | D16 (original options) | Fallback options (a)/(b)/(c) | SUPERSEDED by D16.1 |
 | D13 (original) | Exploration with strict ancestry check | SUPERSEDED by D13.1 |
@@ -195,6 +196,7 @@ Reasoning: [`proposals/2026-11-23_ten_day_design_and_qc.md`](proposals/2026-11-2
 | D41 | Quality-control corrections (approved with the explicit condition that D4.1 and the firewall are unchanged): filter vs pagination names split; C6 predicate = action sub-resource or create–read–(update or delete) lifecycle; C10 restricted to multipart; C7 only where a second-role fixture is built (2 h time box per project, public docs only); Podman fixture pre-loads one image and resets everything else; G1 uses the largest held-out prompt, with a fixed context window or an arm-independent slice-compaction rule fixed before the freeze; statistical reporting as in the reasoning document §3.4. | Amends D3.1 predicates, D27 test | PROVISIONAL (owner, 23 Nov 2026) |
 | D42 | **Reporting for Podman's dominance** (23 of 28 primary defects): the paper reports (1) results separately per project, (2) a Podman-only sensitivity analysis of RQ1/RQ2, (3) strategy applicability by project (which B/C families fired where), (4) explicit limitations from Podman's share; no broad generalisation claims. | Amends EXPERIMENT_PROTOCOL §10 | PROVISIONAL (owner, 23 Nov 2026) |
 | D43 | **Mandatory model-feasibility checks** before the model configuration is frozen (all must pass; none silently skipped): (1) **full-prompt context test** with the largest held-out prompt at the chosen `num_ctx`, zero truncation (`prompt_eval_count` = counted tokens), with no silent truncation ever (truncation fails the call); (2) **JSON validity** T1 ≥ 95%, with T2–T4 as in D27; (3) **strategy adherence** of B and C tests on the Day 5 development sample, threshold ≥ 50% per arm (default set by the drafting assistant; the owner may change it before Day 5); (4) **generation time** measured per arm and the binding 40-hour projection. A failed check is fixed by development-side changes before the freeze or escalated to the owner. | Supersedes D39 (adherence becomes a gate) | PROVISIONAL (owner, 23 Nov 2026; threshold default flagged) |
+| D44 | **Model run configuration from G1 (E43).** `num_ctx` **16384** for every call of every arm; Ollama server with **flash attention on and a q8_0 KV cache** (systemd drop-in `ollama.service.d/kv-cache.conf`, README); `num_predict` 2048; D41 compaction rule `cap=200,drop-examples,drop-schema-descriptions,resp-depth=2`. Machine settings for all model runs: Windows **balanced** power mode, plugged in, PCIe link-state power management **off** on AC. Reason: at fp16 KV the model did not fit in VRAM at 12288 or 16384 (partial CPU offload); with q8_0 KV both fit fully (3.56 / 3.90 GB) at the same speed, and 16384 leaves ~5.3k tokens of headroom above the largest held-out prompt plus maximum output (8,973 + 2,048) for the longer B/C task text. The machine settings follow a hard system reset in performance mode during the first G1 attempt (R35). Generation is not bit-reproducible on this GPU (R36): reproducibility rests on the archived raw outputs (call log and cache), and seeds are independent draws. | Amends D27 configuration; satisfies D43 check (1) for the Podman and nocodb held-out specs | PROPOSED (23 Nov 2026; needs owner agreement) |
 
 ---
 
@@ -241,6 +243,7 @@ Reasoning: [`proposals/2026-11-23_ten_day_design_and_qc.md`](proposals/2026-11-2
 | 23 Nov 2026 | D42, D43 | new → PROVISIONAL | Owner decisions, 23 Nov 2026 |
 | 23 Nov 2026 | D30 | stays PROPOSED | Responsibilities clarified; owner action: name the people |
 | 23 Nov 2026 | D7.1, D11, D12, D3.1 | no status change | Amended or clarified by D24, D25, D31, D34/D35/D41 |
+| 23 Nov 2026 | D44 | new → PROPOSED | Model run configuration measured in G1 (E43); needs the owner's agreement |
 
 ## How to add a decision
 

@@ -90,9 +90,12 @@ public final class OllamaClient {
                 long size = m.path("size").asLong();
                 long vram = m.path("size_vram").asLong();
                 if (size <= 0 || vram < size) {
+                    String hint = vram == 0
+                            ? "Ollama is running on the CPU (GPU discovery failed): sudo systemctl restart ollama, then retry"
+                            : "the model does not fit in GPU memory at num_ctx " + o.numCtx()
+                              + ": lower num_ctx, or use the q8_0 KV cache with flash attention (README)";
                     throw new LlmException(LlmException.Kind.NOT_ON_GPU, String.format(
-                            "%s is %d of %d bytes in VRAM; restart Ollama (sudo systemctl restart ollama) and retry",
-                            o.model(), vram, size));
+                            "%s is %d of %d bytes in VRAM; %s", o.model(), vram, size, hint));
                 }
                 if (m.has("context_length") && m.get("context_length").asInt() != o.numCtx()) {
                     throw new LlmException(LlmException.Kind.NOT_ON_GPU, "loaded with context "
