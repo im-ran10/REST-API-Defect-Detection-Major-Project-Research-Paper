@@ -60,6 +60,25 @@ class SpecNormaliserTest {
     }
 
     @Test
+    void schemaDescriptionsDroppedButOperationTextKept() throws Exception {
+        Path tmp = java.nio.file.Files.createTempFile("spec", ".json");
+        java.nio.file.Files.writeString(tmp, """
+                {"openapi":"3.0.3","info":{"title":"t","version":"1"},"paths":{"/a":{"get":{
+                  "summary":"List things","description":"Operation text",
+                  "parameters":[{"name":"q","in":"query","description":"Param text","schema":{"type":"string","description":"Schema text"}}],
+                  "responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"type":"object",
+                    "properties":{"description":{"type":"string","description":"Field doc"},
+                                  "inner":{"type":"object","properties":{"deep":{"type":"object","properties":{"x":{"type":"integer"}}}}}}}}}}}}}}}
+                """);
+        String text = SpecNormaliser.normalise(tmp, new SpecNormaliser.Compaction(200, true, 0, true, 2))
+                .operations().get(0).text();
+        assertTrue(text.contains("Operation text") && text.contains("Param text") && text.contains("List things"), text);
+        assertFalse(text.contains("Schema text") || text.contains("Field doc"), text);
+        assertTrue(text.contains("\"description\":{\"type\":\"string\"}"), "a property named description survives: " + text);
+        assertTrue(text.contains("$truncated") && !text.contains("\"x\""), "response schema cut at depth 2: " + text);
+    }
+
+    @Test
     void sanitiserReportsLeakageWords() throws Exception {
         Path tmp = java.nio.file.Files.createTempFile("spec", ".yaml");
         java.nio.file.Files.writeString(tmp, """

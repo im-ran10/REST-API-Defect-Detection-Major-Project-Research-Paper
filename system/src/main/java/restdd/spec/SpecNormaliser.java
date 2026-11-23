@@ -55,12 +55,21 @@ public final class SpecNormaliser {
     /**
      * Arm-independent compaction rule (D41). {@link #NONE} keeps everything.
      *
-     * @param descriptionCap max characters kept per description/summary (0 = unlimited)
-     * @param dropExamples   drop {@code example}/{@code examples}
-     * @param maxSchemaDepth schema nesting depth after which a schema becomes {@code {"$truncated": true}} (0 = unlimited)
+     * @param descriptionCap         max characters kept per description/summary (0 = unlimited)
+     * @param dropExamples           drop {@code example}/{@code examples}
+     * @param maxSchemaDepth         schema nesting depth after which a schema is cut to its type (0 = unlimited)
+     * @param dropSchemaDescriptions drop {@code description}/{@code title} inside schemas (operation summary,
+     *                               operation description and parameter descriptions are kept, subject to the cap)
+     * @param responseSchemaDepth    like maxSchemaDepth, but only for 2xx response schemas (0 = unlimited); the
+     *                               runner still checks responses against the full spec
      */
-    public record Compaction(int descriptionCap, boolean dropExamples, int maxSchemaDepth) {
-        public static final Compaction NONE = new Compaction(0, false, 0);
+    public record Compaction(int descriptionCap, boolean dropExamples, int maxSchemaDepth,
+                             boolean dropSchemaDescriptions, int responseSchemaDepth) {
+        public static final Compaction NONE = new Compaction(0, false, 0, false, 0);
+
+        public Compaction(int descriptionCap, boolean dropExamples, int maxSchemaDepth) {
+            this(descriptionCap, dropExamples, maxSchemaDepth, false, 0);
+        }
     }
 
     /** One operation ready for a prompt. {@code key} is "METHOD /path/{template}". */
@@ -208,7 +217,7 @@ public final class SpecNormaliser {
         Map<String, JsonNode> params = new LinkedHashMap<>();
         for (JsonNode src : List.of(item.path("parameters"), op.path("parameters"))) {
             for (JsonNode p : src) {
-                JsonNode resolved = inline(p, new ArrayDeque<>(), 0);
+                JsonNode resolved = inline(p, new ArrayDeque<>(), 0, compaction.maxSchemaDepth(), false);
                 params.put(resolved.path("in").asText() + ":" + resolved.path("name").asText(), resolved);
             }
         }
@@ -217,7 +226,7 @@ public final class SpecNormaliser {
             params.values().forEach(arr::add);
         }
         if (op.has("requestBody")) {
-            s.set("requestBody", inline(op.get("requestBody"), new ArrayDeque<>(), 0));
+            s.set("requestBody", inline(op.get("requestBody"), new ArrayDeque<>(), 0, compaction.maxSchemaDepth(), false));
         }
         ObjectNode responses = s.putObject("responses");
         JsonNode rs = op.path("responses");
@@ -235,7 +244,8 @@ public final class SpecNormaliser {
                 out.put("description", cap(r.get("description").asText()));
             }
             if (code.startsWith("2") && r.has("content") && !r.get("content").isEmpty()) {
-                out.set("content", inline(r.get("content"), new ArrayDeque<>(), 0));
+                int depth = compaction.responseSchemaDepth() > 0 ? compaction.responseSchemaDepth() : compaction.maxSchemaDepth();
+                out.set("content", inline(r.get("content"), new ArrayDeque<>(), 0, depth, false));
             }
             responses.set(code, out);
         }
@@ -246,8 +256,14 @@ public final class SpecNormaliser {
         return s;
     }
 
-    /** Deep copy with $refs inlined, x-* removed, compaction applied. */
-    private JsonNode inline(JsonNode node, Deque<String> open, int schemaDepth) {
+    private static final java.util.Set<String> SCHEMA_KEYS = java.util.Set.of("schema", "properties", "items",
+            "additionalProperties", "allOf", "anyOf", "oneOf", "not");
+
+    /**
+     * Deep copy with $refs inlined, x-* removed, compaction applied. {@code inSchema} is true below a "schema"
+     * key (or inside properties/items/...), where schema-internal descriptions may be dropped.
+     */
+    private JsonNode inline(JsonNode node, Deque<String> open, int schemaDepth, int maxDepth, boolean inSchema) {
         if (node == null) {
             return F.nullNode();
         }
@@ -266,12 +282,18 @@ public final class SpecNormaliser {
                     return F.objectNode().put("$unresolved", name);
                 }
                 open.push(ref);
-                JsonNode out = inline(target, open, schemaDepth);
+                JsonNode out = inline(target, open, schemaDepth, maxDepth, inSchema);
                 open.pop();
                 return out;
             }
-            if (compaction.maxSchemaDepth() > 0 && schemaDepth > compaction.maxSchemaDepth() && looksLikeSchema(node)) {
-                return F.objectNode().put("$truncated", true);
+            // At the depth limit, a schema that still has children (properties, items, ...) is cut to its type.
+            if (maxDepth > 0 && schemaDepth >= maxDepth && hasChildSchemas(node)) {
+                ObjectNode cut = F.objectNode();
+                if (node.has("type")) {
+                    cut.set("type", node.get("type"));
+                }
+                cut.put("$truncated", true);
+                return cut;
             }
             ObjectNode out = F.objectNode();
             for (Iterator<Map.Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
@@ -283,27 +305,33 @@ public final class SpecNormaliser {
                 if (compaction.dropExamples() && (k.equals("example") || k.equals("examples"))) {
                     continue;
                 }
+                if (inSchema && compaction.dropSchemaDescriptions()
+                        && (k.equals("description") || k.equals("title")) && e.getValue().isTextual()) {
+                    continue;
+                }
                 if ((k.equals("description") || k.equals("summary")) && e.getValue().isTextual()) {
                     out.set(k, TextNode.valueOf(cap(e.getValue().asText())));
                     continue;
                 }
                 boolean deeper = k.equals("properties") || k.equals("items") || k.equals("additionalProperties")
                         || k.equals("allOf") || k.equals("anyOf") || k.equals("oneOf");
-                out.set(k, inline(e.getValue(), open, deeper ? schemaDepth + 1 : schemaDepth));
+                // Inside "properties" the keys are property names, not schema keywords.
+                boolean childInSchema = inSchema || SCHEMA_KEYS.contains(k);
+                out.set(k, inline(e.getValue(), open, deeper ? schemaDepth + 1 : schemaDepth, maxDepth, childInSchema));
             }
             return out;
         }
         if (node.isArray()) {
             ArrayNode out = F.arrayNode();
-            node.forEach(n -> out.add(inline(n, open, schemaDepth)));
+            node.forEach(n -> out.add(inline(n, open, schemaDepth, maxDepth, inSchema)));
             return out;
         }
         return node.deepCopy();
     }
 
-    private static boolean looksLikeSchema(JsonNode n) {
-        return n.has("type") || n.has("properties") || n.has("items") || n.has("allOf") || n.has("oneOf")
-                || n.has("anyOf");
+    private static boolean hasChildSchemas(JsonNode n) {
+        return n.has("properties") || n.has("items") || n.has("allOf") || n.has("oneOf") || n.has("anyOf")
+                || (n.has("additionalProperties") && n.get("additionalProperties").isObject());
     }
 
     private JsonNode deref(String ref, List<String> messages) {

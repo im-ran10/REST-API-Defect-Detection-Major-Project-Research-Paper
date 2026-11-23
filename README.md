@@ -87,7 +87,7 @@ Models are stored by the service under `/usr/share/ollama/.ollama/models`, outsi
 ```bash
 cd ~/projects/rest-api-defect-detection/system
 mvn package                                        # builds target/restdd.jar and runs the unit tests
-java -jar target/restdd.jar normalise --spec <spec file> [--out <dir>] [--compact cap=200,drop-examples,depth=4]
+java -jar target/restdd.jar normalise --spec <spec file> [--out <dir>] [--compact cap=200,drop-examples,drop-schema-descriptions,resp-depth=2]
 java -jar target/restdd.jar sanitise  --spec <spec file>                 # D5.1 keyword hits for owner review
 java -jar target/restdd.jar llm-check --spec <spec file> --model qwen3:4b-instruct-2507-q4_K_M [--num-ctx 8192]
 ```

@@ -73,7 +73,7 @@ public final class Main {
         return v;
     }
 
-    /** {@code --compact cap=200,drop-examples,depth=4} (D41 compaction rule); absent = no compaction. */
+    /** {@code --compact cap=200,drop-examples,drop-schema-descriptions,depth=N,resp-depth=N} (D41 compaction rule); absent = no compaction. */
     static SpecNormaliser.Compaction compaction(Map<String, String> a) {
         String v = a.get("compact");
         if (v == null) {
@@ -81,20 +81,26 @@ public final class Main {
         }
         int cap = 0;
         int depth = 0;
+        int respDepth = 0;
         boolean drop = false;
+        boolean schemaDesc = false;
         for (String part : v.split(",")) {
             String p = part.trim();
             if (p.startsWith("cap=")) {
                 cap = Integer.parseInt(p.substring(4));
             } else if (p.startsWith("depth=")) {
                 depth = Integer.parseInt(p.substring(6));
+            } else if (p.startsWith("resp-depth=")) {
+                respDepth = Integer.parseInt(p.substring(11));
             } else if (p.equals("drop-examples")) {
                 drop = true;
+            } else if (p.equals("drop-schema-descriptions")) {
+                schemaDesc = true;
             } else {
                 throw new IllegalArgumentException("unknown --compact part: " + p);
             }
         }
-        return new SpecNormaliser.Compaction(cap, drop, depth);
+        return new SpecNormaliser.Compaction(cap, drop, depth, schemaDesc, respDepth);
     }
 
     private static void normalise(Map<String, String> a) throws Exception {
