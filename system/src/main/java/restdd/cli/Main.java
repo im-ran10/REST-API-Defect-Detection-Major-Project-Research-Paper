@@ -25,7 +25,8 @@ import java.util.Set;
 /**
  * Command-line entry point.
  * <pre>
- *   normalise --spec FILE [--out DIR]     slices + aggregate statistics (no operation names printed)
+ *   normalise --spec FILE [--out DIR] [--compact cap=N,drop-examples,depth=N]
+ *                                         slices + aggregate statistics (no operation names printed)
  *   sanitise  --spec FILE                 D5.1 keyword hits for the owner to review
  *   llm-check --spec FILE --model NAME [--num-ctx N] [--ollama URL]
  *                                         GPU preflight + one structured call on the first operation
@@ -72,8 +73,36 @@ public final class Main {
         return v;
     }
 
+    /** {@code --compact cap=200,drop-examples,depth=4} (D41 compaction rule); absent = no compaction. */
+    static SpecNormaliser.Compaction compaction(Map<String, String> a) {
+        String v = a.get("compact");
+        if (v == null) {
+            return SpecNormaliser.Compaction.NONE;
+        }
+        int cap = 0;
+        int depth = 0;
+        boolean drop = false;
+        for (String part : v.split(",")) {
+            String p = part.trim();
+            if (p.startsWith("cap=")) {
+                cap = Integer.parseInt(p.substring(4));
+            } else if (p.startsWith("depth=")) {
+                depth = Integer.parseInt(p.substring(6));
+            } else if (p.equals("drop-examples")) {
+                drop = true;
+            } else {
+                throw new IllegalArgumentException("unknown --compact part: " + p);
+            }
+        }
+        return new SpecNormaliser.Compaction(cap, drop, depth);
+    }
+
     private static void normalise(Map<String, String> a) throws Exception {
-        NormalisedSpec s = SpecNormaliser.normalise(Path.of(need(a, "spec")));
+        SpecNormaliser.Compaction comp = compaction(a);
+        NormalisedSpec s = SpecNormaliser.normalise(Path.of(need(a, "spec")), comp);
+        if (comp != SpecNormaliser.Compaction.NONE) {
+            System.out.println("compaction: " + comp);
+        }
         int[] t = s.operations().stream().mapToInt(OperationSlice::estimatedTokens).sorted().toArray();
         System.out.printf("%s | sha256 %s | operations %d | defaultValue mapped %d | recursive cuts %d | unresolved refs %d%n",
                 s.declaredVersion(), s.sourceSha256().substring(0, 16), t.length, s.defaultValueMapped(),
@@ -102,7 +131,7 @@ public final class Main {
     }
 
     private static void llmCheck(Map<String, String> a) throws Exception {
-        NormalisedSpec spec = SpecNormaliser.normalise(Path.of(need(a, "spec")));
+        NormalisedSpec spec = SpecNormaliser.normalise(Path.of(need(a, "spec")), compaction(a));
         String model = need(a, "model");
         int numCtx = Integer.parseInt(a.getOrDefault("num-ctx", "8192"));
         GenerationOptions o = new GenerationOptions(model, numCtx, 2048, 0.7, 0.8, 20, 1.0, null, "30m");
