@@ -4,6 +4,18 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-23 (night) — G1 result, model run configuration, merge of `t4-g1`
+
+**Added**
+- RESEARCH_LOG E43 (G1: VRAM fit, largest held-out prompt 8,973 tokens, speeds, 17.8 h projection, non-reproducible outputs, laptop reset); risks R35 (machine stability) and R36 (generation not bit-reproducible).
+- DECISIONS D44 (PROPOSED): `num_ctx` 16384, flash attention + q8_0 KV cache, balanced power mode, PCIe link-state power management off.
+- README: Ollama KV-cache drop-in, machine settings and GPU temperature log for long runs.
+
+**Changed**
+- `OllamaClient.preflight`: the NOT_ON_GPU message now separates a CPU fallback (restart Ollama) from a model that does not fit at the chosen `num_ctx` (lower it or use the q8_0 KV cache).
+- EXPERIMENT_PROTOCOL: amendment note with the G1 configuration and the reproducibility statement; ARCHITECTURE: server-side KV-cache setting is part of the recorded configuration, not of the cache key.
+- Branch `t4-g1` merged into `main`.
+
 ### 2026-11-23 (late) — T4 G1 command and prompt skeleton (branch `t4-g1`)
 
 **Added**

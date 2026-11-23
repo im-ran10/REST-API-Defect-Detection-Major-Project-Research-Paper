@@ -83,6 +83,15 @@ ollama ps                                          # PROCESSOR must read "100% G
 ```
 Models are stored by the service under `/usr/share/ollama/.ollama/models`, outside the repository. In WSL the GPU can fail to initialise within Ollama's 30-second discovery window right after a boot (the service then silently uses the CPU); `sudo systemctl restart ollama` fixes it. The client refuses to run unless the model is fully on the GPU.
 
+Run configuration (D44, PROPOSED; measured in G1, E43). On the 6 GB laptop GPU the model fits fully at `num_ctx` 16384 only with flash attention and an 8-bit KV cache, set for the service with a systemd drop-in (undo: delete the file, `daemon-reload`, restart):
+```bash
+sudo mkdir -p /etc/systemd/system/ollama.service.d
+printf '[Service]\nEnvironment="OLLAMA_FLASH_ATTENTION=1"\nEnvironment="OLLAMA_KV_CACHE_TYPE=q8_0"\n' | sudo tee /etc/systemd/system/ollama.service.d/kv-cache.conf
+sudo systemctl daemon-reload && sudo systemctl restart ollama
+systemctl --no-pager show ollama -p Environment     # record this line with every run
+```
+Before every long model run (R35): Windows **balanced** power mode, plugged in; PCIe link-state power management off on AC (once, in an administrator PowerShell: `powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ASPM 0`, then `powercfg /setactive SCHEME_CURRENT`); and a GPU log in a separate PowerShell window: `nvidia-smi --query-gpu=timestamp,temperature.gpu,power.draw,clocks.gr,utilization.gpu,memory.used --format=csv -l 5 -f $HOME\gpu-log.csv`.
+
 **System CLI** (`system/`, plain Java 21 + Maven, swagger-parser 2.1.48), built to `target/restdd.jar`:
 ```bash
 cd ~/projects/rest-api-defect-detection/system
