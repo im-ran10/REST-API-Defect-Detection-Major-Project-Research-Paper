@@ -110,6 +110,14 @@ class StaticValidatorTest {
     }
 
     @Test
+    void bodySchemaFallsBackToWildcardMediaType() throws Exception {
+        var m = new com.fasterxml.jackson.databind.ObjectMapper();
+        assertEquals("object", StaticValidator.bodySchema(m.readTree("{\"*/*\":{\"schema\":{\"type\":\"object\"}}}")).path("type").asText());
+        assertEquals("array", StaticValidator.bodySchema(m.readTree("{\"application/vnd.x+json\":{\"schema\":{\"type\":\"array\"}}}")).path("type").asText());
+        assertTrue(StaticValidator.bodySchema(m.readTree("{\"text/plain\":{}}")).isMissingNode());
+    }
+
+    @Test
     void pathLanguage() {
         assertNotNull(JsonPathLite.parse("$"));
         assertNotNull(JsonPathLite.parse("$.a[0].b"));

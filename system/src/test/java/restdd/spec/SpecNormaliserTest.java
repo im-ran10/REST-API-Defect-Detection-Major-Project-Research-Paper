@@ -28,8 +28,11 @@ class SpecNormaliserTest {
             assertTrue(s.estimatedTokens() > 0);
         }
         OperationSlice post = spec.find("POST", "/notes");
-        assertEquals("text", post.slice().at("/requestBody/content/application~1json/schema/required/0").asText(),
+        // Swagger 2.0 without "consumes" converts to "*/*"; take the first media type either way.
+        var content = post.slice().at("/requestBody/content");
+        assertEquals("text", content.elements().next().at("/schema/required/0").asText(),
                 "request body schema inlined: " + post.text());
+        assertFalse(post.text().contains("\"content\":{}"), "empty content dropped: " + post.text());
         OperationSlice get = spec.find("GET", "/notes/{id}");
         assertEquals("id", get.slice().at("/parameters/0/name").asText(), "path-level parameter merged");
         assertEquals(64, spec.sourceSha256().length());

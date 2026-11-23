@@ -234,7 +234,7 @@ public final class SpecNormaliser {
             if (r.hasNonNull("description")) {
                 out.put("description", cap(r.get("description").asText()));
             }
-            if (code.startsWith("2") && r.has("content")) {
+            if (code.startsWith("2") && r.has("content") && !r.get("content").isEmpty()) {
                 out.set("content", inline(r.get("content"), new ArrayDeque<>(), 0));
             }
             responses.set(code, out);

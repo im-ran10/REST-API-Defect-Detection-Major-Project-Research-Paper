@@ -389,7 +389,7 @@ public final class StaticValidator {
             issues.add(at + ": required request body missing");
         }
         if (hasBody) {
-            JsonNode schema = rb.path("content").path("application/json").path("schema");
+            JsonNode schema = bodySchema(rb.path("content"));
             if (!schema.isMissingNode()) {
                 List<String> bodyIssues = new ArrayList<>();
                 JsonNode body = st.get("body");
@@ -404,6 +404,23 @@ public final class StaticValidator {
                 bodyIssues.forEach(b -> issues.add(at + ": " + b));
             }
         }
+    }
+
+    /**
+     * Body schema to check against: {@code application/json}, else any JSON media type, else {@code *}{@code /*}
+     * (what swagger-parser assigns when a Swagger 2.0 spec declares no {@code consumes}).
+     */
+    static JsonNode bodySchema(JsonNode content) {
+        if (content.has("application/json")) {
+            return content.get("application/json").path("schema");
+        }
+        for (Iterator<Map.Entry<String, JsonNode>> it = content.fields(); it.hasNext(); ) {
+            Map.Entry<String, JsonNode> e = it.next();
+            if (e.getKey().contains("json")) {
+                return e.getValue().path("schema");
+            }
+        }
+        return content.has("*/*") ? content.get("*/*").path("schema") : com.fasterxml.jackson.databind.node.MissingNode.getInstance();
     }
 
     private static JsonNode headerIgnoreCase(JsonNode headers, String name) {
