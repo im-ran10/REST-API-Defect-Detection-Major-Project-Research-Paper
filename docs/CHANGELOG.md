@@ -4,10 +4,10 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
-### 2026-11-24 — G2 part 2 (E48)
+### 2026-11-24 — G2 part 2 (E48) and T4 manual check (E49)
 
 **Added**
-- RESEARCH_LOG E48 (execution, T3, automatic T4, GPU peak).
+- RESEARCH_LOG E48 (execution, T3, automatic T4, GPU peak) and E49 (manual T4 = 50%, G2 fails as configured; fix proposed).
 
 ### 2026-11-24 — G2 part 1 (E47); operation lists frozen
 
