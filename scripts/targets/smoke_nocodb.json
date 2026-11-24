@@ -1,0 +1,22 @@
+{"tests": [
+  {"title": "signed-in user can read their profile",
+   "steps": [{"method": "GET", "path": "/api/v1/db/auth/user/me",
+              "assertions": [{"type": "status", "op": "equals", "value": 200},
+                             {"type": "body", "path": "$.email", "op": "exists"}]}]},
+  {"title": "fixture table starts with its three rows",
+   "steps": [{"method": "GET", "path": "/api/v1/db/data/{orgs}/{projectName}/{tableName}",
+              "pathParams": {"orgs": "${fixture.orgs}", "projectName": "${fixture.projectName}", "tableName": "${fixture.tableName}"},
+              "assertions": [{"type": "status", "op": "equals", "value": 200},
+                             {"type": "body", "path": "$.list", "op": "lengthEquals", "value": 3}]}]},
+  {"title": "a created row appears in the list (passes on every run only if the reset works)",
+   "steps": [{"method": "POST", "path": "/api/v1/db/data/{orgs}/{projectName}/{tableName}",
+              "pathParams": {"orgs": "${fixture.orgs}", "projectName": "${fixture.projectName}", "tableName": "${fixture.tableName}"},
+              "body": {"Title": "${fixture.uid}", "Qty": 1},
+              "assertions": [{"type": "status", "op": "in", "value": [200, 201]}]},
+             {"method": "GET", "path": "/api/v1/db/data/{orgs}/{projectName}/{tableName}",
+              "pathParams": {"orgs": "${fixture.orgs}", "projectName": "${fixture.projectName}", "tableName": "${fixture.tableName}"},
+              "assertions": [{"type": "body", "path": "$.list", "op": "lengthEquals", "value": 4}]}]},
+  {"title": "request without a token is refused",
+   "steps": [{"method": "GET", "path": "/api/v1/db/meta/projects/", "auth": "none",
+              "assertions": [{"type": "status", "op": "in", "value": [401, 403]}]}]}
+]}

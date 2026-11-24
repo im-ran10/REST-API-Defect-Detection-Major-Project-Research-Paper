@@ -11,7 +11,7 @@
 # the repository or the Dolibarr clone.
 # It contains the database, so it holds the admin user's (hashed) password and API key: keep it private.
 #
-# Every setting can be overridden with an environment variable of the same name.
+# Every setting can be overridden with an environment variable of the same name (none clashes with WSL defaults).
 set -euo pipefail
 
 COMPOSE="${COMPOSE:-docker compose -f docker-compose.yml -f docker-compose.override.yml}"
