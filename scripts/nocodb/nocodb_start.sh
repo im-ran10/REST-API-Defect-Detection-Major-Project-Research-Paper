@@ -7,12 +7,12 @@
 # restarts and restores). Neither is ever printed.
 set -euo pipefail
 
-IMAGE="${IMAGE:-nocodb/nocodb:0.90.3}"
-NAME="${NAME:-restdd-nocodb}"
-VOLUME="${VOLUME:-restdd-nocodb-data}"
-PORT="${PORT:-8090}"
-CRED="${CRED:-$HOME/.nocodb_credentials}"
-ENVF="${ENVF:-$HOME/.nocodb_env}"
+IMAGE="${RESTDD_NOCODB_IMAGE:-nocodb/nocodb:0.90.3}"
+CONTAINER="${RESTDD_NOCODB_CONTAINER:-restdd-nocodb}"
+VOLUME="${RESTDD_NOCODB_VOLUME:-restdd-nocodb-data}"
+PORT="${RESTDD_NOCODB_PORT:-8090}"
+CRED="${RESTDD_NOCODB_CRED:-$HOME/.nocodb_credentials}"
+ENVF="${RESTDD_NOCODB_ENVF:-$HOME/.nocodb_env}"
 
 umask 077
 if [ ! -f "$CRED" ]; then
@@ -26,12 +26,12 @@ if [ ! -f "$ENVF" ]; then
   echo "created $ENVF (private, not printed)"
 fi
 
-if docker ps -a --format '{{.Names}}' | grep -qx "$NAME"; then
-  docker start "$NAME" > /dev/null
-  echo "started existing container $NAME"
+if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER"; then
+  docker start "$CONTAINER" > /dev/null
+  echo "started existing container $CONTAINER"
 else
-  docker run -d --name "$NAME" -p "127.0.0.1:$PORT:8080" -v "$VOLUME:/usr/app/data" --env-file "$ENVF" "$IMAGE" > /dev/null
-  echo "created container $NAME from $IMAGE (port $PORT, volume $VOLUME)"
+  docker run -d --name "$CONTAINER" -p "127.0.0.1:$PORT:8080" -v "$VOLUME:/usr/app/data" --env-file "$ENVF" "$IMAGE" > /dev/null
+  echo "created container $CONTAINER from $IMAGE (port $PORT, volume $VOLUME)"
 fi
 
 for i in $(seq 1 180); do
@@ -42,5 +42,5 @@ for i in $(seq 1 180); do
   sleep 1
 done
 echo "nocodb did not come up within 180 s; last 30 log lines:" >&2
-docker logs --tail 30 "$NAME" >&2
+docker logs --tail 30 "$CONTAINER" >&2
 exit 1
