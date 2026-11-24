@@ -12,6 +12,18 @@ counts() {
 
 case "$ACTION" in
   snapshot)
+    # Podman built from source (benchmark install) ships without containers-common's default config; without a
+    # trust policy it can neither pull nor load images. Generic defaults, created only if missing, same for every
+    # version and arm (recorded in RESEARCH_LOG).
+    mkdir -p /etc/containers
+    if [ ! -f /etc/containers/policy.json ]; then
+      echo '{"default":[{"type":"insecureAcceptAnything"}]}' > /etc/containers/policy.json
+      echo "created default /etc/containers/policy.json (was missing)"
+    fi
+    if [ ! -f /etc/containers/registries.conf ]; then
+      echo 'unqualified-search-registries = ["docker.io"]' > /etc/containers/registries.conf
+      echo "created default /etc/containers/registries.conf (was missing)"
+    fi
     umask 077
     mkdir -p "$SNAP"
     podman image exists "$IMAGE" || podman pull -q "$IMAGE" > /dev/null
