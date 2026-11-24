@@ -108,7 +108,8 @@ public final class CommandReset implements ResetAdapter {
         if (healthUrl == null || healthUrl.isBlank()) {
             return;
         }
-        HttpClient http = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER)
+        // HTTP/1.1 like the executor: a cleartext HTTP/2 upgrade request makes some Node servers drop the connection
+        HttpClient http = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).followRedirects(HttpClient.Redirect.NEVER)
                 .connectTimeout(Duration.ofSeconds(5)).build();
         long t0 = System.nanoTime();
         long deadline = t0 + healthTimeout.toNanos();
