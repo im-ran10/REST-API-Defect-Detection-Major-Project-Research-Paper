@@ -103,6 +103,15 @@ java -jar target/restdd.jar g1 --spec <spec>[,<spec>] --model <model> --num-ctx 
 ```
 `g1` (D41/D43) builds the real prompt (shared system prompt + operation context + a task section padded to the expected longest B/C size) for the largest operation over the given specs and a median one, and for each context window checks that the model loads fully on the GPU, processes the largest prompt without truncation, and how fast it runs; it prints a projection for the 40-hour rule. It prints sizes and timings only, never operation names.
 
+**Generation and the model test (T6).** Before any model run: balanced power mode, plugged in, GPU temperature log running (R35).
+```bash
+java -jar target/restdd.jar generate --project dolibarr --spec <spec> --cap 20 --work runs/x --list-only   # D47 selection only
+java -jar target/restdd.jar generate --project dolibarr --spec <spec> --target <target.json> --cap 20 --seeds 1,2 --work runs/mt-dolibarr
+java -jar target/restdd.jar run-suites --work runs/mt-dolibarr --target <target.json> --spec <spec>
+java -jar target/restdd.jar model-test-report --work runs/mt-restcountries,runs/mt-dolibarr --out runs/t4-sample.json
+```
+Defaults: D44 configuration (num_ctx 16384, num_predict 2048), D41 compaction, D48 decoding settings, *s* = 3. A re-run of `generate` or `run-suites` resumes where it stopped.
+
 **Running a suite against a deployment (T5).** A target file (kept outside the repository; examples in `scripts/targets/`) gives the base URL, the auth environment variable and the reset commands:
 ```bash
 mkdir -p ~/restdd-targets && cp ~/projects/rest-api-defect-detection/scripts/targets/*.example.json ~/restdd-targets/   # once; edit paths if needed

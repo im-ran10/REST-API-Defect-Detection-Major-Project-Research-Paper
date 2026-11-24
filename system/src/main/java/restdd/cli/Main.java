@@ -34,6 +34,9 @@ import java.util.Set;
  *                                         G1 speed / VRAM / truncation test with the largest real prompt (D43)
  *   exec --target FILE --spec FILE --suite FILE [--s N] [--label L] [--out FILE] [--snapshot] [--only I,J]
  *                                         T5: run one suite against one deployment (reset first), write the record
+ *   generate --project P --spec F --target F --work DIR [--cap N] [--seeds 1,2] [--list-only]   T6: generation run (see Generate)
+ *   run-suites --work DIR --target F --spec F [--label L] [--snapshot]    run the generated suites against a deployment
+ *   model-test-report --work DIR1,DIR2 [--label L]                          G2 gate: Gate 0, T1-T4
  *   probe ...                             the Phase 1 probe (unchanged)
  * </pre>
  */
@@ -41,7 +44,7 @@ public final class Main {
 
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
-            System.err.println("usage: normalise | sanitise | llm-check | g1 | exec | probe  (see class javadoc)");
+            System.err.println("usage: normalise | sanitise | llm-check | g1 | exec | generate | run-suites | model-test-report | probe  (see class javadoc)");
             System.exit(2);
         }
         String cmd = args[0];
@@ -52,6 +55,9 @@ public final class Main {
             case "llm-check" -> llmCheck(a);
             case "g1" -> G1.run(a);
             case "exec" -> Exec.run(a);
+            case "generate" -> Generate.run(a);
+            case "run-suites" -> RunSuites.run(a);
+            case "model-test-report" -> ModelTestReport.run(a);
             case "probe" -> ProbeMain.main(Arrays.copyOfRange(args, 1, args.length));
             default -> {
                 System.err.println("unknown command " + cmd);

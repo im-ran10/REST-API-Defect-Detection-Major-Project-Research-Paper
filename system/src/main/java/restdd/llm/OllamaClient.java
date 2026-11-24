@@ -109,12 +109,12 @@ public final class OllamaClient {
 
     // ------------------------------------------------------------------ chat
 
-    /**
-     * One structured-output call. {@code tags} (arm, project, operation, seed, ...) go to the call log only;
-     * they never reach the model.
-     */
-    public ChatResult chat(String system, String user, JsonNode schema, GenerationOptions o, long seed,
-                           String modelDigest, Map<String, String> tags) {
+    /** True if this exact call is already in the cache (a resumed run then sends nothing to the model). */
+    public boolean isCached(String system, String user, JsonNode schema, GenerationOptions o, long seed, String modelDigest) {
+        return Files.exists(cacheDir.resolve(cacheKey(request(system, user, schema, o, seed), modelDigest) + ".json"));
+    }
+
+    private static ObjectNode request(String system, String user, JsonNode schema, GenerationOptions o, long seed) {
         ObjectNode req = JSON.createObjectNode();
         req.put("model", o.model());
         ArrayNode messages = req.putArray("messages");
@@ -129,7 +129,16 @@ public final class OllamaClient {
         req.put("shift", false);
         req.put("keep_alive", o.keepAlive());
         req.set("options", o.toOllamaOptions(seed));
+        return req;
+    }
 
+    /**
+     * One structured-output call. {@code tags} (arm, project, operation, seed, ...) go to the call log only;
+     * they never reach the model.
+     */
+    public ChatResult chat(String system, String user, JsonNode schema, GenerationOptions o, long seed,
+                           String modelDigest, Map<String, String> tags) {
+        ObjectNode req = request(system, user, schema, o, seed);
         String key = cacheKey(req, modelDigest);
         Path cached = cacheDir.resolve(key + ".json");
         if (Files.exists(cached)) {

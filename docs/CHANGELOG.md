@@ -4,6 +4,15 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-24 — T6 generation and model-test tooling (branch `t6-gen`); D47 approved, D48 proposed
+
+**Added**
+- `restdd.gen`: `OperationSelector`, `GenerationRun`, `GpuMonitor`; CLI `generate`, `run-suites`, `model-test-report`; `OllamaClient.isCached`; `GenerationTest` (4 tests).
+- DECISIONS D47 (PROVISIONAL, owner) and D48 (PROPOSED).
+
+**Changed**
+- EXPERIMENT_PROTOCOL §4 (D47, D48, model-test procedure and metric definitions), ARCHITECTURE (T6), README (generation commands), PROJECT_STATUS.
+
 ### 2026-11-24 — Podman reset verified (E46); `t5-podman` merged
 
 **Added**
