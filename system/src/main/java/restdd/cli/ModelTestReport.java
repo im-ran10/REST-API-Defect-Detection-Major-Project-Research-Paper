@@ -38,7 +38,7 @@ final class ModelTestReport {
         ObjectMapper json = new ObjectMapper();
         String label = a.getOrDefault("label", "modeltest");
         int calls = 0, schemaValid = 0, tooLong = 0, cutAtCap = 0, testsInValid = 0, specValid = 0, executable = 0,
-                meaningful = 0, infra = 0, errorTest = 0;
+                meaningful = 0, infra = 0, errorTest = 0, rescored = 0;
         List<Long> ms = new ArrayList<>();
         List<ObjectNode> executableTests = new ArrayList<>();
         Map<String, Integer> conformance = new HashMap<>();
@@ -94,14 +94,19 @@ final class ModelTestReport {
                     switch (outcome) {
                         case "PASS", "FAIL" -> {
                             executable++;
-                            boolean m = "MEANINGFUL".equals(t.path("assertionClass").asText());
+                            String current = restdd.dsl.StaticValidator.classify(suite.get(t.path("index").asInt())).name();
+                            if (!current.equals(t.path("assertionClass").asText())) {
+                                rescored++;
+                            }
+                            boolean m = "MEANINGFUL".equals(current);
                             if (m) {
                                 meaningful++;
                             }
                             ObjectNode sample = json.createObjectNode();
                             sample.put("callId", c.path("callId").asText());
                             sample.put("index", t.path("index").asInt());
-                            sample.put("automaticClass", t.path("assertionClass").asText());
+                            sample.put("automaticClass", current);
+                            sample.put("archivedClass", t.path("assertionClass").asText());
                             sample.put("outcome", outcome);
                             sample.set("test", suite.get(t.path("index").asInt()));
                             executableTests.add(sample);
@@ -125,6 +130,7 @@ final class ModelTestReport {
         System.out.printf("not executable: ERROR-TEST %d, ERROR-INFRA %d, not run %d%n", errorTest, infra,
                 specValid - executable - errorTest - infra);
         System.out.println("conformance notes (reported only): " + conformance);
+        System.out.println("T4 uses the current rubric R-T4; tests whose archived class differed: " + rescored);
         if (!ms.isEmpty()) {
             Collections.sort(ms);
             System.out.printf("fresh-call time: median %.1f s, p95 %.1f s, mean %.1f s (n=%d)%n", ms.get(ms.size() / 2) / 1000.0,

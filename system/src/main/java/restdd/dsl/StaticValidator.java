@@ -331,6 +331,23 @@ public final class StaticValidator {
         return !List.of("exists", "notExists", "isEmpty", "isNotEmpty", "conformsToSpec").contains(op);
     }
 
+    /** R-T4 class of one test from its assertions alone (used to re-score archived runs with the current rubric). */
+    public static AssertionClass classify(JsonNode test) {
+        int status = 0;
+        int meaningful = 0;
+        for (JsonNode st : test.path("steps")) {
+            for (JsonNode a : st.path("assertions")) {
+                String type = a.path("type").asText();
+                if (type.equals("status")) {
+                    status++;
+                } else if (!isTrivial(type, a.path("op").asText(), a)) {
+                    meaningful++;
+                }
+            }
+        }
+        return meaningful > 0 ? AssertionClass.MEANINGFUL : status > 0 ? AssertionClass.STATUS_ONLY : AssertionClass.NONE;
+    }
+
     private static final Set<String> PRESENCE_OPS = Set.of("exists", "notExists", "isEmpty", "isNotEmpty", "isType");
 
     /**
