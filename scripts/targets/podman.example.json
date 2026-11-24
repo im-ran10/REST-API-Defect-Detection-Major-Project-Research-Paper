@@ -1,0 +1,14 @@
+{
+  "baseUrl": "http://127.0.0.1:8082",
+  "auth": {"kind": "none"},
+  "fixtures": {"imageName": "alpine:3.19"},
+  "reset": {
+    "kind": "command",
+    "name": "podman-cleanup-fixture-image",
+    "snapshot": "bash ~/projects/rest-api-defect-detection/scripts/reset/podman_reset.sh snapshot",
+    "restore": "bash ~/projects/rest-api-defect-detection/scripts/reset/podman_reset.sh restore",
+    "healthUrl": "http://127.0.0.1:8082/_ping",
+    "healthTimeoutSec": 60,
+    "commandTimeoutSec": 300
+  }
+}

@@ -1,0 +1,19 @@
+{"tests": [
+  {"title": "API answers ping",
+   "steps": [{"method": "GET", "path": "/libpod/_ping",
+              "assertions": [{"type": "status", "op": "equals", "value": 200}]}]},
+  {"title": "only the fixture image exists after a reset",
+   "steps": [{"method": "GET", "path": "/libpod/images/json",
+              "assertions": [{"type": "status", "op": "equals", "value": 200},
+                             {"type": "body", "path": "$", "op": "lengthEquals", "value": 1}]}]},
+  {"title": "fixture image exists by name",
+   "steps": [{"method": "GET", "path": "/libpod/images/{name}/exists", "pathParams": {"name": "${fixture.imageName}"},
+              "assertions": [{"type": "status", "op": "equals", "value": 204}]}]},
+  {"title": "a created container is listed (passes on every run only if the reset works)",
+   "steps": [{"method": "POST", "path": "/libpod/containers/create",
+              "body": {"image": "${fixture.imageName}", "name": "${fixture.uid}", "command": ["true"]},
+              "assertions": [{"type": "status", "op": "equals", "value": 201}]},
+             {"method": "GET", "path": "/libpod/containers/json", "query": {"all": "true"},
+              "assertions": [{"type": "status", "op": "equals", "value": 200},
+                             {"type": "body", "path": "$", "op": "lengthEquals", "value": 1}]}]}
+]}
