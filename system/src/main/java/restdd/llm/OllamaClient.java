@@ -189,7 +189,7 @@ public final class OllamaClient {
                 resp.path("done_reason").asText(""), resp.path("prompt_eval_count").asInt(0),
                 resp.path("eval_count").asInt(0), resp.path("total_duration").asLong(0),
                 resp.path("load_duration").asLong(0), resp.path("prompt_eval_duration").asLong(0),
-                resp.path("eval_duration").asLong(0));
+                resp.path("eval_duration").asLong(0), resp.path("message").path("thinking").asText("").length());
     }
 
     static String cacheKey(JsonNode request, String modelDigest) {

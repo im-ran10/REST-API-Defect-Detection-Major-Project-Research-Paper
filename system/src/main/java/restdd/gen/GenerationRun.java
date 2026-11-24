@@ -44,7 +44,15 @@ public final class GenerationRun {
                          GenerationOptions options, TaskProvider tasks) {}
 
     public record Summary(int calls, int fromCache, int schemaValid, int promptTooLong, int outputTruncated,
-                          long modelMs, long pausedMs, int pauses) {}
+                          int thinkingDetected, long modelMs, long pausedMs, int pauses) {}
+
+    /**
+     * The thinking mode is fixed per run and recorded (owner, D48): {@code think} omitted = the model's own mode;
+     * for Qwen3 4B Instruct-2507, a non-thinking model, that is non-thinking. Every response is checked.
+     */
+    public static String thinkingMode(GenerationOptions o) {
+        return o.think() == null ? "non-thinking (think field omitted; non-thinking model)" : (o.think() ? "thinking on" : "thinking off (think=false)");
+    }
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -75,6 +83,7 @@ public final class GenerationRun {
         int valid = 0;
         int tooLong = 0;
         int truncated = 0;
+        int thinking = 0;
         long modelMs = 0;
         try (BufferedWriter out = Files.newBufferedWriter(work.resolve("calls.jsonl"), StandardCharsets.UTF_8)) {
             for (OperationSlice op : c.ops()) {
@@ -131,6 +140,11 @@ public final class GenerationRun {
                             rec.put("outputTokens", r.evalCount());
                             rec.put("totalMs", r.totalNs() / 1_000_000);
                             rec.put("doneReason", r.doneReason());
+                            rec.put("thinkingMode", thinkingMode(c.options()));
+                            rec.put("thinkingDetected", r.thinkingDetected());
+                            if (r.thinkingDetected()) {
+                                thinking++;
+                            }
                             rec.put("response", r.content());
                             if (r.fromCache()) {
                                 cached++;
@@ -162,7 +176,7 @@ public final class GenerationRun {
                 }
             }
         }
-        return new Summary(n, cached, valid, tooLong, truncated, modelMs, gpu.pausedMs(), gpu.pauses());
+        return new Summary(n, cached, valid, tooLong, truncated, thinking, modelMs, gpu.pausedMs(), gpu.pauses());
     }
 
     static ObjectNode validation(SuiteReport report) {
@@ -218,6 +232,8 @@ public final class GenerationRun {
         model.put("digest", digest);
         model.put("ollamaVersion", ollamaVersion);
         m.set("options", JSON.valueToTree(c.options()));
+        m.put("thinkingMode", thinkingMode(c.options()));
+        m.put("armsShareOneConfiguration", true); // one GenerationOptions object for every arm (D12)
         return m;
     }
 }

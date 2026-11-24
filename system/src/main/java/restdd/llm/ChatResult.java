@@ -6,7 +6,13 @@ package restdd.llm;
  */
 public record ChatResult(String cacheKey, boolean fromCache, String content, String doneReason,
                          int promptEvalCount, int evalCount, long totalNs, long loadNs, long promptEvalNs,
-                         long evalNs) {
+                         long evalNs, int thinkingChars) {
+
+    /** True if the model produced reasoning output (a {@code thinking} field or a {@code <think>} block). */
+    public boolean thinkingDetected() {
+        return thinkingChars > 0 || content.contains("<think>");
+    }
+
     public boolean outputTruncated() {
         return "length".equals(doneReason);
     }

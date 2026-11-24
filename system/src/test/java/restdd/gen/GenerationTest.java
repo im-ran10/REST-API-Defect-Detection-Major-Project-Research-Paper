@@ -151,6 +151,8 @@ class GenerationTest {
         assertTrue(rec.at("/validation/schemaValid").asBoolean());
         assertEquals("MEANINGFUL", rec.at("/validation/tests/0/assertionClass").asText());
         assertEquals(1, rec.path("seed").asInt());
+        assertFalse(rec.path("thinkingDetected").asBoolean());
+        assertTrue(rec.path("thinkingMode").asText().startsWith("non-thinking"));
 
         GenerationRun.Summary again = new GenerationRun(cfg, client, new PromptBuilder(), gpu, work).run();
         assertEquals(4, again.fromCache(), "a re-run resumes from the cache");
@@ -162,5 +164,6 @@ class GenerationTest {
         assertEquals(OperationSelector.listSha256(ops), m.path("operationListSha256").asText());
         assertEquals(64, m.path("systemPromptSha256").asText().length());
         assertEquals(0.7, m.at("/options/temperature").asDouble());
+        assertTrue(m.path("thinkingMode").asText().startsWith("non-thinking"));
     }
 }

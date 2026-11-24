@@ -8,7 +8,8 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 **Added**
 - `restdd.gen`: `OperationSelector`, `GenerationRun`, `GpuMonitor`; CLI `generate`, `run-suites`, `model-test-report`; `OllamaClient.isCached`; `GenerationTest` (4 tests).
-- DECISIONS D47 (PROVISIONAL, owner) and D48 (PROPOSED).
+- DECISIONS D47 (PROVISIONAL, owner) and D48 (PROVISIONAL, owner: thinking mode fixed and recorded per call).
+- Thinking-mode record and check per call (`ChatResult.thinkingDetected`, manifest `thinkingMode`); final generation configuration table in EXPERIMENT_PROTOCOL §4.
 
 **Changed**
 - EXPERIMENT_PROTOCOL §4 (D47, D48, model-test procedure and metric definitions), ARCHITECTURE (T6), README (generation commands), PROJECT_STATUS.

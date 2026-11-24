@@ -87,7 +87,18 @@ RQ1 and RQ2 are the two pre-registered primary comparisons; C vs A is secondary.
 - *Strategy adherence (D45, PROVISIONAL, owner 23 Nov 2026):* 60 tests per arm from the Day 5 development runs, stratified by strategy; a test is Adherent if its requests carry out the assigned strategy's probe action **and** an assertion checks its oracle (per-entry rule written at T8); gate B ≥ 50% and C ≥ 50%; owner codes all, a second person independently codes 30% without seeing the owner's codes, κ reported; the rubric is final before any test is judged. On failure: one symmetric revision round on development data, re-measure on fresh seeds, then the fallback model, then escalation; no silent threshold change.
 - **Operation cap** per project, fixed on Day 2; selection by path group, proportional share, hash order; identical for all arms.
 - *D47 (owner, 24 Nov 2026):* Podman all 165, nocodb all 126, RESTCountries all 10; Dolibarr 20 (model test) and 60 (development runs). Section = first path segment, largest-remainder shares, SHA-256-of-key order within a section. Lists and their SHA-256 frozen before the experiment; never changed on the basis of observed results.
-- *D48 (PROPOSED):* temperature 0.7, top-p 0.8, top-k 20, repeat penalty 1.0 (Qwen3 model card).
+- *Final generation configuration (D44, D41, D48; owner-approved 23–24 Nov 2026; identical for all three arms, one options object; frozen at the freeze):*
+
+  | Setting | Value |
+  |---|---|
+  | Model | `qwen3:4b-instruct-2507-q4_K_M`, digest `0edcdef34593…` (D27; Gemma 3 4B only if G2 selects it, then G1 repeated) |
+  | Thinking mode | **non-thinking** — the model has no thinking mode; `think` omitted; every response checked for reasoning output and flagged |
+  | Server | Ollama 0.40.17, flash attention on, KV cache q8_0 (systemd drop-in), GPU-only (preflight refuses partial offload) |
+  | Context / output | `num_ctx` 16384, `num_predict` 2048, `truncate` false, `shift` false (no silent truncation) |
+  | Sampling | temperature 0.7, top-p 0.8, top-k 20, repeat penalty 1.0, seed per call (D26) |
+  | Output format | JSON schema with exactly *s* tests (`SuiteSchema`), *s* = 3 provisional |
+  | Prompt | shared system prompt (SHA-256 in each manifest), compacted operation slice (D41), related operations, exploration shapes (T7), fixture names; arms differ only in the task section |
+  | Machine | balanced power mode, plugged in, PCIe link-state power management off; GPU paused at ≥ 85 °C until ≤ 75 °C |
 - *Model test procedure and metric definitions (T6, 24 Nov 2026):* `generate` (Arm A, seeds 1 and 2, *s* = 3, D44 configuration) → `run-suites` against the development deployments (reset before each suite) → `model-test-report`. **Spec-valid** = structurally valid (operations in the spec, references defined, assertions well formed); type/required-parameter conformance is reported, not gated. **Executable** = run outcome PASS or FAIL on that deployment (INVALID or SETUP_ERROR count as ERROR-TEST, INFRA_ERROR as ERROR-INFRA). **Non-trivial** = automatic class MEANINGFUL (an assertion beyond the status code), checked by hand on 20 random executable tests. The 10 strategy-slot calls run after T8, when catalogue entries exist.
 - **Context (D41):** G1 uses the largest held-out prompt; one context window for all calls, or an arm-independent slice-compaction rule fixed before the freeze.
 - **Mandatory feasibility checks (D43)** before the model configuration is frozen: full-prompt context test (zero truncation; truncation always fails the call, never silent); JSON validity (T1 ≥ 95%, T2–T4 as above); strategy adherence of B and C on the Day 5 development sample (≥ 50% per arm, default); per-arm generation time and the binding 40-hour projection. The 10 strategy-slot calls of the model test feed the adherence check (D39 superseded).

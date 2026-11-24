@@ -117,8 +117,9 @@ final class Generate {
         Files.writeString(work.resolve("manifest.json"), manifest.toPrettyString());
 
         int fresh = sum.calls() - sum.fromCache();
-        System.out.printf("%ncalls %d (cached %d) | schema-valid %d | prompt too long %d | output cut at cap %d%n",
-                sum.calls(), sum.fromCache(), sum.schemaValid(), sum.promptTooLong(), sum.outputTruncated());
+        System.out.printf("%ncalls %d (cached %d) | schema-valid %d | prompt too long %d | output cut at cap %d | thinking output %d%n",
+                sum.calls(), sum.fromCache(), sum.schemaValid(), sum.promptTooLong(), sum.outputTruncated(), sum.thinkingDetected());
+        System.out.println("thinking mode: " + GenerationRun.thinkingMode(o));
         System.out.printf("model time %.1f min (%.1f s per fresh call) | GPU pauses %d (%.1f min) | wall %.1f min%n",
                 sum.modelMs() / 60000.0, fresh == 0 ? 0 : sum.modelMs() / 1000.0 / fresh, sum.pauses(),
                 sum.pausedMs() / 60000.0, wallMs / 60000.0);
