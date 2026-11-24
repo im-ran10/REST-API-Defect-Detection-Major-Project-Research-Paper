@@ -7,7 +7,7 @@ All notable changes to project documentation, decisions, design and code. Newest
 ### 2026-11-24 — E51; D50 proposed; report re-scores with the current rubric
 
 **Added**
-- `StaticValidator.classify` (R-T4 class from a test's assertions); RESEARCH_LOG E51; DECISIONS D50 (PROPOSED).
+- `StaticValidator.classify` (R-T4 class from a test's assertions); RESEARCH_LOG E51; DECISIONS D50 (PROVISIONAL: owner delegated, adopted as proposed); EXPERIMENT_PROTOCOL §4 T4 measurement.
 
 **Changed**
 - `model-test-report` re-scores every executable test with the current rubric and reports how many archived classes differ; the T4 sample shows both classes.
