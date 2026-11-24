@@ -4,6 +4,22 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-24 — Podman reset verified (E46); `t5-podman` merged
+
+**Added**
+- RESEARCH_LOG E46.
+
+**Fixed**
+- Podman reset creates missing default `policy.json`/`registries.conf` at snapshot time; `wsl.exe --cd /`; versioned base URL in the Podman target.
+
+### 2026-11-24 — Podman reset scripts (branch `t5-podman`)
+
+**Added**
+- `scripts/reset/podman_reset.sh` + `podman_inner.sh`; `scripts/targets/podman.example.json`; `scripts/targets/smoke_podman.json`.
+
+**Changed**
+- ARCHITECTURE (Podman reset), README (Podman service and reset), PROJECT_STATUS.
+
 ### 2026-11-24 — nocodb deployed and verified (E45); `t5-nocodb` merged
 
 **Added**

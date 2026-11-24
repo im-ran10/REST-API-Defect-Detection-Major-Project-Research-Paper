@@ -117,7 +117,9 @@ source ~/.nocodb_credentials && python3 scripts/nocodb/nocodb_setup.py   # admin
 source scripts/nocodb/nocodb_env.sh            # exports NOCODB_TOKEN for the runner (never printed)
 bash scripts/reset/nocodb_reset.sh snapshot|restore|check
 ```
-Official spec (D5.1 input): `curl -sL -o ~/tools/nocodb_cea2b4ad7348_swagger.json https://raw.githubusercontent.com/nocodb/nocodb/cea2b4ad7348/scripts/sdk/swagger.json`; SHA-256 `234bfa530c0c0860e83689f0b8752eff254c85f2c96d29c6d10ef5e9480696f1`.
+**Podman (reference deployment from X5, E37).** In a separate Ubuntu-24.04 tab: `sudo podman system service -t 0 tcp:127.0.0.1:8082` (keep it open). Quit Docker Desktop (R21). In the main Ubuntu: `cp scripts/targets/podman.example.json ~/restdd-targets/podman.json`, then `bash scripts/reset/podman_reset.sh snapshot|restore|check` (pulls `alpine:3.19` once).
+
+nocodb official spec (D5.1 input): `curl -sL -o ~/tools/nocodb_cea2b4ad7348_swagger.json https://raw.githubusercontent.com/nocodb/nocodb/cea2b4ad7348/scripts/sdk/swagger.json`; SHA-256 `234bfa530c0c0860e83689f0b8752eff254c85f2c96d29c6d10ef5e9480696f1`.
 
 `llm-check` prints the Ollama version and model digest, verifies the model is 100% on the GPU with the requested context window, makes one structured-output call for the spec's first operation and validates it. Its cache and call log go to `./llm-check/` (not committed).
 
