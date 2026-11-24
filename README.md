@@ -110,6 +110,15 @@ java -jar target/restdd.jar exec --target <target.json> --spec <spec> --suite <s
 ```
 `--snapshot` takes the deployment's snapshot first (once per deployment, right after setup); every run then restores it before the tests. Each test prints PASS / FAIL / SETUP_ERROR / INFRA_ERROR / INVALID with a reason; the full record (requests, responses, assertion results, validation result) goes to `--out`, with the API key replaced by `<redacted>`. Dolibarr reset by hand: `bash scripts/reset/dolibarr_reset.sh snapshot|restore|check` from the Dolibarr folder (snapshots in `~/.restdd/snapshots/`, private: they contain the database).
 
+**nocodb reference deployment (Day 2, D25; T5).** The reference version 0.90.3 runs from the official image, with no benchmark command and no defect-specific hook (firewall). Scripts in `scripts/nocodb/`:
+```bash
+bash scripts/nocodb/nocodb_start.sh            # container restdd-nocodb on 127.0.0.1:8090, SQLite in volume restdd-nocodb-data; private ~/.nocodb_credentials and ~/.nocodb_env created once
+source ~/.nocodb_credentials && python3 scripts/nocodb/nocodb_setup.py   # admin user, fixture project/table/3 rows, writes ~/restdd-targets/nocodb.json
+source scripts/nocodb/nocodb_env.sh            # exports NOCODB_TOKEN for the runner (never printed)
+bash scripts/reset/nocodb_reset.sh snapshot|restore|check
+```
+Official spec (D5.1 input): `curl -sL -o ~/tools/nocodb_cea2b4ad7348_swagger.json https://raw.githubusercontent.com/nocodb/nocodb/cea2b4ad7348/scripts/sdk/swagger.json`; SHA-256 `234bfa530c0c0860e83689f0b8752eff254c85f2c96d29c6d10ef5e9480696f1`.
+
 `llm-check` prints the Ollama version and model digest, verifies the model is 100% on the GPU with the requested context window, makes one structured-output call for the spec's first operation and validates it. Its cache and call log go to `./llm-check/` (not committed).
 
 **Phase 1 probe** (now the `probe` subcommand). Loads a Swagger 2.0 / OpenAPI 3.x spec, lists its operations, sends one GET and prints status and body:

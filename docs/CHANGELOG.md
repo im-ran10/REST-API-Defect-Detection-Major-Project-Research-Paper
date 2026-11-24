@@ -4,6 +4,14 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-24 — nocodb reference deployment scripts (branch `t5-nocodb`)
+
+**Added**
+- `scripts/nocodb/nocodb_start.sh`, `nocodb_setup.py`, `nocodb_env.sh`; `scripts/reset/nocodb_reset.sh`; `scripts/targets/smoke_nocodb.json` (validated against the official spec).
+
+**Changed**
+- README (nocodb deployment, official-spec download with checksum), ARCHITECTURE (nocodb reset), PROJECT_STATUS.
+
 ### 2026-11-24 — D46 approved (review roles without outside human reviewers)
 
 **Changed**
