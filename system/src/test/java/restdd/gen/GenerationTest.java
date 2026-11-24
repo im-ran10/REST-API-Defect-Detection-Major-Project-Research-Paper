@@ -94,7 +94,7 @@ class GenerationTest {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         String suite = "{\"tests\":[{\"title\":\"list\",\"steps\":[{\"method\":\"GET\",\"path\":\"/notes\","
                 + "\"assertions\":[{\"type\":\"status\",\"op\":\"equals\",\"value\":200},"
-                + "{\"type\":\"body\",\"path\":\"$\",\"op\":\"isType\",\"value\":\"array\"}]}]}]}";
+                + "{\"type\":\"body\",\"path\":\"$[0].text\",\"op\":\"isType\",\"value\":\"string\"}]}]}]}"; // named part: non-trivial under R-T4
         String chat = String.format("{\"message\":{\"role\":\"assistant\",\"content\":%s},\"done\":true,\"done_reason\":\"stop\","
                 + "\"prompt_eval_count\":900,\"eval_count\":120,\"total_duration\":2000000000,\"eval_duration\":1000000000}",
                 JSON.valueToTree(suite).toString());

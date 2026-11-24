@@ -4,6 +4,14 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-24 — E50 (unintended old-configuration re-run); test fixed
+
+**Fixed**
+- `GenerationTest`: the fake suite uses a named-part assertion (`$[0].text`), non-trivial under R-T4; the outdated expectation had failed the owner's build.
+
+**Added**
+- RESEARCH_LOG E50.
+
 ### 2026-11-24 — D49: G2 remediation (rubric, shared-prompt rule, aligned classifier)
 
 **Added**
