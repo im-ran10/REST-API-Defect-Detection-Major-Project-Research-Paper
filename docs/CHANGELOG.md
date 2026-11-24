@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-25 — E54; D52 proposed; optional presence penalty
+
+**Added**
+- `GenerationOptions.presencePenalty` (sent only when set; `generate --presence-penalty`); `OllamaClientTest.presencePenaltyIsSentOnlyWhenSet`; RESEARCH_LOG E54; DECISIONS D52 (PROPOSED).
+
 ### 2026-11-25 — E53 (real D49 diagnostic)
 
 **Added**

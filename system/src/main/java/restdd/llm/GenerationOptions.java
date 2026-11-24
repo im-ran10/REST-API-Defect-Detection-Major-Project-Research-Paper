@@ -7,9 +7,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Decoding settings, identical for every arm (D12, D27). Frozen at G4 and recorded in each manifest.
  *
  * @param think null = do not send the field (for non-thinking models); otherwise sent as given
+ * @param presencePenalty null = not sent (earlier runs keep identical requests and cache keys); otherwise the
+ *        Qwen model card's anti-repetition setting (D52)
  */
 public record GenerationOptions(String model, int numCtx, int numPredict, double temperature, double topP,
-                                int topK, double repeatPenalty, Boolean think, String keepAlive) {
+                                int topK, double repeatPenalty, Boolean think, String keepAlive,
+                                Double presencePenalty) {
+
+    public GenerationOptions(String model, int numCtx, int numPredict, double temperature, double topP, int topK,
+                             double repeatPenalty, Boolean think, String keepAlive) {
+        this(model, numCtx, numPredict, temperature, topP, topK, repeatPenalty, think, keepAlive, null);
+    }
 
     /** Ollama {@code options} object for one call with the given seed. */
     public ObjectNode toOllamaOptions(long seed) {
@@ -20,6 +28,9 @@ public record GenerationOptions(String model, int numCtx, int numPredict, double
         o.put("top_p", topP);
         o.put("top_k", topK);
         o.put("repeat_penalty", repeatPenalty);
+        if (presencePenalty != null) {
+            o.put("presence_penalty", presencePenalty);
+        }
         o.put("seed", seed);
         return o;
     }

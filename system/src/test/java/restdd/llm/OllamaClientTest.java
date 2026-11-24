@@ -133,4 +133,13 @@ class OllamaClientTest {
         assertEquals("abc123", client.modelDigest("m:4b"));
         assertEquals("0.40.17", client.version());
     }
+
+    @org.junit.jupiter.api.Test
+    void presencePenaltyIsSentOnlyWhenSet() {
+        GenerationOptions plain = new GenerationOptions("m:4b", 16384, 2048, 0.7, 0.8, 20, 1.0, null, "30m");
+        org.junit.jupiter.api.Assertions.assertFalse(plain.toOllamaOptions(1).has("presence_penalty"),
+                "earlier runs keep identical requests");
+        GenerationOptions pp = new GenerationOptions("m:4b", 16384, 2048, 0.7, 0.8, 20, 1.0, null, "30m", 1.5);
+        org.junit.jupiter.api.Assertions.assertEquals(1.5, pp.toOllamaOptions(1).path("presence_penalty").asDouble());
+    }
 }

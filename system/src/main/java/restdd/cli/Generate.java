@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  * <pre>
  * generate --project dolibarr --spec FILE --target FILE --work DIR [--cap 20] [--arms A] [--seeds 1,2] [--s 3]
  *          [--model qwen3:4b-instruct-2507-q4_K_M] [--num-ctx 16384] [--num-predict 2048]
- *          [--temperature 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.0] [--compact D41-rule]
+ *          [--temperature 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.0] [--presence-penalty P] [--compact D41-rule]
  *          [--pause-temp 85 --resume-temp 75] [--shapes FILE] [--list-only]
  * </pre>
  * Defaults are the D44 configuration and the D48 decoding settings. {@code --list-only} prints the D47
@@ -83,7 +83,7 @@ final class Generate {
                 Integer.parseInt(a.getOrDefault("num-ctx", "16384")), Integer.parseInt(a.getOrDefault("num-predict", "2048")),
                 Double.parseDouble(a.getOrDefault("temperature", "0.7")), Double.parseDouble(a.getOrDefault("top-p", "0.8")),
                 Integer.parseInt(a.getOrDefault("top-k", "20")), Double.parseDouble(a.getOrDefault("repeat-penalty", "1.0")),
-                null, "30m");
+                null, "30m", a.containsKey("presence-penalty") ? Double.valueOf(a.get("presence-penalty")) : null);
 
         GenerationRun.TaskProvider tasks = (arm, op) -> PromptBuilder.armATask(s);
         GenerationRun.Config config = new GenerationRun.Config(project, promptSpec, full, ops, arms, seeds, s,
