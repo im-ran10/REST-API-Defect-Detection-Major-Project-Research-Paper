@@ -4,6 +4,12 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-24 — G2 part 1 (E47); operation lists frozen
+
+**Added**
+- `docs/frozen/OPERATION_LISTS.md`, `dolibarr_cap20.txt`, `dolibarr_cap60.txt` (D47 lists and SHA-256, re-verified).
+- RESEARCH_LOG E47 (generation part of the model test).
+
 ### 2026-11-24 — T6 generation and model-test tooling (branch `t6-gen`); D47 approved, D48 proposed
 
 **Added**
