@@ -4,6 +4,16 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-24 — D49: G2 remediation (rubric, shared-prompt rule, aligned classifier)
+
+**Added**
+- DECISIONS D49; EXPERIMENT_PROTOCOL rubric R-T4 and G2 sequence; `StaticValidatorTest.t4RubricMatchesTheManualRule`.
+
+**Changed**
+- `StaticValidator.isTrivial` = rubric R-T4 (whole-body presence/type checks and header presence are trivial).
+- Shared system prompt: one rule requiring a specific body or header check per test (identical for all arms).
+- RESEARCH_LOG E49 (approval note; rubric re-applied, still 10/20), PROJECT_STATUS, ARCHITECTURE.
+
 ### 2026-11-24 — G2 part 2 (E48) and T4 manual check (E49)
 
 **Added**

@@ -96,6 +96,29 @@ class StaticValidatorTest {
         assertEquals(2, t.trivialAssertions());
     }
 
+    /** Rubric R-T4 (owner, 24 Nov 2026): the automatic class must equal the manual verdict. */
+    @Test
+    void t4RubricMatchesTheManualRule() {
+        java.util.function.Function<String, AssertionClass> cls = assertions -> validator.validate(
+                "{\"tests\": [{\"title\": \"x\", \"steps\": [{\"method\": \"GET\", \"path\": \"/notes\", \"assertions\": ["
+                        + assertions + "]}]}]}", 1).tests().get(0).assertionClass();
+        String status = "{\"type\": \"status\", \"op\": \"equals\", \"value\": 200}";
+        // trivial
+        assertEquals(AssertionClass.STATUS_ONLY, cls.apply(status));
+        assertEquals(AssertionClass.STATUS_ONLY, cls.apply(status + ", {\"type\": \"body\", \"path\": \"$\", \"op\": \"exists\"},"
+                + " {\"type\": \"body\", \"path\": \"$\", \"op\": \"isNotEmpty\"}"));
+        assertEquals(AssertionClass.STATUS_ONLY, cls.apply(status + ", {\"type\": \"body\", \"path\": \"$\", \"op\": \"isType\", \"value\": \"array\"}"));
+        assertEquals(AssertionClass.STATUS_ONLY, cls.apply(status + ", {\"type\": \"header\", \"name\": \"Content-Type\", \"op\": \"exists\"}"));
+        // non-trivial
+        assertEquals(AssertionClass.MEANINGFUL, cls.apply("{\"type\": \"body\", \"path\": \"$\", \"op\": \"contains\", \"value\": \"order\"}"));
+        assertEquals(AssertionClass.MEANINGFUL, cls.apply("{\"type\": \"body\", \"path\": \"$\", \"op\": \"lengthGte\", \"value\": 1}"));
+        assertEquals(AssertionClass.MEANINGFUL, cls.apply("{\"type\": \"body\", \"path\": \"$.id\", \"op\": \"exists\"}"));
+        assertEquals(AssertionClass.MEANINGFUL, cls.apply("{\"type\": \"body\", \"path\": \"$.request_data\", \"op\": \"notExists\"}"));
+        assertEquals(AssertionClass.MEANINGFUL, cls.apply("{\"type\": \"body\", \"path\": \"$[*].text\", \"op\": \"isType\", \"value\": \"string\"}"));
+        assertEquals(AssertionClass.MEANINGFUL, cls.apply("{\"type\": \"header\", \"name\": \"Content-Type\", \"op\": \"contains\", \"value\": \"json\"}"));
+        assertEquals(AssertionClass.MEANINGFUL, cls.apply("{\"type\": \"responseSchema\", \"op\": \"conformsToSpec\"}"));
+    }
+
     @Test
     void bodySchemaConformance() {
         String s = """

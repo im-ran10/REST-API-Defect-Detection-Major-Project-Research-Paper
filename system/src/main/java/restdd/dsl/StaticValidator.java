@@ -331,15 +331,23 @@ public final class StaticValidator {
         return !List.of("exists", "notExists", "isEmpty", "isNotEmpty", "conformsToSpec").contains(op);
     }
 
-    /** Trivially true assertions do not count as meaningful (T4). */
+    private static final Set<String> PRESENCE_OPS = Set.of("exists", "notExists", "isEmpty", "isNotEmpty", "isType");
+
+    /**
+     * T4 rubric R-T4 (EXPERIMENT_PROTOCOL §4, owner-approved 24 Nov 2026), identical to the manual check. Status
+     * assertions are counted separately (never non-trivial). Trivial: on the whole body {@code $}, a presence/type
+     * check (exists, notExists, isEmpty, isNotEmpty, isType); a header exists/notExists; a compare of a value with
+     * itself. Non-trivial: anything stating specific content — on {@code $} equals/contains/matches/in/length/number
+     * comparisons (a generic word counts), any operator on a named part ({@code $.id}, {@code $[0]}, {@code $[*].x},
+     * field existence included), header value checks, responseSchema conformsToSpec, compare of two different values.
+     */
     static boolean isTrivial(String type, String op, JsonNode a) {
-        if (type.equals("compare")) {
-            return a.path("left").asText().equals(a.path("right").asText());
-        }
-        if (type.equals("body") && "$".equals(a.path("path").asText()) && op.equals("exists")) {
-            return true;
-        }
-        return false;
+        return switch (type) {
+            case "compare" -> a.path("left").asText().equals(a.path("right").asText());
+            case "body" -> "$".equals(a.path("path").asText().strip()) && PRESENCE_OPS.contains(op);
+            case "header" -> op.equals("exists") || op.equals("notExists");
+            default -> false;
+        };
     }
 
     private static boolean expects4xx(JsonNode a) {

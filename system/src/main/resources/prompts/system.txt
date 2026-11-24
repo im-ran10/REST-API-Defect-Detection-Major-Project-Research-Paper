@@ -26,7 +26,7 @@ OP for body, header and compare: equals, notEquals, in, notIn, exists, notExists
 
 RULES
 - Use only operations listed in the operation context. Every test must be runnable on its own: create what it needs in earlier steps and save identifiers with "extract".
-- Assert what a correct implementation must do. Prefer specific checks on response content over status codes alone.
+- Assert what a correct implementation must do. Every test must check at least one specific thing in a response body or header (a field's value, type or presence, a list's length or contents, an error message, or conformance to the documented schema). A status code alone, or only that the body exists or is not empty, is not enough.
 - Do not invent fields, parameters or values that the operation context does not support, unless the test deliberately sends invalid input; then assert that it is rejected.
 
 EXAMPLE (a different, fictional API)
