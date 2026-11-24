@@ -40,6 +40,16 @@ public final class SuiteSchema {
     public static final int MAX_STEPS = 6;
     public static final int MAX_ASSERTIONS = 6;
 
+    /**
+     * D51: length caps on text values. They stop the degenerate repetition loops seen in G2 (E52: a query value
+     * of 2,000 zeros until the output cap) through the structured-output grammar; identical for all arms, and far
+     * above any realistic test value. JSON bodies and assertion values (any JSON) are not capped.
+     */
+    public static final int MAX_TEXT = 200;
+    public static final int MAX_TITLE = 150;
+    public static final int MAX_PATH = 300;
+    public static final int MAX_FILE_CONTENT = 2000;
+
     private static final JsonNodeFactory F = JsonNodeFactory.instance;
 
     private SuiteSchema() {}
@@ -53,24 +63,24 @@ public final class SuiteSchema {
         ObjectNode ap = assertion.putObject("properties");
         ap.set("type", enumOf(TYPES));
         ap.set("op", enumOf(OPS));
-        ap.set("path", str());
-        ap.set("name", str());
+        ap.set("path", str(MAX_TEXT));
+        ap.set("name", str(MAX_TEXT));
         ap.putObject("value");
-        ap.set("left", str());
-        ap.set("right", str());
+        ap.set("left", str(MAX_TEXT));
+        ap.set("right", str(MAX_TEXT));
         required(assertion, "type", "op");
 
         ObjectNode multipart = obj();
         ObjectNode mp = multipart.putObject("properties");
         mp.set("fields", stringMap());
-        mp.set("fileField", str());
-        mp.set("fileName", str());
-        mp.set("fileContent", str());
+        mp.set("fileField", str(MAX_TEXT));
+        mp.set("fileName", str(MAX_TEXT));
+        mp.set("fileContent", str(MAX_FILE_CONTENT));
 
         ObjectNode step = obj();
         ObjectNode sp = step.putObject("properties");
         sp.set("method", enumOf(METHODS));
-        sp.set("path", str());
+        sp.set("path", str(MAX_PATH));
         sp.set("pathParams", stringMap());
         sp.set("query", stringMap());
         sp.set("headers", stringMap());
@@ -83,7 +93,7 @@ public final class SuiteSchema {
 
         ObjectNode test = obj();
         ObjectNode tp = test.putObject("properties");
-        tp.set("title", str());
+        tp.set("title", str(MAX_TITLE));
         tp.set("steps", arrayOf(step, 1, MAX_STEPS));
         required(test, "title", "steps");
 
@@ -103,9 +113,13 @@ public final class SuiteSchema {
         return F.objectNode().put("type", "string");
     }
 
+    private static ObjectNode str(int maxLength) {
+        return str().put("maxLength", maxLength);
+    }
+
     private static ObjectNode stringMap() {
         ObjectNode o = obj();
-        o.set("additionalProperties", str());
+        o.set("additionalProperties", str(MAX_TEXT));
         return o;
     }
 

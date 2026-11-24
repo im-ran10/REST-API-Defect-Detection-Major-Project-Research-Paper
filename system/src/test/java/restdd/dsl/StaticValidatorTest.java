@@ -96,6 +96,16 @@ class StaticValidatorTest {
         assertEquals(2, t.trivialAssertions());
     }
 
+    /** D51: text values carry a length cap in the structured-output schema; bodies stay unconstrained. */
+    @Test
+    void schemaCapsTextValues() {
+        var step = restdd.dsl.SuiteSchema.build(1).at("/properties/tests/items/properties/steps/items/properties");
+        assertEquals(200, step.at("/query/additionalProperties/maxLength").asInt());
+        assertEquals(200, step.at("/pathParams/additionalProperties/maxLength").asInt());
+        assertEquals(300, step.at("/path/maxLength").asInt());
+        assertTrue(step.path("body").isEmpty(), "body stays any JSON");
+    }
+
     /** Rubric R-T4 (owner, 24 Nov 2026): the automatic class must equal the manual verdict. */
     @Test
     void t4RubricMatchesTheManualRule() {
