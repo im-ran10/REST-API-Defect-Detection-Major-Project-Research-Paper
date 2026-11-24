@@ -1,5 +1,5 @@
 {
-  "baseUrl": "http://127.0.0.1:8082",
+  "baseUrl": "http://127.0.0.1:8082/v4.0.0",
   "auth": {"kind": "none"},
   "fixtures": {"imageName": "alpine:3.19"},
   "reset": {
