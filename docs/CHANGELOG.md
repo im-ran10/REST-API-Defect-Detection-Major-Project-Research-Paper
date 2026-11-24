@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-25 — E53 (real D49 diagnostic)
+
+**Added**
+- RESEARCH_LOG E53.
+
 ### 2026-11-24 — E52; D51 length caps in the answer schema
 
 **Added**
