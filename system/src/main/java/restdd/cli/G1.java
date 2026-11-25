@@ -66,7 +66,9 @@ final class G1 {
         URI ollama = URI.create(a.getOrDefault("ollama", "http://127.0.0.1:11434"));
         for (String ctxText : Main.need(a, "num-ctx").split(",")) {
             int ctx = Integer.parseInt(ctxText.trim());
-            GenerationOptions o = new GenerationOptions(model, ctx, numPredict, 0.7, 0.8, 20, 1.0, null, "30m");
+            restdd.llm.ModelDefaults d = restdd.llm.ModelDefaults.forModel(model); // family sampling; no presence penalty in G1
+            GenerationOptions o = new GenerationOptions(model, ctx, numPredict, d.temperature(), d.topP(), d.topK(),
+                    d.repeatPenalty(), null, "30m");
             OllamaClient c = new OllamaClient(ollama, work.resolve("ctx" + ctx + "/cache"),
                     work.resolve("ctx" + ctx + "/calls.jsonl"), Duration.ofMinutes(15));
             OllamaClient again = new OllamaClient(ollama, work.resolve("ctx" + ctx + "/cache-repeat"),

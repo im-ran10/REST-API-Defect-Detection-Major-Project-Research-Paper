@@ -142,4 +142,17 @@ class OllamaClientTest {
         GenerationOptions pp = new GenerationOptions("m:4b", 16384, 2048, 0.7, 0.8, 20, 1.0, null, "30m", 1.5);
         org.junit.jupiter.api.Assertions.assertEquals(1.5, pp.toOllamaOptions(1).path("presence_penalty").asDouble());
     }
+
+    @Test
+    void modelFamilyDefaultsFollowTheModelCards() {
+        restdd.llm.ModelDefaults q = restdd.llm.ModelDefaults.forModel("qwen3:4b-instruct-2507-q4_K_M");
+        assertEquals(0.7, q.temperature());
+        assertEquals(20, q.topK());
+        assertEquals(1.5, q.presencePenalty());
+        restdd.llm.ModelDefaults g = restdd.llm.ModelDefaults.forModel("gemma3:4b-it-q4_K_M");
+        assertEquals(1.0, g.temperature());
+        assertEquals(0.95, g.topP());
+        assertEquals(64, g.topK());
+        assertTrue(g.presencePenalty() == null);
+    }
 }

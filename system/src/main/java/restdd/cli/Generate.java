@@ -34,7 +34,8 @@ import java.util.concurrent.TimeUnit;
  *          [--temperature 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.0] [--presence-penalty P] [--compact D41-rule]
  *          [--pause-temp 85 --resume-temp 75] [--shapes FEATURE-RECORD.json] [--list-only]
  * </pre>
- * Defaults are the D44 configuration, the D48 decoding settings and the D52 presence penalty (1.5). {@code --list-only} prints the D47
+ * Defaults are the D44 configuration and the model family's D48/D52 settings ({@link restdd.llm.ModelDefaults});
+ * {@code --presence-penalty none} sends none. {@code --list-only} prints the D47
  * selection (keys and SHA-256) and writes it to the work folder without calling the model.
  */
 final class Generate {
@@ -81,11 +82,20 @@ final class Generate {
             }
         }
         List<Long> seeds = Arrays.stream(a.getOrDefault("seeds", "1,2").split(",")).map(x -> Long.parseLong(x.trim())).toList();
-        GenerationOptions o = new GenerationOptions(a.getOrDefault("model", "qwen3:4b-instruct-2507-q4_K_M"),
+        String model = a.getOrDefault("model", "qwen3:4b-instruct-2507-q4_K_M");
+        restdd.llm.ModelDefaults d = restdd.llm.ModelDefaults.forModel(model); // D48/D52 per model family
+        String pp = a.get("presence-penalty");
+        Double presence = pp == null ? d.presencePenalty() : pp.equals("none") ? null : Double.valueOf(pp);
+        GenerationOptions o = new GenerationOptions(model,
                 Integer.parseInt(a.getOrDefault("num-ctx", "16384")), Integer.parseInt(a.getOrDefault("num-predict", "2048")),
-                Double.parseDouble(a.getOrDefault("temperature", "0.7")), Double.parseDouble(a.getOrDefault("top-p", "0.8")),
-                Integer.parseInt(a.getOrDefault("top-k", "20")), Double.parseDouble(a.getOrDefault("repeat-penalty", "1.0")),
-                null, "30m", Double.valueOf(a.getOrDefault("presence-penalty", "1.5"))); // D52 default
+                a.containsKey("temperature") ? Double.parseDouble(a.get("temperature")) : d.temperature(),
+                a.containsKey("top-p") ? Double.parseDouble(a.get("top-p")) : d.topP(),
+                a.containsKey("top-k") ? Integer.parseInt(a.get("top-k")) : d.topK(),
+                a.containsKey("repeat-penalty") ? Double.parseDouble(a.get("repeat-penalty")) : d.repeatPenalty(),
+                null, "30m", presence);
+        System.out.printf("model %s | temperature %s, top-p %s, top-k %d, repeat penalty %s, presence penalty %s%n",
+                model, o.temperature(), o.topP(), o.topK(), o.repeatPenalty(),
+                o.presencePenalty() == null ? "not sent" : o.presencePenalty());
 
         GenerationRun.TaskProvider tasks = (arm, op) -> PromptBuilder.armATask(s);
         GenerationRun.Config config = new GenerationRun.Config(project, promptSpec, full, ops, arms, seeds, s,

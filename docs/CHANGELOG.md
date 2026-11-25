@@ -4,6 +4,14 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-26 — G2 classifier check; Gemma path
+
+**Added**
+- `restdd.llm.ModelDefaults` (decoding per model family); `generate` prints the decoding settings, accepts `--presence-penalty none`; `g1` uses the family's settings; 1 new test.
+
+**Changed**
+- RESEARCH_LOG E60 (classifier check 20/20); DECISIONS §5 D27 outcome; EXPERIMENT_PROTOCOL §6 note; PROJECT_STATUS.
+
 ### 2026-11-26 — E60: final G2 for Qwen (T4 54.9%, fail pending classifier check)
 
 **Added**

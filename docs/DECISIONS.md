@@ -275,6 +275,7 @@ Reasoning: [`proposals/2026-11-23_ten_day_design_and_qc.md`](proposals/2026-11-2
 | 24 Nov 2026 | D51 | new → PROVISIONAL | Adopted under the owner's delegation; owner may object |
 | 25 Nov 2026 | D52 | new → PROPOSED | Loops the schema cannot cap (E54); test on the same seeds before adoption |
 | 25 Nov 2026 | D52 | PROPOSED → PROVISIONAL | Same-seed test met the pre-stated rule (E55) |
+| 26 Nov 2026 | D27 | no status change; **outcome recorded** | Qwen3 4B Instruct-2507 failed the final G2 on T4 (54.9% < 60%, classifier confirmed 20/20, E60) → Gemma 3 4B (`gemma3:4b-it-q4_K_M`) is evaluated with its own G1 and G2 (D44 condition, D49); configuration otherwise identical, decoding per D48's Gemma clause (temperature 1.0, top-p 0.95, top-k 64); D52's presence penalty is Qwen's own setting and is not sent for Gemma |
 
 ## How to add a decision
 
