@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-26 — E60: final G2 for Qwen (T4 54.9%, fail pending classifier check)
+
+**Added**
+- RESEARCH_LOG E60; PROJECT_STATUS.
+
 ### 2026-11-25 — E59: final G2 part 1 (RESTCountries); reset script works from any folder
 
 **Fixed**
