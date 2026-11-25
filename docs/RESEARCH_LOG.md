@@ -296,6 +296,7 @@ Purpose: the holdout evaluation (D11) is **not blind**. This ledger records exac
 | 23 Nov 2026 | Drafting assistant | Deployment scripts of awx, flowable-engine, mastodon, netbox, nocodb, podman scanned for image names and service keywords only (no issue-specific lines printed) | Holdout (deployment metadata) |
 | 23 Nov 2026 | Drafting assistant | Aggregate feature and slice-size counts computed from nocodb's official spec and the Podman benchmark specs (counts only; no operation names, READMEs, defect rows or triggering endpoints) | Holdout (spec aggregates) |
 | 23 Nov 2026 | Drafting assistant | Podman source checked out at the reference commit (worktree for the spec-generation attempt; checkout printed the reference commit's subject line, a merge of PR #13980); `pkg/api/server/docs.go` and the Makefile read; the reference defect's spec read for metadata only (title, version, operation count); nocodb official spec normalised (aggregates printed only) | Holdout (reference-version source and spec metadata) |
+| 26 Nov 2026 | Drafting assistant | The owner pasted the shell line that sets the Podman spec path for G1; it names the reference defect's identifier (the folder of the spec copy chosen in E41). Identifier only, already implied by E32/E41; no README, defect row, patch, hook, issue page or triggering endpoint seen | Holdout (identifier only) |
 
 **Not read for any holdout project:** replication READMEs, defect CSV descriptions, patches, setup-hook bodies.
 
