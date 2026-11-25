@@ -102,9 +102,10 @@ public final class Shapes {
     }
 
     static boolean isMapLike(JsonNode o) {
-        if (o.size() < 2) {
+        if (o.isEmpty()) {
             return false;
         }
+        // a single numeric/ID key is still data (E57: {"1": "PR-0001"}): it must not reach a prompt
         for (Iterator<String> it = o.fieldNames(); it.hasNext(); ) {
             if (!DATA_KEY.matcher(it.next()).matches()) {
                 return false;

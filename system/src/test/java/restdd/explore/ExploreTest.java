@@ -95,6 +95,16 @@ class ExploreTest {
         assertEquals(List.of(), Explorer.fromList("/v2/lang/{et}", "et", bodies));
     }
 
+    @Test
+    void ownSectionListsComeFirstAndSingleIdKeysAreMaps() throws Exception {
+        Map<String, JsonNode> bodies = Map.of(
+                "/agendaevents", JSON.readTree("[{\"id\": \"1\", \"ref\": \"7\"}]"),
+                "/invoices", JSON.readTree("[{\"id\": \"3\", \"ref\": \"FA-1\"}]"));
+        assertEquals(List.of("FA-1"), Explorer.fromList("/invoices/ref/{ref}", "ref", bodies));
+        String text = Shapes.render(Shapes.of(JSON.readTree("{\"opened\": 1, \"refs\": {\"1\": \"PR-0001\"}}")), 3);
+        assertTrue(!text.contains("1:") && text.contains("refs: map<string, string>"), text);
+    }
+
     // ------------------------------------------------------------------ explorer
 
     @BeforeEach

@@ -217,11 +217,11 @@ public final class Explorer {
             body = best == null ? null : bodies.get(best);
         }
         if (body == null) {
-            return fromAnyList(name, bodies);
+            return fromAnyList(path, name, bodies);
         }
         JsonNode list = elements(body);
         if (list == null) {
-            return fromAnyList(name, bodies);
+            return fromAnyList(path, name, bodies);
         }
         List<String> out = new ArrayList<>();
         for (JsonNode e : list) {
@@ -233,16 +233,18 @@ public final class Explorer {
                 break;
             }
         }
-        return out.isEmpty() ? fromAnyList(name, bodies) : out;
+        return out.isEmpty() ? fromAnyList(path, name, bodies) : out;
     }
 
     /**
      * Fallback: any observed list whose elements carry a field named like the parameter (same name, a plural of
      * it, or a name ending in it, e.g. {@code {code}} ← {@code alpha3Code}, {@code {callingcode}} ← {@code callingCodes}).
      */
-    static List<String> fromAnyList(String name, Map<String, JsonNode> bodies) {
+    static List<String> fromAnyList(String path, String name, Map<String, JsonNode> bodies) {
+        // lists of the operation's own section first (E57: /invoices/ref/{ref} takes a ref from /invoices), then path order
+        String section = section(path);
         List<String> paths = new ArrayList<>(bodies.keySet());
-        java.util.Collections.sort(paths);
+        paths.sort(java.util.Comparator.comparing((String p) -> !section(p).equals(section)).thenComparing(p -> p));
         for (String p : paths) {
             JsonNode list = elements(bodies.get(p));
             if (list == null) {
@@ -263,6 +265,11 @@ public final class Explorer {
             }
         }
         return List.of();
+    }
+
+    private static String section(String path) {
+        String[] parts = path.split("/");
+        return parts.length > 1 ? parts[1] : "";
     }
 
     static String matchingField(JsonNode e, String name) {

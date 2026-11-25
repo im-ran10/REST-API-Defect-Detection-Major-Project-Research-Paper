@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-25 — E57: Dolibarr re-exploration; two shape/identifier fixes
+
+**Changed**
+- `Shapes.isMapLike`: a single data-like key is a map; `Explorer.fromAnyList`: own-section lists first; fixture script tolerates PHP notices; 1 new test; RESEARCH_LOG E57; EXPERIMENT_PROTOCOL §6; PROJECT_STATUS.
+
 ### 2026-11-25 — T7 fixes after the first exploration (E56); generic Dolibarr fixture
 
 **Added**
