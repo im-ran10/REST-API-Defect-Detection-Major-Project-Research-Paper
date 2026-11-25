@@ -38,7 +38,21 @@ def call(method, path, body=None, ok=(200, 201)):
     if status not in ok:
         print(f"FAILED {method} {path} -> {status}: {text.replace(KEY, '<redacted>')[:400]}", file=sys.stderr)
         return None
-    return json.loads(text) if text.strip() else None
+    if not text.strip():
+        return True  # success without a body
+    try:
+        return json.loads(text)
+    except ValueError:
+        # Dolibarr sometimes prints PHP notices before the JSON answer: use the JSON part if there is one
+        for start in (text.rfind("\n{"), text.rfind("\n["), text.rfind("\n")):
+            if start >= 0:
+                try:
+                    return json.loads(text[start:])
+                except ValueError:
+                    pass
+        print(f"note: {method} {path} -> {status}, non-JSON answer: "
+              f"{text.replace(KEY, '<redacted>')[:200]!r}", file=sys.stderr)
+        return True
 
 
 def main():
