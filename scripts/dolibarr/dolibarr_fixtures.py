@@ -26,7 +26,7 @@ CRED2 = os.path.expanduser("~/.dolibarr_credentials_2")
 KEY = os.environ.get("DOLIBARR_API_KEY")
 
 
-def call(method, path, body=None, ok=(200, 201)):
+def call(method, path, body=None, ok=(200, 201), quiet=False):
     data = None if body is None else json.dumps(body).encode()
     req = urllib.request.Request(BASE + path, data=data, method=method,
                                  headers={"Content-Type": "application/json", "DOLAPIKEY": KEY})
@@ -36,6 +36,8 @@ def call(method, path, body=None, ok=(200, 201)):
     except urllib.error.HTTPError as e:
         status, text = e.code, e.read().decode(errors="replace")
     if status not in ok:
+        if quiet:
+            return None
         print(f"FAILED {method} {path} -> {status}: {text.replace(KEY, '<redacted>')[:400]}", file=sys.stderr)
         return None
     if not text.strip():
@@ -55,9 +57,39 @@ def call(method, path, body=None, ok=(200, 201)):
         return True
 
 
+PRODUCT_REF = "RESTDD-PRODUCT-1"
+
+
+def ensure_product():
+    """The fixture product's id: looked up by its ref, created only if it does not exist yet."""
+    found = call("GET", f"/products/ref/{PRODUCT_REF}", ok=(200,), quiet=True)
+    if isinstance(found, dict) and found.get("id"):
+        return found["id"]
+    pid = call("POST", "/products", {"ref": PRODUCT_REF, "label": "Fixture product", "price": "10",
+                                     "tva_tx": "0", "type": "0", "status": "1", "status_buy": "1"})
+    return pid if pid not in (None, True) else None
+
+
+def fill_missing():
+    """--fill-missing: add the product fixture to an existing target file without creating anything else."""
+    with open(TARGET) as f:
+        target = json.load(f)
+    fx = target.setdefault("fixtures", {})
+    if "productId" not in fx:
+        pid = ensure_product()
+        if pid is None:
+            sys.exit("product fixture still missing")
+        fx["productId"], fx["productRef"] = str(pid), PRODUCT_REF
+    with open(TARGET, "w") as f:
+        json.dump(target, f, indent=2)
+    print("fixtures:", sorted(fx))
+
+
 def main():
     if not KEY:
         sys.exit("run `source ~/.dolibarr_credentials` first")
+    if "--fill-missing" in sys.argv:
+        return fill_missing()
     now = int(time.time())
     fx = {}
     tp = call("POST", "/thirdparties", {"name": "RESTDD Fixture Customer", "client": "1", "code_client": "-1",
@@ -69,11 +101,10 @@ def main():
                                     "email": "contact@example.com"})
     if ct is not None:
         fx["contactId"] = str(ct)
-    pid = call("POST", "/products", {"ref": "RESTDD-PRODUCT-1", "label": "Fixture product", "price": "10",
-                                     "tva_tx": "0", "type": "0", "status": "1", "status_buy": "1"})
+    pid = ensure_product()
     if pid is not None:
         fx["productId"] = str(pid)
-        fx["productRef"] = "RESTDD-PRODUCT-1"
+        fx["productRef"] = PRODUCT_REF
     line = {"desc": "Fixture line", "subprice": 10, "qty": 1, "tva_tx": 0, "product_type": 0}
     if pid is not None:
         line["fk_product"] = pid

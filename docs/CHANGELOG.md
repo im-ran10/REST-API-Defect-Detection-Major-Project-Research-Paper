@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-25 — E58: both development projects explored; fixture repair mode
+
+**Changed**
+- `dolibarr_fixtures.py`: product looked up by ref before creation; `--fill-missing`. RESEARCH_LOG E58; PROJECT_STATUS.
+
 ### 2026-11-25 — E57: Dolibarr re-exploration; two shape/identifier fixes
 
 **Changed**
