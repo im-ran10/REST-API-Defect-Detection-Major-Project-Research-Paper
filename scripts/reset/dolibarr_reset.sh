@@ -28,7 +28,17 @@ quiet() { "$@" 2> >(grep -v 'attribute .version. is obsolete' >&2); }
 db()    { quiet $COMPOSE exec -T db "$@"; }
 web()   { quiet $COMPOSE exec -T dolibarr "$@"; }
 dump()  { db mysqldump -u"$DB_USER" -p"$DB_PASS" --single-transaction --skip-dump-date --routines "$DB_NAME"; }
+# the database container may still be starting (e.g. right after `docker compose up -d`): wait until it answers
+wait_db() {
+  for i in $(seq 1 90); do
+    if db mysqladmin -u"$DB_USER" -p"$DB_PASS" ping --silent >/dev/null 2>&1; then return 0; fi
+    sleep 1
+  done
+  echo "database did not answer within 90 s" >&2
+  return 1
+}
 
+case "${1:-}" in snapshot|restore|check) wait_db ;; esac
 case "${1:-}" in
   snapshot)
     umask 077                                   # snapshot files readable by this user only

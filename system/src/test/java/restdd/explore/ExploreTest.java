@@ -53,7 +53,7 @@ class ExploreTest {
         assertTrue(text.contains("date_creation: string:date-time"), text);
         assertTrue(text.contains("uuid: string:uuid"), text);
         assertTrue(text.contains("email: string:email"), text);
-        assertTrue(text.contains("lines: [{note: null, qty: number, rowid: string:integer}]"), text);
+        assertTrue(text.contains("lines: [{qty: number, rowid: string:integer, note: null}]"), text);
         assertTrue(text.contains("byId: map<string, {n: string}>"), text);
         assertTrue(Shapes.hasIdLikeField(s));
         assertTrue(Shapes.hasReferenceArray(s), "lines carry rowid");
@@ -67,6 +67,32 @@ class ExploreTest {
         String text = Shapes.render(Shapes.intersect(a, b, "$", diffs), 3);
         assertEquals("{a: mixed, id: integer}", text);
         assertEquals(3, diffs.size(), diffs.toString());
+    }
+
+    @Test
+    void wideEntitiesKeepFieldNamesAndIdKeyedObjectsBecomeMaps() throws Exception {
+        StringBuilder wide = new StringBuilder("{");
+        for (int i = 0; i < 60; i++) {
+            wide.append("\"field").append(i).append("\": ").append(i % 2 == 0 ? "null" : "\"v\"").append(i < 59 ? "," : "");
+        }
+        wide.append("}");
+        String text = Shapes.render(Shapes.of(JSON.readTree(wide.toString())), 3);
+        assertTrue(text.startsWith("{field1: string, "), "non-null fields first, names kept: " + text.substring(0, 60));
+        assertTrue(Shapes.render(Shapes.of(JSON.readTree("{\"17\": {\"a\": 1}, \"18\": {\"a\": 2}}")), 3).startsWith("map<string, "));
+    }
+
+    @Test
+    void identifiersCanComeFromAnyListWithAMatchingField() throws Exception {
+        Map<String, JsonNode> bodies = Map.of("/v2/all", JSON.readTree("""
+                [{"name": "N1", "capital": "C1", "alpha3Code": "A31", "callingCodes": ["93"],
+                  "currencies": [{"code": "AFN", "name": "x"}], "regionalBlocs": [{"acronym": "SAARC"}]},
+                 {"name": "N2", "capital": "C2", "alpha3Code": "A32", "callingCodes": ["355"],
+                  "currencies": [{"code": "ALL"}], "regionalBlocs": []}]"""));
+        assertEquals(List.of("C1", "C2"), Explorer.fromList("/v2/capital/{capital}", "capital", bodies));
+        assertEquals(List.of("A31", "A32"), Explorer.fromList("/v2/alpha/{code}", "code", bodies));
+        assertEquals(List.of("93", "355"), Explorer.fromList("/v2/callingcode/{callingcode}", "callingcode", bodies));
+        assertEquals(List.of("AFN", "ALL"), Explorer.fromList("/v2/currency/{currency}", "currency", bodies));
+        assertEquals(List.of(), Explorer.fromList("/v2/lang/{et}", "et", bodies));
     }
 
     // ------------------------------------------------------------------ explorer

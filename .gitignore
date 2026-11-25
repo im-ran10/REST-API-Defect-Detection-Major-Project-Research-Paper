@@ -17,3 +17,4 @@ runs/
 # private reset snapshots (contain full databases); they live in ~/.restdd, never in the repo
 .restdd/
 .restdd_snapshot/
+__pycache__/

@@ -4,6 +4,14 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-25 — T7 fixes after the first exploration (E56); generic Dolibarr fixture
+
+**Added**
+- `scripts/dolibarr/dolibarr_fixtures.py` (generic fixture; updates the target file's fixtures and secondary role); `Explorer.fromAnyList`/`matchingField`; 2 new tests in `ExploreTest`; RESEARCH_LOG E56.
+
+**Changed**
+- `Shapes`: map rule limited to data-like keys; non-null fields rendered first. Identifier key order (code/ref before name). `dolibarr_reset.sh` waits for the database. EXPERIMENT_PROTOCOL §6 and §9; README; PROJECT_STATUS.
+
 ### 2026-11-25 — T7 exploration; D52 adopted (E55)
 
 **Added**

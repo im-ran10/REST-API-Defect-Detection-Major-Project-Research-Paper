@@ -42,8 +42,8 @@ public final class Explorer {
 
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{([^}/]+)}");
-    private static final List<String> ID_KEYS = List.of("id", "Id", "ID", "rowid", "uuid", "Uuid", "name", "Name",
-            "Names", "ref", "code", "key");
+    private static final List<String> ID_KEYS = List.of("id", "rowid", "uuid", "code", "ref", "acronym", "key", "name",
+            "Names"); // matched case-insensitively
 
     private final NormalisedSpec spec;
     private final ExecConfig config;
@@ -217,19 +217,11 @@ public final class Explorer {
             body = best == null ? null : bodies.get(best);
         }
         if (body == null) {
-            return List.of();
+            return fromAnyList(name, bodies);
         }
-        JsonNode list = body.isArray() ? body : null;
-        if (list == null && body.isObject()) {
-            for (String w : List.of("list", "data", "items", "results")) {
-                if (body.path(w).isArray()) {
-                    list = body.get(w);
-                    break;
-                }
-            }
-        }
+        JsonNode list = elements(body);
         if (list == null) {
-            return List.of();
+            return fromAnyList(name, bodies);
         }
         List<String> out = new ArrayList<>();
         for (JsonNode e : list) {
@@ -241,7 +233,75 @@ public final class Explorer {
                 break;
             }
         }
-        return out;
+        return out.isEmpty() ? fromAnyList(name, bodies) : out;
+    }
+
+    /**
+     * Fallback: any observed list whose elements carry a field named like the parameter (same name, a plural of
+     * it, or a name ending in it, e.g. {@code {code}} ← {@code alpha3Code}, {@code {callingcode}} ← {@code callingCodes}).
+     */
+    static List<String> fromAnyList(String name, Map<String, JsonNode> bodies) {
+        List<String> paths = new ArrayList<>(bodies.keySet());
+        java.util.Collections.sort(paths);
+        for (String p : paths) {
+            JsonNode list = elements(bodies.get(p));
+            if (list == null) {
+                continue;
+            }
+            List<String> out = new ArrayList<>();
+            for (JsonNode e : list) {
+                String v = matchingField(e, name);
+                if (v != null) {
+                    out.add(v);
+                }
+                if (out.size() == 2) {
+                    break;
+                }
+            }
+            if (!out.isEmpty()) {
+                return out;
+            }
+        }
+        return List.of();
+    }
+
+    static String matchingField(JsonNode e, String name) {
+        if (!e.isObject()) {
+            return null;
+        }
+        String n = name.toLowerCase();
+        for (Iterator<String> it = e.fieldNames(); it.hasNext(); ) {
+            String f = it.next();
+            String k = f.toLowerCase();
+            String singular = k.endsWith("ies") ? k.substring(0, k.length() - 3) + "y" : k.endsWith("s") ? k.substring(0, k.length() - 1) : k;
+            if (k.equals(n) || singular.equals(n) || (n.length() >= 4 && k.endsWith(n))) {
+                JsonNode v = e.get(f);
+                if (v.isArray() && !v.isEmpty()) {
+                    v = v.get(0);
+                }
+                if (v.isObject()) {
+                    return idOf(v, name);
+                }
+                if (v.isValueNode() && !v.isNull() && !v.asText().isEmpty()) {
+                    return v.asText();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static JsonNode elements(JsonNode body) {
+        if (body.isArray()) {
+            return body;
+        }
+        if (body.isObject()) {
+            for (String w : List.of("list", "data", "items", "results")) {
+                if (body.path(w).isArray()) {
+                    return body.get(w);
+                }
+            }
+        }
+        return null;
     }
 
     static String idOf(JsonNode e, String name) {

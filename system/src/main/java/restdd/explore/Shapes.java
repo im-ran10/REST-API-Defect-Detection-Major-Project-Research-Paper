@@ -14,8 +14,9 @@ import java.util.regex.Pattern;
 
 /**
  * Shape-only view of JSON responses (EXPERIMENT_PROTOCOL §6, D13.1): keys, JSON types, nesting and format tags.
- * <b>No value ever leaves this class.</b> Objects whose keys look like data (numeric or UUID-like keys, or more
- * than {@value #MAP_KEYS} keys) become {@code map<string, …>} so that IDs used as keys do not leak.
+ * <b>No value ever leaves this class.</b> Objects whose keys look like data (numeric, UUID- or hash-like keys)
+ * become {@code map<string, …>} so that IDs used as keys do not leak. Wide entity objects keep their field names
+ * (rendering lists non-empty fields first).
  *
  * <p>Representation: a scalar is a text node ({@code "string"}, {@code "string:date-time"}, {@code "integer"},
  * {@code "number"}, {@code "boolean"}, {@code "null"}, {@code "mixed"}); an object is {@code {"{}": {key: shape}}};
@@ -101,9 +102,6 @@ public final class Shapes {
     }
 
     static boolean isMapLike(JsonNode o) {
-        if (o.size() > MAP_KEYS) {
-            return true;
-        }
         if (o.size() < 2) {
             return false;
         }
@@ -274,13 +272,16 @@ public final class Shapes {
                     return;
                 }
                 sb.append('{');
-                List<String> parts = new ArrayList<>();
+                List<String> filled = new ArrayList<>();
+                List<String> empty = new ArrayList<>();
                 s.get("{}").fields().forEachRemaining(e -> {
                     StringBuilder p = new StringBuilder(e.getKey()).append(": ");
                     render(e.getValue(), depth + 1, maxDepth, p);
-                    parts.add(p.toString());
+                    boolean isNull = e.getValue().isTextual() && e.getValue().asText().equals("null");
+                    (isNull ? empty : filled).add(p.toString());
                 });
-                sb.append(String.join(", ", parts)).append('}');
+                filled.addAll(empty); // fields seen with a value first: a wide object's useful keys survive the line cap
+                sb.append(String.join(", ", filled)).append('}');
             }
         }
     }

@@ -109,6 +109,12 @@ java -jar target/restdd.jar explore --project dolibarr --spec <spec> --target <t
 ```
 `--show` prints the rendered shapes (development projects only); the record goes to `generate --shapes`.
 
+**Dolibarr generic fixture.** On a freshly restored Dolibarr, before taking the snapshot:
+```bash
+source ~/.dolibarr_credentials && python3 scripts/dolibarr/dolibarr_fixtures.py
+```
+It creates a customer, contact, product and a draft proposal, order and invoice (one line each) through the API, tries to add a second user without rights (key saved privately in `~/.dolibarr_credentials_2`, chmod 600), and writes the fixture IDs into `~/restdd-targets/dolibarr.json`. Then `bash scripts/reset/dolibarr_reset.sh snapshot`.
+
 **Generation and the model test (T6).** Before any model run: balanced power mode, plugged in, GPU temperature log running (R35).
 ```bash
 java -jar target/restdd.jar generate --project dolibarr --spec <spec> --cap 20 --work runs/x --list-only   # D47 selection only
