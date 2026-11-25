@@ -74,7 +74,7 @@ public final class PromptBuilder {
     }
 
     /** Other operations whose path starts with the same static segments as the operation (at most 2). */
-    static List<OperationSlice> related(NormalisedSpec spec, OperationSlice op) {
+    public static List<OperationSlice> related(NormalisedSpec spec, OperationSlice op) {
         String prefix = staticPrefix(op.path());
         List<OperationSlice> out = new ArrayList<>();
         for (OperationSlice s : spec.operations()) {

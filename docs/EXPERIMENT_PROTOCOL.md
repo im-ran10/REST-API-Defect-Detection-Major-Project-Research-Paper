@@ -95,7 +95,7 @@ RQ1 and RQ2 are the two pre-registered primary comparisons; C vs A is secondary.
   | Thinking mode | **non-thinking** — the model has no thinking mode; `think` omitted; every response checked for reasoning output and flagged |
   | Server | Ollama 0.40.17, flash attention on, KV cache q8_0 (systemd drop-in), GPU-only (preflight refuses partial offload) |
   | Context / output | `num_ctx` 16384, `num_predict` 2048, `truncate` false, `shift` false (no silent truncation) |
-  | Sampling | temperature 0.7, top-p 0.8, top-k 20, repeat penalty 1.0, seed per call (D26) |
+  | Sampling | temperature 0.7, top-p 0.8, top-k 20, repeat penalty 1.0, **presence penalty 1.5** (D52, from 25 Nov 2026), seed per call (D26) |
   | Output format | JSON schema with exactly *s* tests (`SuiteSchema`), *s* = 3 provisional; text values capped at 200 characters (titles 150, paths 300, file content 2,000; D51) |
   | Prompt | shared system prompt (SHA-256 in each manifest), compacted operation slice (D41), related operations, exploration shapes (T7), fixture names; arms differ only in the task section |
   | Machine | balanced power mode, plugged in, PCIe link-state power management off; GPU paused at ≥ 85 °C until ≤ 75 °C |
@@ -159,6 +159,8 @@ Holdout (E32, metadata only, 21 Nov 2026): the D13.1 checks pass for all remaini
 **Extraction:** shape only — keys, JSON types, nesting, format tags — plus code-computed booleans (`has_id_like_field`, `has_reference_array`). **Values never leave the explorer.**
 
 **Sharing:** one hashed feature record per project, used by every arm and seed.
+
+*Implementation (T7, 25 Nov 2026; PROVISIONAL until the freeze):* `explore` (`restdd.explore`). Identifiers chosen by code: a fixture whose name equals the path parameter, else the first (then second) element of the list operation whose path is the prefix before the parameter (key preference: the parameter's own name, then id, rowid, uuid, name, ref, code); unresolvable → skipped. Required query parameters take the spec's default, enum value or example, else the operation is skipped. Requests go through the T5 runner with 10 s limits; bodies and identifiers stay in memory. Shapes: keys sorted, JSON types, string format tags (date, date-time, uuid, hex-id, integer-/number-strings, email, uri), first 5 array elements merged, objects with numeric/UUID-like keys or more than 40 keys rendered as `map<string, …>`, depth ≤ 6. Two passes, intersection kept, differences listed. Prompt rendering: the operation under test (if an observed GET) and then its related operations, one line each (≤ 600 characters, ≤ 2,500 in total, nesting depth 3).
 
 **Fallback:** spec plus official-documentation examples, for the affected project only.
 

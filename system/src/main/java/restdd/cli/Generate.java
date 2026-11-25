@@ -32,9 +32,9 @@ import java.util.concurrent.TimeUnit;
  * generate --project dolibarr --spec FILE --target FILE --work DIR [--cap 20] [--arms A] [--seeds 1,2] [--s 3]
  *          [--model qwen3:4b-instruct-2507-q4_K_M] [--num-ctx 16384] [--num-predict 2048]
  *          [--temperature 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.0] [--presence-penalty P] [--compact D41-rule]
- *          [--pause-temp 85 --resume-temp 75] [--shapes FILE] [--list-only]
+ *          [--pause-temp 85 --resume-temp 75] [--shapes FEATURE-RECORD.json] [--list-only]
  * </pre>
- * Defaults are the D44 configuration and the D48 decoding settings. {@code --list-only} prints the D47
+ * Defaults are the D44 configuration, the D48 decoding settings and the D52 presence penalty (1.5). {@code --list-only} prints the D47
  * selection (keys and SHA-256) and writes it to the work folder without calling the model.
  */
 final class Generate {
@@ -69,7 +69,9 @@ final class Generate {
             fixtures.addAll(t.exec().fixtures().keySet());
         }
         fixtures.add("uid");
-        String shapes = a.containsKey("shapes") ? Files.readString(Path.of(a.get("shapes"))) : "";
+        restdd.explore.FeatureRecord record = a.containsKey("shapes") ? restdd.explore.FeatureRecord.load(Path.of(a.get("shapes"))) : null;
+        java.util.function.Function<OperationSlice, String> shapes = record == null ? op -> ""
+                : op -> record.forPrompt(op, PromptBuilder.related(promptSpec, op));
 
         int s = Integer.parseInt(a.getOrDefault("s", "3"));
         List<String> arms = Arrays.asList(a.getOrDefault("arms", "A").split(","));
@@ -83,11 +85,14 @@ final class Generate {
                 Integer.parseInt(a.getOrDefault("num-ctx", "16384")), Integer.parseInt(a.getOrDefault("num-predict", "2048")),
                 Double.parseDouble(a.getOrDefault("temperature", "0.7")), Double.parseDouble(a.getOrDefault("top-p", "0.8")),
                 Integer.parseInt(a.getOrDefault("top-k", "20")), Double.parseDouble(a.getOrDefault("repeat-penalty", "1.0")),
-                null, "30m", a.containsKey("presence-penalty") ? Double.valueOf(a.get("presence-penalty")) : null);
+                null, "30m", Double.valueOf(a.getOrDefault("presence-penalty", "1.5"))); // D52 default
 
         GenerationRun.TaskProvider tasks = (arm, op) -> PromptBuilder.armATask(s);
         GenerationRun.Config config = new GenerationRun.Config(project, promptSpec, full, ops, arms, seeds, s,
-                List.copyOf(fixtures), shapes, o, tasks);
+                List.copyOf(fixtures), shapes, record == null ? null : record.sha256(), o, tasks);
+        if (record != null) {
+            System.out.println("exploration feature record " + a.get("shapes") + " (SHA-256 " + record.sha256() + ")");
+        }
         OllamaClient client = new OllamaClient(URI.create(a.getOrDefault("ollama", "http://127.0.0.1:11434")),
                 work.resolve("cache"), work.resolve("ollama-calls.jsonl"), Duration.ofMinutes(15));
         PromptBuilder prompts = new PromptBuilder();

@@ -40,7 +40,8 @@ public final class GenerationRun {
     public interface TaskProvider extends BiFunction<String, OperationSlice, String> {}
 
     public record Config(String project, NormalisedSpec promptSpec, NormalisedSpec fullSpec, List<OperationSlice> ops,
-                         List<String> arms, List<Long> seeds, int s, List<String> fixtureNames, String shapes,
+                         List<String> arms, List<Long> seeds, int s, List<String> fixtureNames,
+                         java.util.function.Function<OperationSlice, String> shapes, String shapesSha256,
                          GenerationOptions options, TaskProvider tasks) {}
 
     public record Summary(int calls, int fromCache, int schemaValid, int promptTooLong, int outputTruncated,
@@ -91,7 +92,7 @@ public final class GenerationRun {
                 for (long seed : c.seeds()) {
                     for (String arm : c.arms()) {
                         n++;
-                        String user = prompts.user(c.promptSpec(), promptOp, c.shapes(), c.fixtureNames(),
+                        String user = prompts.user(c.promptSpec(), promptOp, c.shapes().apply(promptOp), c.fixtureNames(),
                                 c.tasks().apply(arm, promptOp));
                         ObjectNode rec = JSON.createObjectNode();
                         rec.put("callId", c.project() + "|" + arm + "|" + seed + "|" + op.key());
@@ -225,7 +226,7 @@ public final class GenerationRun {
         m.put("operationListSha256", OperationSelector.listSha256(c.ops()));
         ArrayNode fx = m.putArray("fixtureNames");
         c.fixtureNames().forEach(fx::add);
-        m.put("shapesSha256", OperationSelector.sha256(c.shapes() == null ? "" : c.shapes()));
+        m.put("featureRecordSha256", c.shapesSha256() == null ? "none" : c.shapesSha256());
         m.put("systemPromptSha256", OperationSelector.sha256(prompts.system()));
         ObjectNode model = m.putObject("model");
         model.put("name", c.options().model());

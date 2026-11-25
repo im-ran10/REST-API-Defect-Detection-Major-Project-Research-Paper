@@ -4,6 +4,15 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-25 — T7 exploration; D52 adopted (E55)
+
+**Added**
+- `restdd.explore` (`Shapes`, `Explorer`, `FeatureRecord`), CLI `explore`, `ExploreTest` (5 tests); RESEARCH_LOG E55.
+
+**Changed**
+- `generate --shapes` takes a feature record and renders per-operation shapes; manifest records `featureRecordSha256`; presence penalty 1.5 by default (D52).
+- DECISIONS D52 → PROVISIONAL (verified E55); EXPERIMENT_PROTOCOL §4 table and §6 implementation; ARCHITECTURE; README; PROJECT_STATUS.
+
 ### 2026-11-25 — E54; D52 proposed; optional presence penalty
 
 **Added**
