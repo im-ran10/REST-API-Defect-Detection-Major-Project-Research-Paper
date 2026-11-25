@@ -14,6 +14,14 @@
 # Every setting can be overridden with an environment variable of the same name (none clashes with WSL defaults).
 set -euo pipefail
 
+# work in the prepared Dolibarr folder even when called from elsewhere (E59: run from the repository, every
+# command failed and the snapshot silently stayed old)
+if [ ! -f docker-compose.yml ]; then
+  DOLIBARR_DIR="${DOLIBARR_DIR:-$HOME/tools/Defects4REST/defects4rest/data/temp_project_data/dolibarr}"
+  [ -f "$DOLIBARR_DIR/docker-compose.yml" ] || { echo "no docker-compose.yml here or in $DOLIBARR_DIR (set DOLIBARR_DIR)" >&2; exit 2; }
+  cd "$DOLIBARR_DIR"
+fi
+
 COMPOSE="${COMPOSE:-docker compose -f docker-compose.yml -f docker-compose.override.yml}"
 DB_NAME="${DB_NAME:-dolibarr}"
 DB_USER="${DB_USER:-dolibarr}"
@@ -31,7 +39,7 @@ dump()  { db mysqldump -u"$DB_USER" -p"$DB_PASS" --single-transaction --skip-dum
 # the database container may still be starting (e.g. right after `docker compose up -d`): wait until it answers
 wait_db() {
   for i in $(seq 1 90); do
-    if db mysqladmin -u"$DB_USER" -p"$DB_PASS" ping --silent >/dev/null 2>&1; then return 0; fi
+    if db mysql -u"$DB_USER" -p"$DB_PASS" -N -e "SELECT 1" "$DB_NAME" >/dev/null 2>&1; then return 0; fi
     sleep 1
   done
   echo "database did not answer within 90 s" >&2

@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-25 — E59: final G2 part 1 (RESTCountries); reset script works from any folder
+
+**Fixed**
+- `dolibarr_reset.sh` changes to the Dolibarr folder itself; database wait uses `mysql`. RESEARCH_LOG E59; PROJECT_STATUS.
+
 ### 2026-11-25 — E58: both development projects explored; fixture repair mode
 
 **Changed**
