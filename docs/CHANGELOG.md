@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-26 — E63: Gemma fails T2; model choice escalated
+
+**Added**
+- RESEARCH_LOG E63; PROJECT_STATUS.
+
 ### 2026-11-26 — E62: D53 first test; body-path pattern added
 
 **Changed**
