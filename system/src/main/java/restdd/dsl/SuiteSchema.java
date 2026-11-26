@@ -96,6 +96,11 @@ public final class SuiteSchema {
 
     /** Operators that take no {@code value} (StaticValidator.needsValue). */
     static final List<String> NO_VALUE_OPS = List.of("exists", "notExists", "isEmpty", "isNotEmpty");
+    /**
+     * D53: the JSONPath subset {@link JsonPathLite} accepts ({@code $}, then up to 12 {@code .name}, {@code [n]} or
+     * {@code [*]} segments), written for the grammar with bounded repetition.
+     */
+    public static final String BODY_PATH_PATTERN = "^\\$(\\.[A-Za-z0-9_@\\$-]{1,80}|\\[([0-9]{1,6}|\\*)\\]){0,12}$";
     static final List<String> STATUS_OPS = List.of("equals", "notEquals", "in", "notIn", "gt", "gte", "lt", "lte");
 
     /**
@@ -127,6 +132,8 @@ public final class SuiteSchema {
         for (String f : fields) {
             if (f.equals("value")) {
                 p.putObject("value");
+            } else if (f.equals("path")) {
+                p.set("path", str(MAX_TEXT).put("pattern", BODY_PATH_PATTERN));
             } else {
                 p.set(f, str(MAX_TEXT));
             }

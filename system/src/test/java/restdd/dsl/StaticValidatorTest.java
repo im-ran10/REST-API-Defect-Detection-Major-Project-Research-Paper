@@ -193,4 +193,16 @@ class StaticValidatorTest {
         }
         assertTrue(bodyNeedsPath);
     }
+
+    @Test
+    void bodyPathPatternMatchesExactlyTheParsedSubset() {
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(SuiteSchema.BODY_PATH_PATTERN);
+        for (String ok : java.util.List.of("$", "$.a", "$[0].b", "$[*].alpha2Code", "$.error.message", "$.x-y[12]")) {
+            assertTrue(p.matcher(ok).matches(), ok);
+            assertTrue(JsonPathLite.parse(ok) != null, ok);
+        }
+        for (String bad : java.util.List.of("alpha2Code", "message", "$.[*].name", "$..a", "$.a b", "")) {
+            assertTrue(!p.matcher(bad).matches(), bad);
+        }
+    }
 }

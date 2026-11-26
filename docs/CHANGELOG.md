@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-26 — E62: D53 first test; body-path pattern added
+
+**Changed**
+- `SuiteSchema.BODY_PATH_PATTERN` on body paths; `StaticValidatorTest.bodyPathPatternMatchesExactlyTheParsedSubset`; DECISIONS D53 amended; RESEARCH_LOG E62; PROJECT_STATUS.
+
 ### 2026-11-26 — E61: Gemma G1 and diagnostic; D53 proposed
 
 **Added**
