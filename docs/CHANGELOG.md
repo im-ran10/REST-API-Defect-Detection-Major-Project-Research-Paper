@@ -4,6 +4,14 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-26 — E61: Gemma G1 and diagnostic; D53 proposed
+
+**Added**
+- `SuiteSchema.assertionSchema()` (D53: one `anyOf` alternative per assertion type); `StaticValidatorTest.answerSchemaRequiresPerTypeFields`; RESEARCH_LOG E61; DECISIONS D53 (PROPOSED).
+
+**Changed**
+- EXPERIMENT_PROTOCOL §4 output-format row; PROJECT_STATUS.
+
 ### 2026-11-26 — G2 classifier check; Gemma path
 
 **Added**

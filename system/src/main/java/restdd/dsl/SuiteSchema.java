@@ -59,16 +59,7 @@ public final class SuiteSchema {
         if (s < 1) {
             throw new IllegalArgumentException("s must be >= 1");
         }
-        ObjectNode assertion = obj();
-        ObjectNode ap = assertion.putObject("properties");
-        ap.set("type", enumOf(TYPES));
-        ap.set("op", enumOf(OPS));
-        ap.set("path", str(MAX_TEXT));
-        ap.set("name", str(MAX_TEXT));
-        ap.putObject("value");
-        ap.set("left", str(MAX_TEXT));
-        ap.set("right", str(MAX_TEXT));
-        required(assertion, "type", "op");
+        ObjectNode assertion = assertionSchema();
 
         ObjectNode multipart = obj();
         ObjectNode mp = multipart.putObject("properties");
@@ -101,6 +92,49 @@ public final class SuiteSchema {
         schema.putObject("properties").set("tests", arrayOf(test, s, s));
         required(schema, "tests");
         return schema;
+    }
+
+    /** Operators that take no {@code value} (StaticValidator.needsValue). */
+    static final List<String> NO_VALUE_OPS = List.of("exists", "notExists", "isEmpty", "isNotEmpty");
+    static final List<String> STATUS_OPS = List.of("equals", "notEquals", "in", "notIn", "gt", "gte", "lt", "lte");
+
+    /**
+     * D53: one alternative per assertion type, carrying exactly the rules the static validator already applies
+     * (status: status operators and a value; body: a path, no conformsToSpec, a value unless the operator takes none;
+     * header: a name, the same value rule; responseSchema: conformsToSpec only; compare: left and right). The grammar
+     * then cannot produce, e.g., a body assertion without a path. Same schema for every model and arm.
+     */
+    static ObjectNode assertionSchema() {
+        List<String> valueOps = OPS.stream().filter(o -> !NO_VALUE_OPS.contains(o) && !o.equals("conformsToSpec")).toList();
+        ObjectNode a = F.objectNode();
+        ArrayNode any = a.putArray("anyOf");
+        any.add(variant("status", STATUS_OPS, List.of("value")));
+        any.add(variant("body", valueOps, List.of("path", "value")));
+        any.add(variant("body", NO_VALUE_OPS, List.of("path")));
+        any.add(variant("header", valueOps, List.of("name", "value")));
+        any.add(variant("header", NO_VALUE_OPS, List.of("name")));
+        any.add(variant("responseSchema", List.of("conformsToSpec"), List.of()));
+        any.add(variant("compare", OPS, List.of("left", "right")));
+        return a;
+    }
+
+    private static ObjectNode variant(String type, List<String> ops, List<String> fields) {
+        ObjectNode v = obj();
+        ObjectNode p = v.putObject("properties");
+        p.set("type", enumOf(List.of(type)));
+        p.set("op", enumOf(ops));
+        List<String> req = new java.util.ArrayList<>(List.of("type", "op"));
+        for (String f : fields) {
+            if (f.equals("value")) {
+                p.putObject("value");
+            } else {
+                p.set(f, str(MAX_TEXT));
+            }
+            req.add(f);
+        }
+        required(v, req.toArray(String[]::new));
+        v.put("additionalProperties", false);
+        return v;
     }
 
     private static ObjectNode obj() {

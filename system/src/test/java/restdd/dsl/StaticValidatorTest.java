@@ -169,4 +169,28 @@ class StaticValidatorTest {
         assertEquals(3, schema.at("/properties/tests/maxItems").asInt());
         assertEquals("tests", schema.at("/required/0").asText());
     }
+
+    @Test
+    void answerSchemaRequiresPerTypeFields() {
+        com.fasterxml.jackson.databind.JsonNode any = SuiteSchema.build(3).at("/properties/tests/items/properties/steps/items/properties/assertions/items/anyOf");
+        assertEquals(7, any.size());
+        boolean bodyNeedsPath = false;
+        for (com.fasterxml.jackson.databind.JsonNode v : any) {
+            String type = v.at("/properties/type/enum/0").asText();
+            java.util.List<String> req = new java.util.ArrayList<>();
+            v.path("required").forEach(r -> req.add(r.asText()));
+            if (type.equals("body")) {
+                bodyNeedsPath = req.contains("path");
+                assertTrue(bodyNeedsPath);
+                v.at("/properties/op/enum").forEach(o -> assertNotEquals("conformsToSpec", o.asText()));
+            }
+            if (type.equals("status")) {
+                assertTrue(req.contains("value"));
+            }
+            if (type.equals("header")) {
+                assertTrue(req.contains("name"));
+            }
+        }
+        assertTrue(bodyNeedsPath);
+    }
 }
