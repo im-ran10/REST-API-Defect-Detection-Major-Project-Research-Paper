@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-27 — E69: development divergence (Div_C 34.8%)
+
+**Added**
+- RESEARCH_LOG E69; PROJECT_STATUS.
+
 ### 2026-11-27 — E68: first development selector report; C10 fix; both start rules reported
 
 **Fixed**
