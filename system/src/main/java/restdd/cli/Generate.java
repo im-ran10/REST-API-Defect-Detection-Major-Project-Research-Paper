@@ -84,6 +84,7 @@ final class Generate {
             }
         }
         boolean ablation = a.containsKey("ignore-predicates");
+        restdd.select.Selector.Start startRule = restdd.select.Selector.Start.valueOf(a.getOrDefault("start", "MOD").toUpperCase()); // D56(5)
         if (ablation && !SelectReport.DEVELOPMENT.contains(project)) {
             throw new IllegalArgumentException("--ignore-predicates (C∅ ablation, D37) is allowed on development projects only");
         }
@@ -110,7 +111,7 @@ final class Generate {
             if (!arm.equals("A")) {
                 restdd.select.Catalogue cat = restdd.select.Catalogue.load(arm);
                 cats.put(arm, cat);
-                System.out.printf("catalogue %s %s (SHA-256 %s)%s%n", arm, cat.version(), cat.sha256(),
+                System.out.printf("catalogue %s %s (SHA-256 %s), start rule %s%s%n", arm, cat.version(), cat.sha256(), startRule,
                         ablation ? " — C∅ ablation: predicates ignored" : "");
             }
         }
@@ -123,7 +124,7 @@ final class Generate {
             for (long seed : seeds) {
                 for (var ce : cats.entrySet()) {
                     restdd.select.OperationFeatures f = features.get(op.key());
-                    List<restdd.select.Selector.Slot> slots = restdd.select.Selector.assign(ce.getValue(), f, seed, s, ablation);
+                    List<restdd.select.Selector.Slot> slots = restdd.select.Selector.assign(ce.getValue(), f, seed, s, ablation, startRule);
                     taskByCall.put(ce.getKey() + "|" + seed + "|" + op.key(), new GenerationRun.Task(
                             restdd.select.Selector.task(ce.getValue(), slots),
                             slots.stream().map(restdd.select.Selector.Slot::entryId).toList(),

@@ -64,22 +64,30 @@ final class SelectReport {
             Catalogue c = Catalogue.load(id);
             System.out.printf("%ncatalogue %s %s (SHA-256 %s…)%n", id, c.version(), c.sha256().substring(0, 12));
             System.out.println("  operations on which each entry fires: " + Selector.firingCounts(c, sel));
-            Map<String, Integer> assigned = new LinkedHashMap<>();
-            c.entries().forEach(e -> assigned.put(e.id(), 0));
-            int total = 0;
-            int distinct = 0;
-            for (OperationFeatures f : sel) {
-                for (long seed : offsets) {
-                    for (Selector.Slot sl : Selector.assign(c, f, seed, s, false)) {
-                        assigned.merge(sl.entryId(), 1, Integer::sum);
-                        total++;
-                        distinct += overlap.path(id).path(sl.entryId()).isEmpty() ? 1 : 0;
+            for (Selector.Start rule : Selector.Start.values()) {
+                Map<String, Integer> assigned = new LinkedHashMap<>();
+                c.entries().forEach(e -> assigned.put(e.id(), 0));
+                int total = 0;
+                int distinct = 0;
+                int neverUsed = 0; // (operation, fired entry) pairs never assigned over the offsets
+                for (OperationFeatures f : sel) {
+                    java.util.Set<String> used = new java.util.HashSet<>();
+                    for (long seed : offsets) {
+                        for (Selector.Slot sl : Selector.assign(c, f, seed, s, false, rule)) {
+                            assigned.merge(sl.entryId(), 1, Integer::sum);
+                            used.add(sl.entryId());
+                            total++;
+                            distinct += overlap.path(id).path(sl.entryId()).isEmpty() ? 1 : 0;
+                        }
+                    }
+                    for (String e : Selector.fired(c, f, false)) {
+                        neverUsed += used.contains(e) ? 0 : 1;
                     }
                 }
+                System.out.printf("  start rule %s: assignments over offsets %s: %s%n", rule, offsets, assigned);
+                System.out.printf("  start rule %s: Div_%s = %d / %d = %.1f%%; fired (operation, entry) pairs never assigned: %d%n",
+                        rule, id, distinct, total, total == 0 ? 0.0 : 100.0 * distinct / total, neverUsed);
             }
-            System.out.println("  slot assignments over offsets " + offsets + ": " + assigned);
-            System.out.printf("  Div_%s = %d / %d = %.1f%% (assignments to entries with no counterpart in the other catalogue)%n",
-                    id, distinct, total, total == 0 ? 0.0 : 100.0 * distinct / total);
             if (show) {
                 for (OperationFeatures f : sel) {
                     List<String> slots = new ArrayList<>();

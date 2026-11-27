@@ -53,12 +53,17 @@ public final class FeatureExtractor {
         }
         JsonNode content = slice.path("requestBody").path("content");
         boolean hasBody = slice.has("requestBody");
-        boolean multipart = false;
+        boolean anyMultipart = false;
+        boolean anyJson = false;
         for (Iterator<String> it = content.fieldNames(); it.hasNext(); ) {
             String media = it.next();
-            multipart |= media.startsWith("multipart/");
+            anyMultipart |= media.startsWith("multipart/");
+            anyJson |= media.contains("json");
             constrained |= hasConstraint(content.path(media).path("schema"));
         }
+        // D41 "multipart bodies only": a body that is also offered as JSON is an ordinary body (E68: Dolibarr lists
+        // multipart/form-data beside application/json for every body)
+        boolean multipart = anyMultipart && !anyJson;
         boolean has2xxSchema = false;
         for (Iterator<Map.Entry<String, JsonNode>> it = slice.path("responses").fields(); it.hasNext(); ) {
             Map.Entry<String, JsonNode> r = it.next();

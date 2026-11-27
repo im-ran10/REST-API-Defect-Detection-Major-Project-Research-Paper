@@ -13,6 +13,12 @@ public final class Selector {
 
     public record Slot(int index, String entryId, String reason) {}
 
+    /**
+     * Start of the round-robin. MOD = the protocol's (seed mod count) (EXPERIMENT_PROTOCOL §3); TILE = (seed × s mod
+     * count), so consecutive seeds take consecutive blocks of s entries (D56(5), owner to decide).
+     */
+    public enum Start { MOD, TILE }
+
     private Selector() {}
 
     public static List<String> fired(Catalogue c, OperationFeatures f, boolean ignorePredicates) {
@@ -29,6 +35,11 @@ public final class Selector {
      * @param ignorePredicates development-only C∅ ablation (D37): every non-default entry counts as fired
      */
     public static List<Slot> assign(Catalogue c, OperationFeatures f, long seed, int s, boolean ignorePredicates) {
+        return assign(c, f, seed, s, ignorePredicates, Start.MOD);
+    }
+
+    public static List<Slot> assign(Catalogue c, OperationFeatures f, long seed, int s, boolean ignorePredicates,
+                                    Start rule) {
         List<String> fired = fired(c, f, ignorePredicates);
         List<Slot> slots = new ArrayList<>();
         if (fired.isEmpty()) {
@@ -37,7 +48,7 @@ public final class Selector {
             }
             return slots;
         }
-        int start = (int) Math.floorMod(seed, (long) fired.size());
+        int start = (int) Math.floorMod(rule == Start.TILE ? seed * s : seed, (long) fired.size());
         for (int i = 0; i < s; i++) {
             String id = fired.get((start + i) % fired.size());
             String why = ignorePredicates ? "C∅ ablation: predicates ignored"

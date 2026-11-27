@@ -4,6 +4,14 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-27 — E68: first development selector report; C10 fix; both start rules reported
+
+**Fixed**
+- C10 multipart reading (body offered also as JSON is not multipart).
+
+**Added**
+- `Selector.Start` (MOD, TILE); `select-report` prints both with never-assigned counts; `generate --start`; tests; RESEARCH_LOG E68; DECISIONS D56(5)–(6).
+
 ### 2026-11-27 — T8: strategy catalogues, predicates and the shared selector
 
 **Added**

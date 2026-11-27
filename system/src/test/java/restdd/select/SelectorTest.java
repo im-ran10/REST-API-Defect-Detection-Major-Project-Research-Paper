@@ -130,6 +130,11 @@ class SelectorTest {
        "schema": {
         "type": "object"
        }
+      },
+      "multipart/form-data": {
+       "schema": {
+        "type": "object"
+       }
       }
      }
     },
@@ -237,6 +242,7 @@ class SelectorTest {
         assertTrue(Selector.fired(b, f.get("DELETE /books/{id}"), false).contains("B6"));
         assertTrue(Selector.fired(c, f.get("POST /books/{id}/archive"), false).contains("C6"));
         assertTrue(Selector.fired(c, f.get("POST /books/{id}/cover"), false).contains("C10"));
+        assertFalse(Selector.fired(c, f.get("PUT /books/{id}"), false).contains("C10"), "JSON body offered also as multipart");
         assertFalse(Selector.fired(c, f.get("GET /books/{id}"), false).contains("C7"), "no second role");
         assertTrue(Selector.fired(c, features(true).get("GET /books/{id}"), false).contains("C7"));
         assertEquals(List.of(), Selector.fired(c, f.get("GET /status"), false));
@@ -252,6 +258,8 @@ class SelectorTest {
         List<Selector.Slot> s1 = Selector.assign(c, f.get("GET /books"), 1, 3, false);
         assertEquals(fired.get(0), s0.get(0).entryId());
         assertEquals(fired.get(1 % fired.size()), s1.get(0).entryId());
+        List<Selector.Slot> t1 = Selector.assign(c, f.get("GET /books"), 1, 3, false, Selector.Start.TILE);
+        assertEquals(fired.get(3 % fired.size()), t1.get(0).entryId(), "TILE: seed 1 starts after the first block of 3");
         List<Selector.Slot> d = Selector.assign(c, f.get("GET /status"), 7, 3, false);
         assertTrue(d.stream().allMatch(x -> x.entryId().equals("C9")));
         String task = Selector.task(c, s0);
