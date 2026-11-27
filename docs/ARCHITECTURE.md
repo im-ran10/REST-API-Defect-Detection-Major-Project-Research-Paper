@@ -82,7 +82,7 @@ RESEARCHER SIDE — may read ground truth; never imported by system code
 | 5 | LLM generator | Provider-independent client; fixed system prompt; arm-specific task section; token accounting | Not started |
 | 6 | Static validator | Schema validation of the DSL; rejects, never repairs | Not started |
 | 7 | Replayer | Drives `defects4rest checkout` sequentially; health check; generic fixture; snapshot/restore (Dolibarr DB dump); fixed test order; isolated candidate re-runs | Not started |
-| 8 | Verdict engine | Outcome classes; differential candidates; flaky detection | Not started |
+| 8 | Verdict engine | Outcome classes; differential candidates; flaky detection | **Built (T10, 27 Nov 2026):** `restdd.verdict.VerdictEngine`, `verdicts` CLI (screening → full → isolated stages, plans for `run-suites --only`, candidates + blinded export + mapping); results kept as JSONL files, not PostgreSQL (D0.4 scope) |
 | 9 | Results store | PostgreSQL schema for runs, tests, exchanges, verdicts, budgets | Not started |
 | R | Researcher tools | Attribution (RESTCountries fix-delta script), confirmation sheet with arm anonymisation, statistics (Python) | Partly: audit scripts exist in `analysis/benchmark_audit/` |
 

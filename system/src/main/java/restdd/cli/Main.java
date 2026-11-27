@@ -61,6 +61,7 @@ public final class Main {
             case "run-suites" -> RunSuites.run(a);
             case "model-test-report" -> ModelTestReport.run(a);
             case "select-report" -> SelectReport.run(a);
+            case "verdicts" -> Verdicts.run(a);
             case "probe" -> ProbeMain.main(Arrays.copyOfRange(args, 1, args.length));
             default -> {
                 System.err.println("unknown command " + cmd);

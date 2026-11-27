@@ -123,6 +123,13 @@ java -jar target/restdd.jar run-suites --work runs/mt-dolibarr --target <target.
 java -jar target/restdd.jar model-test-report --work runs/mt-restcountries,runs/mt-dolibarr --out runs/t4-sample.json
 ```
 
+**Verdicts (T10).** For one generation run and one defect: run every suite once on the buggy and the patched deployment (`run-suites --label <bug>-s1`, `--label <fix>-s1`), then let `verdicts` plan the next stage; it prints the next commands:
+```bash
+java -jar target/restdd.jar verdicts --work runs/RUN --defect restcountries#235 --buggy bug --patched fix
+java -jar target/restdd.jar run-suites --work runs/RUN --target T --spec S --label bug-f2 --only runs/RUN/plan-full-restcountries_235.txt
+```
+Stages: screening (`-s1`) → full re-runs of suites with a candidate (`-f2`, `-f3`, fresh snapshot each) → isolated re-runs of each candidate (`-i1..i3`) → `candidates-*.jsonl`, `blinded-*.jsonl` (for reviewers), `mapping-*.jsonl` (keep closed).
+
 **Strategy arms (T8).** `generate --arms A,B,C` adds the strategy-conditioned arms (shared selector; catalogue files in `system/src/main/resources/catalogues/`; slot choices in `selection.jsonl`). Selector view without model calls (counts only for held-out projects; `--show` is development-only):
 ```bash
 java -jar target/restdd.jar select-report --project dolibarr --spec SPEC --shapes ~/restdd-features/dolibarr.json --target ~/restdd-targets/dolibarr.json --cap 60 --show

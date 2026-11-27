@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-27 — T10: verdict engine
+
+**Added**
+- `restdd.verdict` (`Verdict`, `VerdictEngine`); `verdicts` CLI; `run-suites --only` (whole-suite and isolated single-test re-runs, resumable); `VerdictEngineTest` (3), `VerdictsFlowTest` (2); RESEARCH_LOG E70; EXPERIMENT_PROTOCOL §9 implementation note; ARCHITECTURE component 8; README.
+
 ### 2026-11-27 — D56 approved with TILE
 
 **Changed**
