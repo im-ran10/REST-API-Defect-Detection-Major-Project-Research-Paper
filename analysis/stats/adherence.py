@@ -100,9 +100,23 @@ def kappa(a, b):
     return 1.0 if pe == 1 else (po - pe) / (1 - pe)
 
 
+def read_csv(path):
+    """Spreadsheet programs (Excel, WPS) may save CSV as UTF-8 with BOM, or in the Windows code page."""
+    raw = open(path, "rb").read()
+    for enc in ("utf-8-sig", "cp1252", "latin-1"):
+        try:
+            text = raw.decode(enc)
+            break
+        except UnicodeDecodeError:
+            continue
+    return list(csv.DictReader(text.splitlines()))
+
+
 def score(d):
     key = json.load(open(os.path.join(d, "sample_key.json")))["key"]
-    own = {r["sampleId"]: r["code"].strip() for r in csv.DictReader(open(os.path.join(d, "coding_owner.csv")))}
+    own = {r["sampleId"]: r["code"].strip() for r in read_csv(os.path.join(d, "coding_owner.csv"))}
+    norm = {c.lower(): c for c in CODES}
+    own = {sid: norm.get(c.lower(), c) for sid, c in own.items()}  # tolerate capitalisation
     bad = {sid: c for sid, c in own.items() if c not in CODES}
     if bad:
         raise SystemExit(f"uncoded or unknown codes: {list(bad)[:5]} ... ({len(bad)})")
@@ -119,7 +133,7 @@ def score(d):
     res["gate_pass"] = res["B"]["share"] >= 0.5 and res["C"]["share"] >= 0.5
     sec_path = os.path.join(d, "coding_second.csv")
     if os.path.exists(sec_path):
-        sec = {r["sampleId"]: r["code"].strip() for r in csv.DictReader(open(sec_path)) if r["code"].strip()}
+        sec = {r["sampleId"]: r["code"].strip() for r in read_csv(sec_path) if r["code"].strip()}
         ids = sorted(sec)
         res["second_coder"] = {"n": len(ids), "kappa": kappa([own[i] for i in ids], [sec[i] for i in ids]),
                                "disagreements": [i for i in ids if own[i] != sec[i]]}
