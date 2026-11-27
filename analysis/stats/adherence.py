@@ -111,7 +111,23 @@ def read_csv(path):
             break
         except UnicodeDecodeError:
             continue
-    return list(csv.DictReader(text.splitlines()))
+    # AI chats may wrap the CSV in a code fence or vary the heading (sample_id, SampleId, "Code ")
+    lines = [l for l in text.splitlines() if l.strip() and not l.strip().startswith("```")]
+    rows = list(csv.DictReader(lines))
+    alias = {"sampleid": "sampleId", "sample_id": "sampleId", "sample id": "sampleId", "id": "sampleId",
+             "code": "code", "note": "note"}
+    out = []
+    for r in rows:
+        n = {}
+        for k, v in r.items():
+            if k is None:
+                continue
+            key = alias.get(k.strip().strip('"').lower(), k.strip())
+            n[key] = (v or "").strip()
+        out.append(n)
+    if out and ("sampleId" not in out[0] or "code" not in out[0]):
+        raise SystemExit(f"{os.path.basename(path)}: need columns sampleId and code; found {list(out[0])}. First line: {lines[0][:120]!r}")
+    return out
 
 
 def score(d, two_coders=False):
