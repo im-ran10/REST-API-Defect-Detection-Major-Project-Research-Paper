@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-28 — E73: G3 passes; A5 per arm
+
+**Added**
+- RESEARCH_LOG E73; PROJECT_STATUS.
+
 ### 2026-11-28 — D58: two AI coders for adherence
 
 **Added**
