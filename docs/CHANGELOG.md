@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-27 — D57 proposed (G3 bars) before the Day-5 runs
+
+**Added**
+- DECISIONS D57 (PROPOSED); PROJECT_STATUS (T12 approval and conditions).
+
 ### 2026-11-27 — T11: analysis scripts
 
 **Added**
