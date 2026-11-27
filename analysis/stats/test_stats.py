@@ -110,6 +110,13 @@ class Adherence(unittest.TestCase):
         with open(os.path.join(out, "coding_owner.csv"), "w", newline="") as f:
             wr = csv.DictWriter(f, list(rows[0])); wr.writeheader(); wr.writerows(rows)
         os.remove(os.path.join(out, "coding_second.csv"))
+        sec_rows = [dict(r, code=("Partial" if i % 2 else r["code"])) for i, r in enumerate(rows)]
+        with open(os.path.join(out, "coding_second.csv"), "w", newline="") as f:
+            wr = csv.DictWriter(f, list(rows[0])); wr.writeheader(); wr.writerows(sec_rows)
+        two = adherence.score(out, two_coders=True)
+        self.assertLess(two["B"]["share"], 1.0)  # stricter: both must say Adherent
+        self.assertEqual(two["B"]["coder1_share"], 1.0)
+        os.remove(os.path.join(out, "coding_second.csv"))
         res = adherence.score(out)
         self.assertEqual(res["B"]["share"], 1.0)
         self.assertEqual(res["C"]["share"], 0.0)

@@ -6,7 +6,9 @@ sample:  python3 adherence.py sample WORK_DIR --out DIR [--n 60] [--seed 4545]
     stratified by assigned strategy in proportion to its slot count, excluding default-strategy slots (reported).
     Writes DIR/coding_owner.csv (all 2n), DIR/coding_second.csv (a random 30%, without the owner's codes) and
     DIR/sample_key.json (sample ID -> call, index). Coders see the strategy and its adherence rule (D45: not arm-blind).
-score:   python3 adherence.py score DIR
+score:   python3 adherence.py score DIR [--two-coders]
+    --two-coders (D58): coding_owner.csv and coding_second.csv each hold codes for ALL tests from two independent AI
+    coders; a test is Adherent only if both say Adherent; kappa over all tests.
     Reads the filled sheets (code column: Adherent / Partial / Not adherent). Per arm: Adherent / n with a 95%
     Wilson interval; gate = B >= 50% and C >= 50% (point estimates); Cohen's kappa on the double-coded subset.
 """
@@ -112,7 +114,7 @@ def read_csv(path):
     return list(csv.DictReader(text.splitlines()))
 
 
-def score(d):
+def score(d, two_coders=False):
     key = json.load(open(os.path.join(d, "sample_key.json")))["key"]
     own = {r["sampleId"]: r["code"].strip() for r in read_csv(os.path.join(d, "coding_owner.csv"))}
     norm = {c.lower(): c for c in CODES}
@@ -132,6 +134,31 @@ def score(d):
                     "by_strategy": {s: f"{a}/{n}" for s, (a, n) in sorted(by.items())}}
     res["gate_pass"] = res["B"]["share"] >= 0.5 and res["C"]["share"] >= 0.5
     sec_path = os.path.join(d, "coding_second.csv")
+    if two_coders:
+        # D58: two independent AI coders code all tests; Adherent only if both say Adherent
+        norm = {c.lower(): c for c in CODES}
+        sec = {r["sampleId"]: norm.get(r["code"].strip().lower(), r["code"].strip()) for r in read_csv(sec_path)}
+        missing = [s_ for s_ in own if sec.get(s_) not in CODES]
+        if missing:
+            raise SystemExit(f"coder 2 has no valid code for {len(missing)} tests, e.g. {missing[:5]}")
+        out = {"rule": "D58: Adherent only if both coders say Adherent"}
+        for arm in ("B", "C"):
+            ids = [s_ for s_, k in key.items() if k["arm"] == arm]
+            both = sum(own[s_] == "Adherent" and sec[s_] == "Adherent" for s_ in ids)
+            c2 = sum(sec[s_] == "Adherent" for s_ in ids)
+            by = defaultdict(lambda: [0, 0])
+            for s_ in ids:
+                by[key[s_]["strategy"]][0] += own[s_] == "Adherent" and sec[s_] == "Adherent"
+                by[key[s_]["strategy"]][1] += 1
+            out[arm] = {"adherent_both": both, "n": len(ids), "share": both / len(ids), "wilson95": wilson(both, len(ids)),
+                        "coder1_share": res[arm]["share"], "coder2_share": c2 / len(ids),
+                        "by_strategy": {k: f"{a_}/{n_}" for k, (a_, n_) in sorted(by.items())}}
+        ids = sorted(own)
+        out["kappa_all"] = kappa([own[i] for i in ids], [sec[i] for i in ids])
+        out["disagreements"] = sum(own[i] != sec[i] for i in ids)
+        out["gate_pass"] = out["B"]["share"] >= 0.5 and out["C"]["share"] >= 0.5
+        print(json.dumps(out, indent=2))
+        return out
     if os.path.exists(sec_path):
         sec = {r["sampleId"]: r["code"].strip() for r in read_csv(sec_path) if r["code"].strip()}
         ids = sorted(sec)
@@ -147,5 +174,6 @@ if __name__ == "__main__":
     s = sub.add_parser("sample"); s.add_argument("work"); s.add_argument("--out", required=True)
     s.add_argument("--n", type=int, default=60); s.add_argument("--seed", type=int, default=4545)
     t = sub.add_parser("score"); t.add_argument("dir")
+    t.add_argument("--two-coders", action="store_true", help="D58: coder 2 coded all tests; Adherent = both agree")
     a = ap.parse_args()
-    sample(a.work, a.out, a.n, a.seed) if a.cmd == "sample" else score(a.dir)
+    sample(a.work, a.out, a.n, a.seed) if a.cmd == "sample" else score(a.dir, a.two_coders)
