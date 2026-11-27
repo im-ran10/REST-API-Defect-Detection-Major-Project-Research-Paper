@@ -1,0 +1,158 @@
+{
+  "catalogue": "C",
+  "version": "T8-1",
+  "default": "C9",
+  "provenance": "Every entry cites a Defects4REST taxonomy subtype (ST) or an RQ3 limitation class (L) (D3.1).",
+  "entries": [
+    {
+      "id": "C1",
+      "name": "Payload validation at boundaries",
+      "trigger": "constrainedInput",
+      "applicability": "A request body or constrained parameters (types, formats, ranges, enums).",
+      "probe": "Send values at and just beyond documented limits: types, formats (date, email), lengths, ranges, enums, nested fields.",
+      "oracle": "Valid boundary values are accepted and kept as sent; invalid ones are refused with 4xx and a message naming the field.",
+      "example": "POST /books with {\"year\": -1} → status equals 400; $.message contains \"year\".",
+      "source": "Defects4REST taxonomy ST4 (data validation and transformation)",
+      "adherence": {
+        "probe": "A request uses a value at or beyond a documented limit.",
+        "oracle": "An assertion checks acceptance with the stored value, or refusal with an error message."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "C2",
+      "name": "Filter and search semantics",
+      "trigger": "filtering",
+      "applicability": "A GET with a filter or search parameter.",
+      "probe": "Filter on a value taken from a created or listed item, and repeat with an equivalent filter form.",
+      "oracle": "Every returned item satisfies the filter, the known matching item is included, and equivalent filters return the same items.",
+      "example": "GET /books?search=Dune → $[*].title contains \"Dune\"; $ lengthGte 1.",
+      "source": "Defects4REST taxonomy ST5 (query and filtering)",
+      "adherence": {
+        "probe": "A request filters on a known value.",
+        "oracle": "An assertion checks that the returned items match the filter."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "C3",
+      "name": "Persistence round-trip",
+      "trigger": "writeWithGet",
+      "applicability": "A create or update with a GET on the same resource.",
+      "probe": "Write values for several writable fields, optional ones included, then read the resource back.",
+      "oracle": "Every written field reads back with exactly the written value: nothing dropped, defaulted or truncated.",
+      "example": "PUT /books/{bookId} with {\"title\": \"Emma\", \"year\": 1815} → GET: $.title equals \"Emma\"; $.year equals 1815.",
+      "source": "Defects4REST taxonomy ST4; limitation L1 (writes that fail to persist)",
+      "adherence": {
+        "probe": "A write is followed by a read of the same resource.",
+        "oracle": "Assertions compare read-back fields with the written values."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "C4",
+      "name": "Cross-view consistency",
+      "trigger": "crossView",
+      "applicability": "List and item views, alternate keys, or reference fields.",
+      "probe": "Read the same record through two views: list and item, identifier and alternate key, or by following a reference.",
+      "oracle": "The views agree on their shared fields, and references point to records that exist.",
+      "example": "GET /books → extract $[0].id and $[0].title; GET /books/{id} → $.title equals the saved title.",
+      "source": "Defects4REST taxonomy ST4, ST5; limitation L1",
+      "adherence": {
+        "probe": "The same record is read through two views.",
+        "oracle": "An assertion compares a field across the views."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "C5",
+      "name": "Domain plausibility of values",
+      "trigger": "textFields",
+      "applicability": "A GET that returns objects with text fields.",
+      "probe": "Read records and inspect values whose domain is clear from names and docs: dates, codes, amounts, statuses, names.",
+      "oracle": "Values fit their domain: valid date format and order, non-negative amounts, codes from the documented set, no placeholder text.",
+      "example": "GET /loans/{loanId} → $.dueDate matches \"^\\\\d{4}-\\\\d{2}-\\\\d{2}$\"; $.status in [\"open\", \"returned\"].",
+      "source": "Defects4REST limitation L1 (semantic correctness)",
+      "adherence": {
+        "probe": "Records with domain-typed fields are read.",
+        "oracle": "An assertion checks a value's format, range or allowed set."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "C6",
+      "name": "Workflow and state transitions",
+      "trigger": "workflow",
+      "applicability": "Action sub-resources or a create-read-update/delete lifecycle.",
+      "probe": "Drive the resource through a sequence of states: create, act, read; act twice; or act in a wrong state.",
+      "oracle": "Each step yields the documented state, invalid transitions are refused with 4xx, and a read shows the new state.",
+      "example": "POST /loans/{loanId}/return → GET /loans/{loanId}: $.status equals \"returned\"; a second return → status in [400, 409].",
+      "source": "Defects4REST taxonomy ST2 (state and workflow); limitation L2 (stateless testing)",
+      "adherence": {
+        "probe": "A sequence of state-changing requests is sent.",
+        "oracle": "An assertion checks the resulting state or the refusal of an invalid step."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "C7",
+      "name": "Session and role variation",
+      "trigger": "secondRole",
+      "applicability": "A secured operation and a second user.",
+      "probe": "Run the operation as one user on another user's resource, and once with no credentials.",
+      "oracle": "Another user cannot read or change the resource (403 or 404), and one user's data never shows in another's response.",
+      "example": "GET /notes/{noteId} with auth secondary → status in [403, 404]; $.text notExists.",
+      "source": "Defects4REST taxonomy ST6, ST7 (authentication, authorisation); limitation L3",
+      "adherence": {
+        "probe": "A request is sent as a second user or without credentials.",
+        "oracle": "Assertions check refusal and that no owner data is returned."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "C8",
+      "name": "Representation variation",
+      "trigger": "representation",
+      "applicability": "Pagination, projection or sort parameters.",
+      "probe": "Vary the representation: page size and offset, selected fields, sort order, and edge values (0, 1, very large).",
+      "oracle": "Item sets stay consistent across representations; edge values get 2xx or a clear 4xx, never 5xx or a malformed body.",
+      "example": "GET /books?limit=1 → $ lengthEquals 1; GET /books?limit=0 → status in [200, 400].",
+      "source": "Defects4REST taxonomy ST3 (environment and representation)",
+      "adherence": {
+        "probe": "Requests vary one representation parameter.",
+        "oracle": "An assertion checks item counts, fields or order under the variation."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "C9",
+      "name": "Runtime error surface",
+      "trigger": "default",
+      "applicability": "Any operation.",
+      "probe": "Send malformed or unexpected requests: unknown fields, deeply nested or oversized values, wrong content types.",
+      "oracle": "No 5xx; error bodies carry a message and no stack trace, SQL text or file paths.",
+      "example": "POST /books with {\"title\": {\"x\": [1]}} → status lt 500; $.message notContains \"Exception\".",
+      "source": "Defects4REST taxonomy ST10 (runtime errors)",
+      "adherence": {
+        "probe": "A malformed or unexpected request is sent.",
+        "oracle": "Assertions exclude 5xx and check the error body for internals."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "C10",
+      "name": "File and storage handling",
+      "trigger": "multipart",
+      "applicability": "A multipart (file upload) operation.",
+      "probe": "Upload a small file and read or list it back; also upload an empty file and one with an unusual name.",
+      "oracle": "The stored file keeps its name and content; invalid uploads are refused with 4xx and a message.",
+      "example": "POST /books/{bookId}/cover with a.txt \"hi\" → GET /books/{bookId}: $.cover contains \"a.txt\".",
+      "source": "Defects4REST taxonomy ST11 (file and storage)",
+      "adherence": {
+        "probe": "A file is uploaded and then read back, or an invalid file is uploaded.",
+        "oracle": "An assertion checks the stored file's name or content, or the refusal."
+      },
+      "validation": "Illustrative"
+    }
+  ]
+}

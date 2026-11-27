@@ -130,7 +130,7 @@ class GenerationTest {
         List<OperationSlice> ops = OperationSelector.select(spec.operations(), 2);
         GenerationOptions o = new GenerationOptions("m:4b", 16384, 2048, 0.7, 0.8, 20, 1.0, null, "30m");
         GenerationRun.Config cfg = new GenerationRun.Config("notes", spec, spec, ops, List.of("A"), List.of(1L, 2L), 1,
-                List.of("uid"), op -> "", null, o, (arm, op) -> PromptBuilder.armATask(1));
+                List.of("uid"), op -> "", null, o, (arm, seed, op) -> GenerationRun.Task.plain(PromptBuilder.armATask(1)));
         Path work = dir.resolve("run");
         OllamaClient client = new OllamaClient(URI.create("http://127.0.0.1:" + server.getAddress().getPort()),
                 work.resolve("cache"), work.resolve("ollama-calls.jsonl"), Duration.ofSeconds(10));

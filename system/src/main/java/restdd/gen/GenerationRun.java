@@ -36,8 +36,18 @@ import java.util.function.BiFunction;
  */
 public final class GenerationRun {
 
-    /** Arm → task section for an operation. Arm A: {@link PromptBuilder#armATask}; B/C: catalogue strategies (T8). */
-    public interface TaskProvider extends BiFunction<String, OperationSlice, String> {}
+    /** The task section for one call, with the strategies of its slots (empty for arm A) and why they were chosen. */
+    public record Task(String text, List<String> strategies, List<String> reasons) {
+        public static Task plain(String text) {
+            return new Task(text, List.of(), List.of());
+        }
+    }
+
+    /** (arm, seed, operation) → task. Arm A: {@link PromptBuilder#armATask}; B/C: shared selector + catalogue (T8). */
+    @FunctionalInterface
+    public interface TaskProvider {
+        Task task(String arm, long seed, OperationSlice op);
+    }
 
     public record Config(String project, NormalisedSpec promptSpec, NormalisedSpec fullSpec, List<OperationSlice> ops,
                          List<String> arms, List<Long> seeds, int s, List<String> fixtureNames,
@@ -92,8 +102,9 @@ public final class GenerationRun {
                 for (long seed : c.seeds()) {
                     for (String arm : c.arms()) {
                         n++;
+                        Task task = c.tasks().task(arm, seed, op);
                         String user = prompts.user(c.promptSpec(), promptOp, c.shapes().apply(promptOp), c.fixtureNames(),
-                                c.tasks().apply(arm, promptOp));
+                                task.text());
                         ObjectNode rec = JSON.createObjectNode();
                         rec.put("callId", c.project() + "|" + arm + "|" + seed + "|" + op.key());
                         rec.put("project", c.project());
@@ -101,6 +112,10 @@ public final class GenerationRun {
                         rec.put("seed", seed);
                         rec.put("operation", op.key());
                         rec.put("s", c.s());
+                        ArrayNode strategies = rec.putArray("strategies");
+                        task.strategies().forEach(strategies::add);
+                        ArrayNode reasons = rec.putArray("selectionReasons");
+                        task.reasons().forEach(reasons::add);
                         rec.put("userPrompt", user);
 
                         ChatResult r = null;

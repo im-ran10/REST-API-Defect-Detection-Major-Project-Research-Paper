@@ -65,9 +65,11 @@ final class Generate {
         }
 
         List<String> fixtures = new ArrayList<>();
+        boolean secondRole = false;
         if (a.containsKey("target")) {
             TargetConfig t = TargetConfig.load(Path.of(a.get("target")), name -> "unused-for-fixture-names");
             fixtures.addAll(t.exec().fixtures().keySet());
+            secondRole = t.exec().secondaryAuth() != null;
         }
         fixtures.add("uid");
         restdd.explore.FeatureRecord record = a.containsKey("shapes") ? restdd.explore.FeatureRecord.load(Path.of(a.get("shapes"))) : null;
@@ -77,9 +79,13 @@ final class Generate {
         int s = Integer.parseInt(a.getOrDefault("s", "3"));
         List<String> arms = Arrays.asList(a.getOrDefault("arms", "A").split(","));
         for (String arm : arms) {
-            if (!arm.equals("A")) {
-                throw new IllegalArgumentException("arm " + arm + " needs the strategy catalogues (T8); only A is available");
+            if (!arm.matches("A|B|C")) {
+                throw new IllegalArgumentException("unknown arm " + arm + " (A, B or C)");
             }
+        }
+        boolean ablation = a.containsKey("ignore-predicates");
+        if (ablation && !SelectReport.DEVELOPMENT.contains(project)) {
+            throw new IllegalArgumentException("--ignore-predicates (C∅ ablation, D37) is allowed on development projects only");
         }
         List<Long> seeds = Arrays.stream(a.getOrDefault("seeds", "1,2").split(",")).map(x -> Long.parseLong(x.trim())).toList();
         String model = a.getOrDefault("model", "qwen3:4b-instruct-2507-q4_K_M");
@@ -97,7 +103,47 @@ final class Generate {
                 model, o.temperature(), o.topP(), o.topK(), o.repeatPenalty(),
                 o.presencePenalty() == null ? "not sent" : o.presencePenalty());
 
-        GenerationRun.TaskProvider tasks = (arm, op) -> PromptBuilder.armATask(s);
+        // B/C: shared selector over the project's features (spec + exploration record + second role); every choice
+        // is logged to selection.jsonl before any model call (EXPERIMENT_PROTOCOL §3)
+        Map<String, restdd.select.Catalogue> cats = new java.util.HashMap<>();
+        for (String arm : arms) {
+            if (!arm.equals("A")) {
+                restdd.select.Catalogue cat = restdd.select.Catalogue.load(arm);
+                cats.put(arm, cat);
+                System.out.printf("catalogue %s %s (SHA-256 %s)%s%n", arm, cat.version(), cat.sha256(),
+                        ablation ? " — C∅ ablation: predicates ignored" : "");
+            }
+        }
+        Map<String, restdd.select.OperationFeatures> features = cats.isEmpty() ? Map.of()
+                : restdd.select.FeatureExtractor.extract(full, record, secondRole);
+        Map<String, GenerationRun.Task> taskByCall = new java.util.HashMap<>();
+        StringBuilder selLog = new StringBuilder();
+        com.fasterxml.jackson.databind.ObjectMapper jm = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (OperationSlice op : ops) {
+            for (long seed : seeds) {
+                for (var ce : cats.entrySet()) {
+                    restdd.select.OperationFeatures f = features.get(op.key());
+                    List<restdd.select.Selector.Slot> slots = restdd.select.Selector.assign(ce.getValue(), f, seed, s, ablation);
+                    taskByCall.put(ce.getKey() + "|" + seed + "|" + op.key(), new GenerationRun.Task(
+                            restdd.select.Selector.task(ce.getValue(), slots),
+                            slots.stream().map(restdd.select.Selector.Slot::entryId).toList(),
+                            slots.stream().map(restdd.select.Selector.Slot::reason).toList()));
+                    Map<String, Object> row = new java.util.LinkedHashMap<>();
+                    row.put("arm", ce.getKey());
+                    row.put("seed", seed);
+                    row.put("operation", op.key());
+                    row.put("slots", slots);
+                    row.put("features", f.asMap());
+                    selLog.append(jm.writeValueAsString(row)).append('\n');
+                }
+            }
+        }
+        if (!cats.isEmpty()) {
+            Files.writeString(work.resolve("selection.jsonl"), selLog.toString());
+        }
+        GenerationRun.TaskProvider tasks = (arm, seed, op) -> arm.equals("A")
+                ? GenerationRun.Task.plain(PromptBuilder.armATask(s))
+                : taskByCall.get(arm + "|" + seed + "|" + op.key());
         GenerationRun.Config config = new GenerationRun.Config(project, promptSpec, full, ops, arms, seeds, s,
                 List.copyOf(fixtures), shapes, record == null ? null : record.sha256(), o, tasks);
         if (record != null) {

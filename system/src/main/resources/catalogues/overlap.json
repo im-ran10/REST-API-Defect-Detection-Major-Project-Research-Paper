@@ -1,0 +1,71 @@
+{
+  "version": "T8-1",
+  "rule": "Revision 2 \u00a71.2, frozen before any divergence computation (D31). An entry with a counterpart in the other catalogue counts as overlapping, whatever the degree (high, medium, low-medium); Div_C = share of C assignments to entries with no B counterpart.",
+  "C": {
+    "C1": [
+      "B2",
+      "B3"
+    ],
+    "C2": [
+      "B12",
+      "B13",
+      "B14"
+    ],
+    "C3": [],
+    "C4": [
+      "B10",
+      "B11"
+    ],
+    "C5": [],
+    "C6": [],
+    "C7": [
+      "B8"
+    ],
+    "C8": [
+      "B11",
+      "B15"
+    ],
+    "C9": [
+      "B1"
+    ],
+    "C10": []
+  },
+  "B": {
+    "B1": [
+      "C9"
+    ],
+    "B2": [
+      "C1"
+    ],
+    "B3": [
+      "C1"
+    ],
+    "B4": [],
+    "B5": [],
+    "B6": [],
+    "B7": [],
+    "B8": [
+      "C7"
+    ],
+    "B9": [],
+    "B10": [
+      "C4"
+    ],
+    "B11": [
+      "C4",
+      "C8"
+    ],
+    "B12": [
+      "C2"
+    ],
+    "B13": [
+      "C2"
+    ],
+    "B14": [
+      "C2"
+    ],
+    "B15": [
+      "C8"
+    ]
+  }
+}

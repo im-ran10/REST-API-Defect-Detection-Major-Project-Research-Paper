@@ -1,0 +1,233 @@
+{
+  "catalogue": "B",
+  "version": "T8-1",
+  "default": "B1",
+  "provenance": "An entry belongs to B only if it appears in B's named sources: tool check lists (Schemathesis, RESTler), Segura et al.'s metamorphic output patterns, RFC 9110 (D3.1, D34).",
+  "entries": [
+    {
+      "id": "B1",
+      "name": "Server-error robustness",
+      "trigger": "default",
+      "applicability": "Any operation.",
+      "probe": "Send well-formed but unusual requests: optional parameters left out, boundary values, unexpected but valid combinations.",
+      "oracle": "The status is never 5xx; when the request is refused (4xx), the body carries an error message.",
+      "example": "GET /books?year=99999 → status lt 500; body $.message exists.",
+      "source": "Schemathesis not_a_server_error; RESTler 5xx detection",
+      "adherence": {
+        "probe": "At least one request uses unusual but well-formed input.",
+        "oracle": "An assertion excludes 5xx, and a refusal is checked for an error message."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B2",
+      "name": "Invalid input is rejected",
+      "trigger": "hasInput",
+      "applicability": "The operation takes parameters or a request body.",
+      "probe": "Break one documented constraint at a time: wrong type, key absent, value empty, value null, out of range, value outside the enum.",
+      "oracle": "The status is 4xx (not 2xx, not 5xx) and the body carries an error message.",
+      "example": "POST /books with {\"title\": null} → status in [400, 422]; body $.message exists.",
+      "source": "Schemathesis negative_data_rejection; Vieira et al. (DSN 2007) mutation operators by data type",
+      "adherence": {
+        "probe": "A request violates one documented input constraint.",
+        "oracle": "An assertion expects a 4xx status, and the error body is checked."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B3",
+      "name": "Valid input is accepted",
+      "trigger": "hasInput",
+      "applicability": "The operation takes parameters or a request body.",
+      "probe": "Send a request that meets every documented constraint: once with only required fields, once with optional fields as well.",
+      "oracle": "The status is 2xx and the response matches the documented schema.",
+      "example": "POST /books with {\"title\": \"Emma\", \"year\": 1815} → status in [200, 201]; responseSchema conformsToSpec.",
+      "source": "Schemathesis positive_data_acceptance",
+      "adherence": {
+        "probe": "A request satisfies all documented constraints.",
+        "oracle": "An assertion expects 2xx and checks the response against the schema or its fields."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B4",
+      "name": "Response conformance",
+      "trigger": "has2xxSchema",
+      "applicability": "A success response schema is documented.",
+      "probe": "Call the operation exactly as documented, with valid values for every parameter.",
+      "oracle": "The status is one of the documented codes and the body conforms to the documented schema (types, required fields).",
+      "example": "GET /books/{bookId} → status equals 200; responseSchema conformsToSpec; $.title isType string.",
+      "source": "Schemathesis status_code_conformance, response_schema_conformance",
+      "adherence": {
+        "probe": "The operation is called with valid, documented input.",
+        "oracle": "An assertion checks schema conformance or the type of documented fields."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B5",
+      "name": "Invalid or unknown identifier",
+      "trigger": "hasPathParam",
+      "applicability": "The path contains an identifier parameter.",
+      "probe": "Use an identifier that does not exist, a malformed one (wrong type or format), or one of a deleted resource.",
+      "oracle": "The status is 404 (or 400 for a malformed value), never 2xx with data or 5xx; the body carries an error message.",
+      "example": "GET /books/999999 → status equals 404; body $.message exists.",
+      "source": "RESTler invalid dynamic object checker",
+      "adherence": {
+        "probe": "A request uses a non-existent or malformed identifier.",
+        "oracle": "An assertion expects 404/400, and the error body is checked."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B6",
+      "name": "Deleted resource is gone",
+      "trigger": "deleteWithGet",
+      "applicability": "DELETE and GET exist for the same item.",
+      "probe": "Create or pick a resource, delete it, then read it again with the same identifier.",
+      "oracle": "The delete succeeds (2xx) and the follow-up read returns 404 with an error message.",
+      "example": "DELETE /books/{bookId} → status in [200, 204]; GET /books/{bookId} → status equals 404; $.message exists.",
+      "source": "Schemathesis use_after_free; RESTler use-after-free checker",
+      "adherence": {
+        "probe": "A delete is followed by a read of the same identifier.",
+        "oracle": "An assertion expects the read to fail with 404, and the body is checked."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B7",
+      "name": "Created resource is available",
+      "trigger": "createWithGet",
+      "applicability": "POST on a collection and GET on its items.",
+      "probe": "Create a resource, save its identifier with extract, then read it back by that identifier.",
+      "oracle": "The read returns 200 and shows the created resource; its identifier equals the saved one.",
+      "example": "POST /books → extract bookId from $.id; GET /books/{bookId} → status equals 200; $.id equals ${bookId}.",
+      "source": "Schemathesis ensure_resource_availability",
+      "adherence": {
+        "probe": "A create is followed by a read of the new identifier.",
+        "oracle": "An assertion checks that the read-back resource carries the created identifier."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B8",
+      "name": "Access control is enforced",
+      "trigger": "secured",
+      "applicability": "The operation declares authentication.",
+      "probe": "Send the request with no credentials (auth none), and, if a second user exists, as that user.",
+      "oracle": "The status is 401 or 403 and the body contains no resource data.",
+      "example": "GET /books/{bookId} with auth none → status in [401, 403]; $.title notExists.",
+      "source": "Schemathesis ignored_auth; RESTler namespace rule checker",
+      "adherence": {
+        "probe": "A request is sent without credentials or as another user.",
+        "oracle": "Assertions expect 401/403 and that no resource field is returned."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B9",
+      "name": "Method semantics",
+      "trigger": "safeOrIdempotent",
+      "applicability": "A GET, HEAD, PUT or DELETE operation.",
+      "probe": "Repeat a safe or idempotent request: GET twice, the same PUT twice, DELETE twice, and read the state after each.",
+      "oracle": "GET leaves state unchanged; a repeated PUT gives the same final state; a second DELETE never revives the resource or returns 5xx.",
+      "example": "PUT /books/{bookId} twice with {\"title\": \"Emma\"} → GET /books/{bookId}: $.title equals \"Emma\".",
+      "source": "RFC 9110 safe and idempotent methods",
+      "adherence": {
+        "probe": "The same safe or idempotent request is repeated.",
+        "oracle": "An assertion checks the state after the repetition."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B10",
+      "name": "Equivalent requests agree",
+      "trigger": "multiQuery",
+      "applicability": "A GET with two or more query parameters.",
+      "probe": "Send the same query twice with the parameters in a different order or in an equivalent form, saving a value from each.",
+      "oracle": "Both responses contain the same items, in any order: same length and the same identifiers.",
+      "example": "GET /books?genre=sf&year=1965 and GET /books?year=1965&genre=sf → compare the saved $[0].id values.",
+      "source": "Segura et al. (TSE 2018) metamorphic output pattern Equivalence",
+      "adherence": {
+        "probe": "Two equivalent forms of the same query are sent.",
+        "oracle": "An assertion compares results of the two requests."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B11",
+      "name": "Equal ordered results",
+      "trigger": "paging",
+      "applicability": "A GET with pagination parameters (limit, offset, page, per_page).",
+      "probe": "Request page 1 and page 2, then one larger page that covers both.",
+      "oracle": "Items keep their order: the large page equals the two pages joined; no item repeats across pages.",
+      "example": "GET /books?limit=2&page=2 → save $[0].id; GET /books?limit=4&page=1 → compare $[2].id with it.",
+      "source": "Segura et al. (TSE 2018) metamorphic output pattern Equality",
+      "adherence": {
+        "probe": "Overlapping pages are requested.",
+        "oracle": "An assertion compares items or order across the pages."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B12",
+      "name": "Filtered result is a subset",
+      "trigger": "filtering",
+      "applicability": "A GET with a filter or search parameter.",
+      "probe": "Request the unfiltered list, then the same list with a restrictive filter.",
+      "oracle": "Every filtered item satisfies the filter, and the filtered list is no longer than the unfiltered one.",
+      "example": "GET /books?genre=sf → $[*].genre equals \"sf\".",
+      "source": "Segura et al. (TSE 2018) metamorphic output pattern Subset",
+      "adherence": {
+        "probe": "A filtered request is compared with or follows an unfiltered one.",
+        "oracle": "An assertion checks that the items satisfy the filter."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B13",
+      "name": "Disjoint partitions",
+      "trigger": "partitioning",
+      "applicability": "A GET with a filter or an enumerated query parameter.",
+      "probe": "Request two disjoint partitions: two different enum values or two mutually exclusive filters.",
+      "oracle": "No item appears in both results; each result contains only items of its own partition.",
+      "example": "GET /books?status=lent → $[*].status equals \"lent\"; GET /books?status=free → $[*].status equals \"free\".",
+      "source": "Segura et al. (TSE 2018) metamorphic output pattern Disjoint",
+      "adherence": {
+        "probe": "Two disjoint partitions are requested.",
+        "oracle": "Assertions check each partition's items."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B14",
+      "name": "Partitions are complete",
+      "trigger": "partitioning",
+      "applicability": "A GET with a filter or an enumerated query parameter.",
+      "probe": "Request every partition (each enum value) and the unpartitioned list.",
+      "oracle": "The partitions together hold exactly the items of the unpartitioned list; their sizes add up.",
+      "example": "GET /books?status=lent, ?status=free and GET /books → $ lengthEquals the sum of the two partition lengths.",
+      "source": "Segura et al. (TSE 2018) metamorphic output pattern Complete",
+      "adherence": {
+        "probe": "All partitions and the full list are requested.",
+        "oracle": "An assertion relates partition contents or sizes to the full list."
+      },
+      "validation": "Illustrative"
+    },
+    {
+      "id": "B15",
+      "name": "Expected differences only",
+      "trigger": "projecting",
+      "applicability": "A GET with field selection, sort or order parameters.",
+      "probe": "Request the same list with and without the projection or sort.",
+      "oracle": "Results differ only as expected: projected items carry only the requested fields; sorted items follow the sort key.",
+      "example": "GET /books?fields=title → $[*].title exists; $[*].year notExists.",
+      "source": "Segura et al. (TSE 2018) metamorphic output pattern Difference",
+      "adherence": {
+        "probe": "A projected or sorted request is sent.",
+        "oracle": "An assertion checks the projected fields or the order."
+      },
+      "validation": "Illustrative"
+    }
+  ]
+}

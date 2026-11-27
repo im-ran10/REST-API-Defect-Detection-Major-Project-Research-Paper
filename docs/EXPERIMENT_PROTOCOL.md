@@ -53,6 +53,8 @@ RQ1 and RQ2 are the two pre-registered primary comparisons; C vs A is secondary.
 - **Predicate corrections (D41):** filter names (`filter`, `filters`, `sqlfilters`, `search`, `q`, `query`, `where`) → C2/B12; pagination/projection/sort names (`limit`, `offset`, `page`, `per_page`, `fields`, `sort*`, `order*`) → C8/B11/B15; C6 = action sub-resource or create–read–(update or delete) lifecycle; C10 = multipart bodies only; C7 only where the generic fixture provides a second role.
 - **Divergence (D31):** Div_C = share of C's (operation, slot) assignments, over development operations, *s* slots and the 5 seed offsets, with no B counterpart; Div_B reported; the overlap table is committed before the first computation; the fallback triggers if Div_C < 20%.
 
+*T8 implementation (27 Nov 2026, DRAFT until the freeze):* catalogues and overlap table in `system/src/main/resources/catalogues/`; mapping artefact `docs/frozen/CATALOGUES.md`; selector `restdd.select` (features, predicates, round-robin allocation, shared slot template; sources not shown in prompts); `generate --arms A,B,C` logs every slot choice with its predicate and features to `selection.jsonl` before any model call; `select-report` prints firing counts, assignments and Div_C/Div_B (counts only for held-out projects). Choices and the start-index issue: D56 (PROPOSED).
+
 **Development effort parity.** A, B and C each get the same number of logged revision rounds on the development set.
 
 **External tools.** Schemathesis, RESTler, EvoMaster and AutoRestTest are not run in the initial plan (scope). Their published RQ3 results for 6 development defects (E20) are context only, not comparable baselines.

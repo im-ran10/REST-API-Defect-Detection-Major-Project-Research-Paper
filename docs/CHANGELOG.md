@@ -4,6 +4,14 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-27 — T8: strategy catalogues, predicates and the shared selector
+
+**Added**
+- `restdd.select` (features, predicates, catalogue loader, selector, slot template); catalogues B (15), C (10), overlap table; `select-report`; `generate --arms A,B,C` with `selection.jsonl` and `--ignore-predicates` (development only); `SelectorTest` (3); `docs/frozen/CATALOGUES.md`; DECISIONS D56 (PROPOSED); RESEARCH_LOG E67.
+
+**Changed**
+- `GenerationRun.TaskProvider` receives the seed and returns the slot strategies (logged per call); ARCHITECTURE component 4; EXPERIMENT_PROTOCOL §2 note; README; PROJECT_STATUS.
+
 ### 2026-11-27 — D55: model selection closed (Qwen3 4B, E65 configuration)
 
 **Added**

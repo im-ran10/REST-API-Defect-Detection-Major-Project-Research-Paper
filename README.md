@@ -122,6 +122,11 @@ java -jar target/restdd.jar generate --project dolibarr --spec <spec> --target <
 java -jar target/restdd.jar run-suites --work runs/mt-dolibarr --target <target.json> --spec <spec>
 java -jar target/restdd.jar model-test-report --work runs/mt-restcountries,runs/mt-dolibarr --out runs/t4-sample.json
 ```
+
+**Strategy arms (T8).** `generate --arms A,B,C` adds the strategy-conditioned arms (shared selector; catalogue files in `system/src/main/resources/catalogues/`; slot choices in `selection.jsonl`). Selector view without model calls (counts only for held-out projects; `--show` is development-only):
+```bash
+java -jar target/restdd.jar select-report --project dolibarr --spec SPEC --shapes ~/restdd-features/dolibarr.json --target ~/restdd-targets/dolibarr.json --cap 60 --show
+```
 Defaults: D44 configuration (num_ctx 16384, num_predict 2048), D41 compaction, D48 decoding settings, *s* = 3. A re-run of `generate` or `run-suites` resumes where it stopped.
 
 **Running a suite against a deployment (T5).** A target file (kept outside the repository; examples in `scripts/targets/`) gives the base URL, the auth environment variable and the reset commands:
