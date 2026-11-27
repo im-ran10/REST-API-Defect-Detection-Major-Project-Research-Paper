@@ -172,7 +172,9 @@ class StaticValidatorTest {
 
     @Test
     void answerSchemaRequiresPerTypeFields() {
-        com.fasterxml.jackson.databind.JsonNode any = SuiteSchema.build(3).at("/properties/tests/items/properties/steps/items/properties/assertions/items/anyOf");
+        assertTrue(SuiteSchema.build(3).at("/properties/tests/items/properties/steps/items/properties/assertions/items/anyOf").isMissingNode(),
+                "D53 is opt-in");
+        com.fasterxml.jackson.databind.JsonNode any = SuiteSchema.assertionSchema().path("anyOf");
         assertEquals(7, any.size());
         boolean bodyNeedsPath = false;
         for (com.fasterxml.jackson.databind.JsonNode v : any) {

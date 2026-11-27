@@ -4,6 +4,22 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-27 — D55: model selection closed (Qwen3 4B, E65 configuration)
+
+**Added**
+- DECISIONS D55 (deviation documented; owner-approved with three wording corrections); RESEARCH_LOG E65 manual check, E66 (Gemma formal G2), R37; EXPERIMENT_PROTOCOL §4 note, §10 A5 (per-arm R-T4 share), §12 threats.
+
+**Changed**
+- D53 → SUPERSEDED (code stays opt-in); PROJECT_STATUS current stage.
+
+### 2026-11-26 — D54: second Qwen G2 (code and docs committed 27 Nov after the owner's review)
+
+**Added**
+- Grounding rule in `prompts/system.txt`; `model-test-report` breakdown (class counts, by method, success vs 4xx) and grounding count; DECISIONS D54; RESEARCH_LOG E64.
+
+**Changed**
+- D53 schema opt-in (`-Drestdd.d53=true`), default = the E60 schema; EXPERIMENT_PROTOCOL §6 note; PROJECT_STATUS.
+
 ### 2026-11-26 — E63: Gemma fails T2; model choice escalated
 
 **Added**

@@ -160,6 +160,10 @@ Holdout (E32, metadata only, 21 Nov 2026): the D13.1 checks pass for all remaini
 
 **Sharing:** one hashed feature record per project, used by every arm and seed.
 
+*Model selection closed (D55, owner, 27 Nov 2026):* neither candidate passed G2 (Qwen T4 54.9% / 52.9%, E60/E65; Gemma T2 5.0%, T4 5/9 on the nine tests that survived T2, E66). Deviation from D27/D43/D49(6) approved under D43's escalation clause: **Qwen3 4B Instruct-2507 with the E65 configuration** (the D44/D48/D51/D52 table above, D53 off, shared system prompt with the D49 and D54 rules, SHA-256 `5b759f15501b8a27…`). Thresholds, R-T4, D45, arms, catalogues, budgets and detection criteria unchanged; no further prompt optimisation; model selection not reopened unless a check fails after the freeze.
+
+*Second Qwen G2 (D54, 26 Nov 2026):* shared-prompt grounding rule; seeds 7–8; thresholds and R-T4 unchanged; Gemma deferred.
+
 *Model selection outcome (26 Nov 2026, E60):* Qwen failed the final G2 on T4; Gemma 3 4B (`gemma3:4b-it-q4_K_M`) gets its own G1 and G2 with the identical configuration except decoding (D48 Gemma clause: temperature 1.0, top-p 0.95, top-k 64, repeat penalty 1.0; no presence penalty). `generate` and `g1` take these from the model name (`ModelDefaults`) and print them.
 
 *Implementation (T7, 25 Nov 2026; PROVISIONAL until the freeze):* `explore` (`restdd.explore`). Identifiers chosen by code: a fixture whose name equals the path parameter, else the first (then second) element of the list operation whose path is the prefix before the parameter (key preference: the parameter's own name, then id, rowid, uuid, code, ref, acronym, key, name, case-insensitive), else (E56) the first observed list (lists of the operation's own first path segment first, E57; then path order) whose elements carry a field named like the parameter (same name, its plural, or a longer name ending in it, e.g. `alpha3Code` for `{code}`); unresolvable → skipped. Required query parameters take the spec's default, enum value or example, else the operation is skipped. Requests go through the T5 runner with 10 s limits; bodies and identifiers stay in memory. Shapes: keys sorted, JSON types, string format tags (date, date-time, uuid, hex-id, integer-/number-strings, email, uri), first 5 array elements merged, objects whose keys are all numeric/UUID/hash-like (even a single key, E57) rendered as `map<string, …>` (the earlier "more than 40 keys" rule was removed, E56: it hid the field names of wide entities), fields seen with a value listed before null-only fields, depth ≤ 6. Two passes, intersection kept, differences listed. Prompt rendering: the operation under test (if an observed GET) and then its related operations, one line each (≤ 600 characters, ≤ 2,500 in total, nesting depth 3).
@@ -294,6 +298,7 @@ Notes:
 
 **Claim discipline:**
 - Inference covers the sampled defects and projects only; no per-type significance tests.
+- **A5 (D55, descriptive):** R-T4 non-trivial share of executable tests per arm (development and held-out runs), with class counts (MEANINGFUL / STATUS_ONLY / NONE), from `model-test-report`'s breakdown.
 - If fewer than 20 evaluable holdout defects remain, report descriptively.
 - No post-hoc subgroup hunting.
 
@@ -344,6 +349,7 @@ Benchmark commit (`265db11`), patch indices, Docker image IDs/digests, JDK and t
   - T2-dominated sample;
   - RESTCountries has a single detection mechanism.
 - **Statistical:** small *n* (R12); no per-type claims.
+- *Added 27 Nov 2026 (D55, R37):* the generator missed the pre-declared assertion-quality bar (T4) and is used by an approved deviation; weak success-path assertions lower detection power and may affect arms differently (B and C prescribe checks), assessed with the per-arm R-T4 share (A5); differential execution and blind confirmation (D4.1) reduce, not eliminate, false-detection risk; R-T4 written after the first failure (D49); D45 threshold assistant-set; G2 bars are practical floors.
 - *Added 23 Nov 2026:* two held-out projects, Podman dominant (23 of 28); a free 4B model (R30); C's distinct families unevenly applicable per project (R31); RQ1 bundles selection, strategy text and examples; no refinement loop, so tests are never adapted to buggy behaviour (RESTestBench lesson, E39).
 
 ## 13. Freeze checklist (all before the first holdout deployment)

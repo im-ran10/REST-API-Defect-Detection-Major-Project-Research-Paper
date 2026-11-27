@@ -59,7 +59,8 @@ public final class SuiteSchema {
         if (s < 1) {
             throw new IllegalArgumentException("s must be >= 1");
         }
-        ObjectNode assertion = assertionSchema();
+        // D53 (PROPOSED, Gemma-only so far) is opt-in: -Drestdd.d53=true; default = the schema of the E60 run
+        ObjectNode assertion = Boolean.getBoolean("restdd.d53") ? assertionSchema() : plainAssertionSchema();
 
         ObjectNode multipart = obj();
         ObjectNode mp = multipart.putObject("properties");
@@ -109,6 +110,20 @@ public final class SuiteSchema {
      * header: a name, the same value rule; responseSchema: conformsToSpec only; compare: left and right). The grammar
      * then cannot produce, e.g., a body assertion without a path. Same schema for every model and arm.
      */
+    static ObjectNode plainAssertionSchema() {
+        ObjectNode assertion = obj();
+        ObjectNode ap = assertion.putObject("properties");
+        ap.set("type", enumOf(TYPES));
+        ap.set("op", enumOf(OPS));
+        ap.set("path", str(MAX_TEXT));
+        ap.set("name", str(MAX_TEXT));
+        ap.putObject("value");
+        ap.set("left", str(MAX_TEXT));
+        ap.set("right", str(MAX_TEXT));
+        required(assertion, "type", "op");
+        return assertion;
+    }
+
     static ObjectNode assertionSchema() {
         List<String> valueOps = OPS.stream().filter(o -> !NO_VALUE_OPS.contains(o) && !o.equals("conformsToSpec")).toList();
         ObjectNode a = F.objectNode();

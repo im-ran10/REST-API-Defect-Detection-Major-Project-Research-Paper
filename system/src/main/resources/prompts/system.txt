@@ -28,6 +28,7 @@ RULES
 - Use only operations listed in the operation context. Every test must be runnable on its own: create what it needs in earlier steps and save identifiers with "extract".
 - Assert what a correct implementation must do. Every test must check at least one specific thing in a response body or header (a field's value, type or presence, a list's length or contents, an error message, or conformance to the documented schema). A status code alone, or only that the body exists or is not empty, is not enough.
 - Do not invent fields, parameters or values that the operation context does not support, unless the test deliberately sends invalid input; then assert that it is rejected.
+- An expected value in an assertion must come from the operation context (documented enums, examples, defaults or observed response shapes) or from a value this test sent or saved. If you cannot know a value, check the field's presence, type or length, or a list's size, instead of guessing it.
 
 EXAMPLE (a different, fictional API)
 Operation: POST /books, body {"title": string (required), "year": integer}. Also available: GET /books/{bookId}.

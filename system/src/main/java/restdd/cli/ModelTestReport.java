@@ -42,6 +42,9 @@ final class ModelTestReport {
         List<Long> ms = new ArrayList<>();
         List<ObjectNode> executableTests = new ArrayList<>();
         Map<String, Integer> conformance = new HashMap<>();
+        Map<String, Integer> classCounts = new java.util.TreeMap<>();
+        Map<String, int[]> breakdown = new java.util.TreeMap<>();
+        int[] grounding = new int[2]; // [string expected values, of which found in the prompt or the test's own request]
 
         for (String dir : Main.need(a, "work").split(",")) {
             Path work = Path.of(dir.trim());
@@ -102,6 +105,17 @@ final class ModelTestReport {
                             if (m) {
                                 meaningful++;
                             }
+                            JsonNode test = suite.get(t.path("index").asInt());
+                            classCounts.merge(current, 1, Integer::sum);
+                            String[] id = c.path("callId").asText().split("\\|");
+                            String method = id.length > 3 ? id[3].split(" ")[0] : "?";
+                            String kind = t.path("expectsClientError").asBoolean() ? "expects 4xx" : "expects success";
+                            for (String key : List.of("method " + method, kind)) {
+                                int[] mt = breakdown.computeIfAbsent(key, k -> new int[2]);
+                                mt[0] += m ? 1 : 0;
+                                mt[1]++;
+                            }
+                            groundingCount(test, c.path("userPrompt").asText(""), grounding);
                             ObjectNode sample = json.createObjectNode();
                             sample.put("callId", c.path("callId").asText());
                             sample.put("index", t.path("index").asInt());
@@ -131,6 +145,10 @@ final class ModelTestReport {
                 specValid - executable - errorTest - infra);
         System.out.println("conformance notes (reported only): " + conformance);
         System.out.println("T4 uses the current rubric R-T4; tests whose archived class differed: " + rescored);
+        System.out.println("T4 classes of executable tests: " + classCounts);
+        breakdown.forEach((k, v) -> System.out.printf("  %-18s non-trivial %3d / %-3d = %5.1f%%%n", k, v[0], v[1], pct(v[0], v[1])));
+        System.out.printf("expected string values in body/header checks: %d, found in the prompt or the test's own request: %d, "
+                + "not found: %d (reported only)%n", grounding[0], grounding[1], grounding[0] - grounding[1]);
         if (!ms.isEmpty()) {
             Collections.sort(ms);
             System.out.printf("fresh-call time: median %.1f s, p95 %.1f s, mean %.1f s (n=%d)%n", ms.get(ms.size() / 2) / 1000.0,
@@ -160,5 +178,45 @@ final class ModelTestReport {
     private static void line(String id, String what, int a, int b, double p, int threshold) {
         System.out.printf("%s      %-30s %4d / %-4d = %5.1f%%  (≥ %d%%)  %s%n", id, what, a, b, p, threshold,
                 p >= threshold ? "PASS" : "FAIL");
+    }
+
+    private static final List<String> VALUE_OPS = List.of("equals", "notEquals", "contains", "notContains", "in", "notIn", "matches");
+
+    /** Counts string expected values and how many occur in the user prompt or in the test's own requests. */
+    static void groundingCount(JsonNode test, String userPrompt, int[] g) {
+        if (test == null) {
+            return;
+        }
+        String prompt = userPrompt.toLowerCase();
+        StringBuilder req = new StringBuilder();
+        for (JsonNode st : test.path("steps")) {
+            for (String f : List.of("path", "pathParams", "query", "headers", "body", "multipart")) {
+                req.append(st.path(f).toString().toLowerCase()).append(' ');
+            }
+        }
+        for (JsonNode st : test.path("steps")) {
+            for (JsonNode a : st.path("assertions")) {
+                String type = a.path("type").asText();
+                if (!(type.equals("body") || type.equals("header")) || !VALUE_OPS.contains(a.path("op").asText())) {
+                    continue;
+                }
+                List<JsonNode> vals = new ArrayList<>();
+                if (a.path("value").isArray()) {
+                    a.path("value").forEach(vals::add);
+                } else {
+                    vals.add(a.path("value"));
+                }
+                for (JsonNode v : vals) {
+                    if (!v.isTextual() || v.asText().isBlank()) {
+                        continue;
+                    }
+                    String x = v.asText().toLowerCase();
+                    g[0]++;
+                    if (prompt.contains(x) || req.toString().contains(x)) {
+                        g[1]++;
+                    }
+                }
+            }
+        }
     }
 }
