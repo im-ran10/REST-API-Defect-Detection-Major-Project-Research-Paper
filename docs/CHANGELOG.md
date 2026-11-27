@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-27 — D56 approved with TILE
+
+**Changed**
+- `generate` default start rule TILE; DECISIONS D56 → PROVISIONAL (pre-freeze amendment, MOD figures kept); EXPERIMENT_PROTOCOL §3 amendment; RESEARCH_LOG E69 note; CATALOGUES.md allocation section; PROJECT_STATUS.
+
 ### 2026-11-27 — E69: development divergence (Div_C 34.8%)
 
 **Added**

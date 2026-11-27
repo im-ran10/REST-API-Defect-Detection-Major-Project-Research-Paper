@@ -15,7 +15,8 @@ public final class Selector {
 
     /**
      * Start of the round-robin. MOD = the protocol's (seed mod count) (EXPERIMENT_PROTOCOL §3); TILE = (seed × s mod
-     * count), so consecutive seeds take consecutive blocks of s entries (D56(5), owner to decide).
+     * count), so consecutive seeds take consecutive blocks of s entries. TILE is the frozen rule (D56(5), owner
+     * 27 Nov 2026); MOD is kept for the audit trail and the report.
      */
     public enum Start { MOD, TILE }
 

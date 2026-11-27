@@ -64,6 +64,7 @@ RQ1 and RQ2 are the two pre-registered primary comparisons; C vs A is secondary.
 - **Features:** deterministic, from the project-level spec and exploration shapes (final methodology §5.1).
 - **Triggering:** each catalogue entry has a boolean trigger predicate over those features.
 - **Allocation:** per operation, triggered strategies in catalogue order fill *s* slots round-robin, starting at index (seed mod length); default strategy if nothing triggers.
+- *Amendment 27 Nov 2026 (D56, owner; pre-freeze, coverage counts only):* the start index is **(seed × *s*) mod length** (TILE) for B and C, so consecutive seeds take consecutive blocks of *s* entries. Under the original rule (MOD) 35 fired (operation, strategy) pairs were never assigned on the development operations; under TILE 0. Div_C is 34.8% under both (E69): **three arms**; Div_B 47.3% (MOD) → 40.7% (TILE).
 - **No priors.**
 - **Logging:** each choice is logged with its predicate and feature values.
 

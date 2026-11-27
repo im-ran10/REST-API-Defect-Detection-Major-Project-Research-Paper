@@ -51,6 +51,10 @@ Revision 2 §1.2, frozen before any divergence computation (D31). An entry with 
 
 C entries with **no** B counterpart (count towards Div_C): C3, C5, C6, C10. B entries with no C counterpart (Div_B): B4, B5, B6, B7, B9.
 
+## Allocation (D56)
+
+Start index (seed × *s*) mod (number of fired entries), TILE, for both catalogues (owner, 27 Nov 2026). Development divergence (E69): Div_C 34.8%, Div_B 40.7%; three arms.
+
 ## Token parity (D35)
 
 Mean estimated tokens per entry as presented in the prompt (name, applicability, probe, oracle, example; characters ÷ 4): B 86.3, C 94.5, ratio C/B = 1.095 (within ±20%; checked by `SelectorTest`).

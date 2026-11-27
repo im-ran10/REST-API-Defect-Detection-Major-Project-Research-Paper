@@ -84,7 +84,7 @@ final class Generate {
             }
         }
         boolean ablation = a.containsKey("ignore-predicates");
-        restdd.select.Selector.Start startRule = restdd.select.Selector.Start.valueOf(a.getOrDefault("start", "MOD").toUpperCase()); // D56(5)
+        restdd.select.Selector.Start startRule = restdd.select.Selector.Start.valueOf(a.getOrDefault("start", "TILE").toUpperCase()); // D56(5)
         if (ablation && !SelectReport.DEVELOPMENT.contains(project)) {
             throw new IllegalArgumentException("--ignore-predicates (C∅ ablation, D37) is allowed on development projects only");
         }
