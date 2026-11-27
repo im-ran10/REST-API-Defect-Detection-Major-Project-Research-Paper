@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-27 — E72: Day-5 generation; per-arm G3 report
+
+**Added**
+- `analysis/stats/g3.py` (per-arm T1–T3 and timing) with a test; RESEARCH_LOG E72; PROJECT_STATUS.
+
 ### 2026-11-27 — D57 proposed (G3 bars) before the Day-5 runs
 
 **Added**

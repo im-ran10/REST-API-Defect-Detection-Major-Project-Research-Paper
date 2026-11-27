@@ -11,6 +11,7 @@ import adherence  # noqa: E402
 import assertion_quality  # noqa: E402
 import build_y  # noqa: E402
 import detection  # noqa: E402
+import g3  # noqa: E402
 
 
 class Detection(unittest.TestCase):
@@ -130,6 +131,28 @@ class AssertionQuality(unittest.TestCase):
         r = assertion_quality.shares([w], "run")
         self.assertEqual(r["A"]["executable"], 2)  # INVALID is not executable
         self.assertEqual(r["A"]["non_trivial_share"], 0.5)
+
+
+class G3(unittest.TestCase):
+    def test_bars_per_arm(self):
+        w = tempfile.mkdtemp()
+        with open(os.path.join(w, "calls.jsonl"), "w") as f:
+            for k in range(20):
+                ok = not (k == 0)  # arm B: 1 of 20 schema-invalid -> 95% passes T1
+                for arm in "AB":
+                    sv = True if arm == "A" else ok
+                    f.write(json.dumps({"callId": f"x|{arm}|{k}|GET /a", "arm": arm, "totalMs": 1000, "fromCache": False,
+                                        "validation": {"schemaValid": sv, "tests": [{"index": i, "structurallyValid": i < 2} for i in range(3)] if sv else []}}) + "\n")
+        r = g3.g3(w, "day5")
+        self.assertEqual(r["G3"], "pending")
+        self.assertFalse(r["A"]["pass"]["T2"])  # 2 of 3 valid = 66.7% < 80%
+        self.assertTrue(r["B"]["pass"]["T1"])
+        with open(os.path.join(w, "exec-day5.jsonl"), "w") as f:
+            for k in range(20):
+                f.write(json.dumps({"callId": f"x|A|{k}|GET /a", "record": {"tests": [{"index": 0, "outcome": "PASS"}, {"index": 1, "outcome": "INFRA_ERROR"}]}}) + "\n")
+        r = g3.g3(w, "day5")
+        self.assertEqual(r["A"]["T3"], "20/40 = 50.0%")
+        self.assertEqual(r["G3"], "FAIL")
 
 
 if __name__ == "__main__":
