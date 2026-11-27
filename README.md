@@ -130,6 +130,8 @@ java -jar target/restdd.jar run-suites --work runs/RUN --target T --spec S --lab
 ```
 Stages: screening (`-s1`) → full re-runs of suites with a candidate (`-f2`, `-f3`, fresh snapshot each) → isolated re-runs of each candidate (`-i1..i3`) → `candidates-*.jsonl`, `blinded-*.jsonl` (for reviewers), `mapping-*.jsonl` (keep closed).
 
+**Analysis (T11).** Python scripts in `analysis/stats/` (no extra packages): `build_y.py` → `detection.py` (detection analysis), `assertion_quality.py` (R-T4 share per arm), `adherence.py sample|score` (D45 coding sheets and scores). Tests: `python3 -m unittest analysis/stats/test_stats.py`.
+
 **Strategy arms (T8).** `generate --arms A,B,C` adds the strategy-conditioned arms (shared selector; catalogue files in `system/src/main/resources/catalogues/`; slot choices in `selection.jsonl`). Selector view without model calls (counts only for held-out projects; `--show` is development-only):
 ```bash
 java -jar target/restdd.jar select-report --project dolibarr --spec SPEC --shapes ~/restdd-features/dolibarr.json --target ~/restdd-targets/dolibarr.json --cap 60 --show

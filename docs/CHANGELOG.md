@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-27 — T11: analysis scripts
+
+**Added**
+- `analysis/stats/` (`build_y.py`, `detection.py`, `assertion_quality.py`, `adherence.py`, `test_stats.py`); RESEARCH_LOG E71; EXPERIMENT_PROTOCOL §10 implementation note; README.
+
 ### 2026-11-27 — T10: verdict engine
 
 **Added**
