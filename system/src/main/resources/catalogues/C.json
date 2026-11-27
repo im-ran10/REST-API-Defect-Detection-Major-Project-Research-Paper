@@ -99,9 +99,9 @@
       "name": "Session and role variation",
       "trigger": "secondRole",
       "applicability": "A secured operation and a second user.",
-      "probe": "Run the operation as one user on another user's resource, and once with no credentials.",
+      "probe": "Run the operation as a second user (\"auth\": \"secondary\") on another user's resource, and once with no credentials (\"auth\": \"none\").",
       "oracle": "Another user cannot read or change the resource (403 or 404), and one user's data never shows in another's response.",
-      "example": "GET /notes/{noteId} with auth secondary → status in [403, 404]; $.text notExists.",
+      "example": "GET /notes/{noteId} with \"auth\": \"secondary\" → status in [403, 404]; $.text notExists.",
       "source": "Defects4REST taxonomy ST6, ST7 (authentication, authorisation); limitation L3",
       "adherence": {
         "probe": "A request is sent as a second user or without credentials.",

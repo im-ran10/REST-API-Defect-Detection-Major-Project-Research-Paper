@@ -4,6 +4,16 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-28 — D59: D45 revision round 1
+
+**Changed**
+- `Selector.task`: each slot also shows the entry's adherence rule (`Required requests:`, `Required assertion: … A status code alone does not satisfy this.`), identical for B and C.
+- Catalogues B8 and C7: auth written as the step field (`"auth": "none"`, `"auth": "secondary"`) in probe and example; catalogues T8-2 (B `6de856de…`, C `b473cc39…`).
+- `SelectorTest`: checks the adherence lines; parity and leakage checks cover all prompt-visible entry text (C/B 1.080).
+
+**Added**
+- DECISIONS D59; RESEARCH_LOG E75 (diagnosis, spot check) and E76; EXPERIMENT_PROTOCOL note; `docs/frozen/CATALOGUES.md` (T8-2, slot presentation, parity); ARCHITECTURE component 4; PROJECT_STATUS.
+
 ### 2026-11-28 — E74: D45 adherence gate fails
 
 **Added**

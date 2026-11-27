@@ -71,7 +71,11 @@ public final class Selector {
                     .append("Applies when: ").append(e.applicability()).append('\n')
                     .append("Probe: ").append(e.probe()).append('\n')
                     .append("Oracle: ").append(e.oracle()).append('\n')
-                    .append("Example (fictional API): ").append(e.example()).append('\n');
+                    .append("Example (fictional API): ").append(e.example()).append('\n')
+                    // D59 (D45 revision round 1): the entry's own adherence rule, verbatim, for B and C alike.
+                    .append("Required requests: ").append(e.adherenceProbe()).append('\n')
+                    .append("Required assertion: ").append(e.adherenceOracle())
+                    .append(" A status code alone does not satisfy this.\n");
         }
         return sb.toString();
     }

@@ -264,6 +264,9 @@ class SelectorTest {
         assertTrue(d.stream().allMatch(x -> x.entryId().equals("C9")));
         String task = Selector.task(c, s0);
         assertTrue(task.contains("SLOT 1 - ") && task.contains("Oracle: ") && !task.contains("Defects4REST"), task);
+        assertTrue(task.contains("Required requests: " + c.entry(s0.get(0).entryId()).adherenceProbe())
+                && task.contains("Required assertion: " + c.entry(s0.get(0).entryId()).adherenceOracle()
+                + " A status code alone does not satisfy this."), "D59 adherence lines: " + task);
     }
 
     @Test
@@ -276,7 +279,8 @@ class SelectorTest {
             Catalogue cat = Catalogue.load(id);
             double sum = 0;
             for (Catalogue.Entry e : cat.entries()) {
-                String text = String.join(" ", e.name(), e.applicability(), e.probe(), e.oracle(), e.example()).toLowerCase();
+                String text = String.join(" ", e.name(), e.applicability(), e.probe(), e.oracle(), e.example(),
+                        e.adherenceProbe(), e.adherenceOracle()).toLowerCase(); // D59: all prompt-visible text
                 for (String w : banned) {
                     assertFalse(text.contains(w), id + " " + e.id() + " mentions " + w);
                 }

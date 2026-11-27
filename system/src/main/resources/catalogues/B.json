@@ -114,9 +114,9 @@
       "name": "Access control is enforced",
       "trigger": "secured",
       "applicability": "The operation declares authentication.",
-      "probe": "Send the request with no credentials (auth none), and, if a second user exists, as that user.",
+      "probe": "Send the request with no credentials (\"auth\": \"none\"), and, if a second user exists, as that user (\"auth\": \"secondary\").",
       "oracle": "The status is 401 or 403 and the body contains no resource data.",
-      "example": "GET /books/{bookId} with auth none → status in [401, 403]; $.title notExists.",
+      "example": "GET /books/{bookId} with \"auth\": \"none\" → status in [401, 403]; $.title notExists.",
       "source": "Schemathesis ignored_auth; RESTler namespace rule checker",
       "adherence": {
         "probe": "A request is sent without credentials or as another user.",
