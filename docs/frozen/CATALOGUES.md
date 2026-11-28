@@ -61,6 +61,8 @@ Mean estimated tokens per entry as presented in the prompt (name, applicability,
 
 *T8-2 (D59, 28 Nov 2026):* the prompt now also shows each entry's adherence rule, so parity is computed over all prompt-visible entry text (the five fields plus adherence probe and oracle): B 115.3, C 124.6, **C/B = 1.080** (five fields only: 1.102). `SelectorTest` checks the full text.
 
+*Version label:* the JSON `version` field still reads "T8-1"; T8-2 is identified by the SHA-256 above (E77).
+
 ## Slot presentation (shared by B and C)
 
 Per slot: `SLOT n - <name>`, `Applies when:`, `Probe:`, `Oracle:`, `Example (fictional API):`, and since D59 (D45 revision round 1) `Required requests: <adherence probe>` and `Required assertion: <adherence oracle> A status code alone does not satisfy this.` The header line asks for one test per slot, in slot order. Code: `Selector.task`.

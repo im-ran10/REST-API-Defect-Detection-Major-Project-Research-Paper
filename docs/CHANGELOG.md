@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-28 — E77: second-round generation on the wrong spec (not used)
+
+**Added**
+- RESEARCH_LOG E77; DECISIONS D59, EXPERIMENT_PROTOCOL and PROJECT_STATUS point the second measurement to `dev3-dolibarr` with the R14 spec; CATALOGUES.md note on the version label.
+
 ### 2026-11-28 — D59: D45 revision round 1
 
 **Changed**
