@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-28 — E78: D59 second-round generation
+
+**Added**
+- RESEARCH_LOG E78; PROJECT_STATUS.
+
 ### 2026-11-28 — E77: second-round generation on the wrong spec (not used)
 
 **Added**
