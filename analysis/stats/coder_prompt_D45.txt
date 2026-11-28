@@ -1,0 +1,8 @@
+You are coding generated API tests for strategy adherence. The attached CSV has one test per row. Do not search the web; use only the attached file.
+For each row: the column "adherence_probe" says what the test's requests must DO, and "adherence_oracle" says what at least one assertion must CHECK. The test itself is the JSON in the "test" column ("steps" = requests with method/path; "assertions" = checks).
+Code each row with exactly one of:
+- Adherent: the requests carry out the probe AND at least one assertion checks the oracle
+- Partial: only one of the two
+- Not adherent: neither, or the test does a different strategy
+Judge only what the test JSON actually contains. If unsure, choose the stricter code.
+Return a downloadable CSV file with exactly these columns: sampleId,code,note (note = at most 12 words of reason), one row for every row of the input (120 rows), same sampleIds. No other output. If you cannot create a file, output the CSV as plain text inside one code block.

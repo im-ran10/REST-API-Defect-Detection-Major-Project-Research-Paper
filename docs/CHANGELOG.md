@@ -4,6 +4,12 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-28 — E80: D45 second measurement fails; escalation (D60 proposed)
+
+**Added**
+- `analysis/stats/coder_prompt_D45.txt` (the fixed coder prompt, verbatim).
+- RESEARCH_LOG E80; DECISIONS D60 (PROPOSED); EXPERIMENT_PROTOCOL note; PROJECT_STATUS (STOP).
+
 ### 2026-11-28 — E79: second-round execution, G3 PASS for B and C
 
 **Added**
