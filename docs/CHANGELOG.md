@@ -4,6 +4,11 @@ All notable changes to project documentation, decisions, design and code. Newest
 
 ## [Unreleased]
 
+### 2026-11-28 — E79: second-round execution, G3 PASS for B and C
+
+**Added**
+- RESEARCH_LOG E79; PROJECT_STATUS.
+
 ### 2026-11-28 — E78: D59 second-round generation
 
 **Added**
